@@ -111,7 +111,7 @@ Found a bug? Please open an issue on our [GitHub Issues](https://github.com/Fect
 
 ## ☕ Support the Project
 
-If you find TurboTask helpful, consider buying me a coffee! Your support helps maintain and improve the project.
+If you find this project helpful, consider buying me a coffee! Your support helps maintain and improve the project.
 
 <a href="https://www.buymeacoffee.com/fector101" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">
