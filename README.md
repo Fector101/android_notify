@@ -19,7 +19,7 @@
 Make sure you have the required dependencies installed:
 
 ```bash
-pip install android_notify
+pip install android-notify
 ```
 
 ## Usage
@@ -49,11 +49,7 @@ android.enable_androidx = True
 from android_notify.core import send_notification
 
 # Send a basic notification
-send_notification(
-    title='Hello!',
-    message='This is a sample notification.',
-    style='big_text'
-)
+send_notification("Hello", "This is a basic notification.")
 
 # Send a notification with an image
 send_notification(
@@ -68,6 +64,13 @@ send_notification(
     title='Inbox Notification',
     message='Line 1\nLine 2\nLine 3',
     style='inbox'
+)
+
+# Send a Big Text notification (Note this send as a normal notification if not supported on said device)
+send_notification(
+    title='Hello!',
+    message='This is a sample notification.',
+    style='big_text'
 )
 ```
 
@@ -122,4 +125,3 @@ If you find TurboTask helpful, consider buying me a coffee! Your support helps m
 ## Acknowledgments
 
 - Thanks to the Kivy and Pyjnius communities for their support.
-- Inspired by modern Android notification practices.

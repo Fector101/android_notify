@@ -105,32 +105,32 @@ def send_notification(title, message, style=None, img_path=None, channel_id="def
      # Add Actions (Buttons)
     
     # add Action 1 Button
-    try:
-        # Create Action 1
-        action_intent = Intent(context, PythonActivity)
-        action_intent.setAction("ACTION_ONE")
-        pending_action_intent = PendingIntent.getActivity(
-            context, 
-            0, 
-            action_intent, 
-            PendingIntent.FLAG_IMMUTABLE
-        )
+    # try:
+    #     # Create Action 1
+    #     action_intent = Intent(context, PythonActivity)
+    #     action_intent.setAction("ACTION_ONE")
+    #     pending_action_intent = PendingIntent.getActivity(
+    #         context, 
+    #         0, 
+    #         action_intent, 
+    #         PendingIntent.FLAG_IMMUTABLE
+    #     )
         
-        # Convert text to CharSequence
-        action_text = cast('java.lang.CharSequence', String("Action 1"))
+    #     # Convert text to CharSequence
+    #     action_text = cast('java.lang.CharSequence', String("Action 1"))
         
-        # Add action with proper types
-        builder.addAction(
-            int(context.getApplicationInfo().icon),  # Cast icon to int
-            action_text,                             # CharSequence text
-            pending_action_intent                    # PendingIntent
-        )
+    #     # Add action with proper types
+    #     builder.addAction(
+    #         int(context.getApplicationInfo().icon),  # Cast icon to int
+    #         action_text,                             # CharSequence text
+    #         pending_action_intent                    # PendingIntent
+    #     )
         
         
-        # Set content intent for notification tap
-        builder.setContentIntent(pending_action_intent)
-    except Exception as e:
-        print('Failed adding Action 1',e)
+    #     # Set content intent for notification tap
+    #     builder.setContentIntent(pending_action_intent)
+    # except Exception as e:
+    #     print('Failed adding Action 1',e)
 
     
     # Apply styles
