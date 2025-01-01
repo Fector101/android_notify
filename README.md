@@ -81,7 +81,7 @@ send_notification(
 ### **Assist** -- How to Copy image to app folder
 
 ```python
-import shutil # This module comes packaged with python
+import shutil,os # These module comes packaged with python
 from android.storage import app_storage_path # type: ignore -- This works only on android
 
 app_path = os.path.join(app_storage_path(),'app')
