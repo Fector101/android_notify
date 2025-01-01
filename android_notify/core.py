@@ -3,43 +3,48 @@ from jnius import autoclass,cast
 import random
 import os
 
-# Get the required Java classes
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
-NotificationChannel = autoclass('android.app.NotificationChannel')
-String = autoclass('java.lang.String')
+ON_ANDROID = False
+try:
+    # Get the required Java classes
+    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    NotificationChannel = autoclass('android.app.NotificationChannel')
+    String = autoclass('java.lang.String')
+    Intent = autoclass('android.content.Intent')
+    PendingIntent = autoclass('android.app.PendingIntent')
+    context = PythonActivity.mActivity # Get the app's context 
+    BitmapFactory = autoclass('android.graphics.BitmapFactory')
+    BuildVersion = autoclass('android.os.Build$VERSION')    
+    ON_ANDROID=True
+except Exception as e:
+    print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.')
 
+if ON_ANDROID:
+    try:
+        # NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
+        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
 
-# NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
-NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-
-# Notification Design
-NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-# NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
-
-NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-BitmapFactory = autoclass('android.graphics.BitmapFactory')
-BuildVersion = autoclass('android.os.Build$VERSION')
-PendingIntent = autoclass('android.app.PendingIntent')
-Intent = autoclass('android.content.Intent')
-context = PythonActivity.mActivity # Get the app's context 
-
+        # Notification Design
+        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
+        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
+        # NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
+        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
+        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
+    except Exception as e:
+        print("""
+        Dependency Error: Add the following in buildozer.spec:
+        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
+        * android.enable_androidx = True
+        * android.permissions = POST_NOTIFICATIONS
+        """)
 
 def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
     from android.permissions import request_permissions, Permission,check_permission # type: ignore
-    
-    def check_permissions(permissions):
-        for permission in permissions:
-            if check_permission(permission) != True:
-                return False
-        return True
 
     permissions=[Permission.POST_NOTIFICATIONS]
-    if check_permissions(permissions):
+    if not all(check_permission(p) for p in permissions):
         request_permissions(permissions)
 
 def get_image_uri(relative_path):
@@ -52,25 +57,27 @@ def get_image_uri(relative_path):
 
     output_path = os.path.join(app_storage_path(),'app', relative_path)
     # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
-
+    
+    if not os.path.exists(output_path):
+        raise FileNotFoundError(f"Image not found at path: {output_path}")
+    
     Uri = autoclass('android.net.Uri')
     return Uri.parse(f"file://{output_path}")
 
-# from kivy.clock import mainthread
-# @mainthread
-def send_notification(title, message, style=None, img_path=None, channel_id="default_channel"):
+
+def send_notification(title:str, message:str, style=None, img_path=None, channel_id:str="default_channel"):
     """
     Send a notification on Android.
 
     :param title: Title of the notification.
     :param message: Message body.
-    :param style: Style of the notification ('big_text', 'big_picture', 'inbox').
-    :param image: Image URL or drawable for 'big_picture' style.
+    :param style: Style of the notification ('big_text', 'big_picture', 'inbox', 'large_icon').
+    :param img_path: Path to the image resource.
     :param channel_id: Notification channel ID.
     """
-    # TODO check if running on android short circuit and return message if not
-    
-    
+    if not ON_ANDROID:
+        print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
+        return
     
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
@@ -80,12 +87,7 @@ def send_notification(title, message, style=None, img_path=None, channel_id="def
     
     # Notification Channel (Required for Android 8.0+)
     if BuildVersion.SDK_INT >= 26:
-        print('entered....')
-        channel = NotificationChannel(
-            channel_id,
-            "Default Channel",
-            importance
-        )
+        channel = NotificationChannel(channel_id, "Default Channel",importance)
         notification_manager.createNotificationChannel(channel)
 
     # Build the notification
@@ -97,74 +99,37 @@ def send_notification(title, message, style=None, img_path=None, channel_id="def
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     
     # Get Image
-    img=img_path
+    img=None
     if img_path:
         try:
             img = get_image_uri(img_path)
-        except Exception as e:
-            print('Failed getting Image path',e)
+        except FileNotFoundError as e:
+            print('Failed Adding Bitmap: ',e)
     
-     # Add Actions (Buttons) 
-    
-    # add Action 1 Button
-    # try:
-    #     # Create Action 1
-    #     action_intent = Intent(context, PythonActivity)
-    #     action_intent.setAction("ACTION_ONE")
-    #     pending_action_intent = PendingIntent.getActivity(
-    #         context, 
-    #         0, 
-    #         action_intent, 
-    #         PendingIntent.FLAG_IMMUTABLE
-    #     )
-        
-    #     # Convert text to CharSequence
-    #     action_text = cast('java.lang.CharSequence', String("Action 1"))
-        
-    #     # Add action with proper types
-    #     builder.addAction(
-    #         int(context.getApplicationInfo().icon),  # Cast icon to int
-    #         action_text,                             # CharSequence text
-    #         pending_action_intent                    # PendingIntent
-    #     )
-        
-        
-    #     # Set content intent for notification tap
-    #     builder.setContentIntent(pending_action_intent)
-    # except Exception as e:
-    #     print('Failed adding Action 1',e)
-
-    
-    # Apply styles
-    if style == "big_text":
-        big_text_style = NotificationCompatBigTextStyle()
-        big_text_style.bigText(message)
-        builder.setStyle(big_text_style)
-        
-        
-    elif style == "big_picture" and img_path:
-        try:
+    # Apply notification styles
+    try:
+        if style == "big_text":
+            big_text_style = NotificationCompatBigTextStyle()
+            big_text_style.bigText(message)
+            builder.setStyle(big_text_style)
+            
+            
+        elif style == "big_picture" and img_path:
             bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
-            # bitmap = BitmapFactory.decodeFile(img_path)
             builder.setLargeIcon(bitmap)
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
-            # big_picture_style.bigPicture(bitmap).bigLargeIcon(None)
-            # big_picture_style.bigLargeIcon(bitmap) # This just changes dropdown app icon
-            
             builder.setStyle(big_picture_style)
-        except Exception as e:
-            print('Failed Adding Bitmap...', e)
-    elif style == "inbox":
-        inbox_style = NotificationCompatInboxStyle()
-        for line in message.split("\n"):
-            inbox_style.addLine(line)
-        builder.setStyle(inbox_style)
-    elif style == "large_icon" and img_path:
-        try:
+        elif style == "inbox":
+            inbox_style = NotificationCompatInboxStyle()
+            for line in message.split("\n"):
+                inbox_style.addLine(line)
+            builder.setStyle(inbox_style)
+        elif style == "large_icon" and img_path:
             bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
             builder.setLargeIcon(bitmap)
-        except Exception as e:
-            print('Failed Large Icon...', e)
-    
-    # Show the notification
-    notification_manager.notify(random.randint(0, 100), builder.build())
+    except Exception as e:
+        print('Failed Adding Style: ',e)
+    # Display the notification
+    notification_id = random.randint(0, 100)
+    notification_manager.notify(notification_id, builder.build())
+    return notification_id
