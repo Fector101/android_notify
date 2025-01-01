@@ -98,7 +98,6 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
     builder.setDefaults(NotificationCompat.DEFAULT_ALL) 
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     
-    # Get Image
     img=None
     if img_path:
         try:
@@ -112,8 +111,6 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
             big_text_style = NotificationCompatBigTextStyle()
             big_text_style.bigText(message)
             builder.setStyle(big_text_style)
-            
-            
         elif style == "big_picture" and img_path:
             bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
             builder.setLargeIcon(bitmap)
