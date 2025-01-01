@@ -78,7 +78,9 @@ send_notification(
 
 ---
 
-### **Assist** -- How to Copy image to app folder
+### **Assist**
+
+- How to Copy image to app folder
 
 ```python
 import shutil,os # These module comes packaged with python
@@ -90,6 +92,17 @@ image_path= "/storage/emulated/0/Download/profile.png"
 shutil.copy(image_path, os.path.join(app_path, "profile.png"))
 ```
 
+- Avoiding Human Error when using different notification styles
+
+```python
+from android_notify import NotificationStyles
+send_notification(
+    title='Picture Alert!',
+    message='This notification includes an image.',
+    img_path='assets/imgs/icon.png'
+    style=NotificationStyles.BIG_PICTURE,
+)
+```
 ---
 
 ### **Functions Reference**
