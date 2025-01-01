@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='android_notify',
-    version='1.1',
+    version='1.2',
     author='Fabian',
     url='https://github.com/Fector101/android_notify/',
     description='A Python package for sending Android notifications.',

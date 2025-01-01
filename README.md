@@ -48,7 +48,7 @@ android.enable_androidx = True
 ### Example Notification
 
 ```python
-from android_notify.core import send_notification
+from android_notify import send_notification
 
 # Send a basic notification
 send_notification("Hello", "This is a basic notification.")
