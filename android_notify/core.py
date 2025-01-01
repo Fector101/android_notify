@@ -20,7 +20,7 @@ except Exception as e:
 
 if ON_ANDROID:
     try:
-        # NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
+        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
         NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
 
         # Notification Design
@@ -82,8 +82,8 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
 
-    importance= autoclass('android.app.NotificationManager').IMPORTANCE_HIGH # also works #NotificationManager.IMPORTANCE_DEFAULT
-    # importance= NotificationManagerCompat.IMPORTANCE_HIGH #autoclass('android.app.NotificationManager').IMPORTANCE_HIGH also works #NotificationManager.IMPORTANCE_DEFAULT
+    # importance= autoclass('android.app.NotificationManager').IMPORTANCE_HIGH # also works #NotificationManager.IMPORTANCE_DEFAULT
+    importance= NotificationManagerCompat.IMPORTANCE_HIGH #autoclass('android.app.NotificationManager').IMPORTANCE_HIGH also works #NotificationManager.IMPORTANCE_DEFAULT
     
     # Notification Channel (Required for Android 8.0+)
     if BuildVersion.SDK_INT >= 26:
