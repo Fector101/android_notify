@@ -47,12 +47,21 @@ android.enable_androidx = True
 
 ### Example Notification
 
+#### Basic Notification
+
 ```python
 from android_notify import send_notification
 
 # Send a basic notification
 send_notification("Hello", "This is a basic notification.")
+```
 
+**Example Image:**  
+![Basic Notification](path/to/basic-notification-image.png)
+
+#### Notification with an Image (Big Picture Style)
+
+```python
 # Send a notification with an image
 send_notification(
     title='Picture Alert!',
@@ -60,21 +69,38 @@ send_notification(
     style='big_picture',
     img_path='assets/imgs/icon.png'
 )
+```
 
+**Example Image:**  
+![Big Picture Notification](path/to/big-picture-notification-image.png)
+
+#### Inbox Notification Style
+
+```python
 # Send a notification with inbox style
 send_notification(
     title='Inbox Notification',
     message='Line 1\nLine 2\nLine 3',
     style='inbox'
 )
+```
 
-# Send a Big Text notification (Note this send as a normal notification if not supported on said device)
+**Example Image:**  
+![Inbox Notification](path/to/inbox-notification-image.png)
+
+#### Big Text Notification
+
+```python
+# Send a Big Text notification
 send_notification(
     title='Hello!',
     message='This is a sample notification.',
     style='big_text'
 )
 ```
+
+**Example Image:**  
+![Big Text Notification](path/to/big-text-notification-image.png)
 
 ---
 
@@ -103,6 +129,7 @@ send_notification(
     style=NotificationStyles.BIG_PICTURE,
 )
 ```
+
 ---
 
 ### **Functions Reference**
@@ -207,4 +234,4 @@ If you find this project helpful, consider buying me a coffee! Your support help
 ## 🌐 **Links**
 
 - **PyPI:** [android-notify on PyPI](https://pypi.org/project/android-notify/)
-- **GitHub:** [Source Code Repository](hhttps://github.com/Fector101/android_notify/)
+- **GitHub:** [Source Code Repository](https://github.com/Fector101/android_notify/)
