@@ -78,6 +78,7 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
     if not ON_ANDROID:
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
+    asks_permission_if_needed()
     
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
