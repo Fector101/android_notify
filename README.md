@@ -33,7 +33,7 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add pyjnius so it's packaged with the build
-requirements = python3,kivy,pyjnius
+requirements = python3, kivy, pyjnius, android-notify
 
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
@@ -109,8 +109,8 @@ send_notification(
 - How to Copy image to app folder
 
 ```python
-import shutil,os # These module comes packaged with python
-from android.storage import app_storage_path # type: ignore -- This works only on android
+import shutil,os # These modules come packaged with python
+from android.storage import app_storage_path # type: ignore -- This works only on android 
 
 app_path = os.path.join(app_storage_path(),'app')
 image_path= "/storage/emulated/0/Download/profile.png"
@@ -121,7 +121,7 @@ shutil.copy(image_path, os.path.join(app_path, "profile.png"))
 - Avoiding Human Error when using different notification styles
 
 ```python
-from android_notify import NotificationStyles
+from android_notify import send_notification, NotificationStyles
 send_notification(
     title='Picture Alert!',
     message='This notification includes an image.',
