@@ -241,5 +241,5 @@ class NotificationManager:
         self.notification_ids.append(notification_id)
         return notification_id
 
-notification_manager=NotificationManager()
+# notification_manager=NotificationManager()
 # notification_manager.s
