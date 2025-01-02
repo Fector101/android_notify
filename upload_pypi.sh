@@ -29,4 +29,4 @@ twine upload dist/* --verbose
 echo "Cleaning up build files..."
 rm -rf dist/ build/ *.egg-info
 
-echo "Package uploaded successfully!"
+echo "Script for Upload done!"

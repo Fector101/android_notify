@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="android-notify",
-    version="1.23",
+    version="1.23.1",
     author="Fabian",
     author_email='fector101@yahoo.com',
     description="A Python package for sending Android notifications using PyJNIus in Kivy apps.",
