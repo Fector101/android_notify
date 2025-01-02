@@ -28,7 +28,7 @@ setup(
         "notifications",
         "kivy",
         "mobile",
-        "push notifications",
+        "post notifications",
         "pyjnius",
         "android notifications",
         "kivy notifications",
