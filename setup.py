@@ -5,7 +5,7 @@ setup(
     version="1.23.1",
     author="Fabian",
     author_email='fector101@yahoo.com',
-    description="A Python package for sending Android notifications using PyJNIus in Kivy apps.",
+    description="A Python package that simpilfies creating Android Post notifications using PyJNIus in Kivy apps.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/fector101/android-notify",
