@@ -1,5 +1,7 @@
 android_notify.egg-info
-text.py
+lab/
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
