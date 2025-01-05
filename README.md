@@ -100,11 +100,10 @@ send_notification(
 )
 ```
 
-**Example Image:**  
-![Inbox Notification](path/to/inbox-notification-image.png)
-![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg)
+**Example Image:**
+![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inbox_noti.jpg)
 
-#### Big Text Notification
+#### Big Text Notification (This will default to normal text if unsupported)
 
 ```python
 # Send a Big Text notification
