@@ -57,8 +57,7 @@ send_notification("Hello", "This is a basic notification.")
 ```
 
 **Example Image:**  
-![Basic Notification](path/to/basicnoti.png)
-
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basicnoti.jpg)
 #### Notification with an Image (Big Picture Style)
 
 ```python
@@ -71,9 +70,8 @@ send_notification(
 )
 ```
 
-**Example Image:**  
-![Big Picture Notification](path/to/bigpicturenoti.png)
-
+**Example Image:**
+![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
 #### Notification with an Image (Large Icon Style)
 
 ```python
