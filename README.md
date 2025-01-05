@@ -106,7 +106,7 @@ send_notification(
 
 ### Version 1.24 (Channel Name)
 
--Can be found in App Settings where user can turn on/off specific Notifications
+- Can be found in App Settings where user can turn on/off specific Notifications
 
 ```python
 # channel_id default is now channel_name in lowercase with spaces replaced for underscores(_)
