@@ -57,7 +57,7 @@ send_notification("Hello", "This is a basic notification.")
 ```
 
 **Example Image:**  
-![Basic Notification](path/to/basic-notification-image.png)
+![Basic Notification](path/to/basicnoti.png)
 
 #### Notification with an Image (Big Picture Style)
 
@@ -72,7 +72,7 @@ send_notification(
 ```
 
 **Example Image:**  
-![Big Picture Notification](path/to/big-picture-notification-image.png)
+![Big Picture Notification](path/to/bigpicturenoti.png)
 
 #### Notification with an Image (Large Icon Style)
 
