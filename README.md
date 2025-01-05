@@ -119,7 +119,7 @@ send_notification(
 ```
 
 **Sample Image:**  
-![channels](docs/imgs/channel_name.jpg)
+![channels](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
 
 ---
 
