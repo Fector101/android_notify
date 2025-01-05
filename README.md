@@ -74,6 +74,21 @@ send_notification(
 **Example Image:**  
 ![Big Picture Notification](path/to/big-picture-notification-image.png)
 
+#### Notification with an Image (Large Icon Style)
+
+```python
+# Send a notification with Large Icon
+send_notification(
+    title='Completed download',
+    message='profile.jpg',
+    style='large_icon',
+    img_path='assets/imgs/icon.png'
+)
+```
+
+**Example Image:**  
+![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
+
 #### Inbox Notification Style
 
 ```python
@@ -87,6 +102,7 @@ send_notification(
 
 **Example Image:**  
 ![Inbox Notification](path/to/inbox-notification-image.png)
+![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg)
 
 #### Big Text Notification
 
@@ -100,26 +116,39 @@ send_notification(
 ```
 
 **Example Image:**  
-![Big Text Notification](path/to/big-text-notification-image.png)
+![Big Text Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg)
 
 ---
 
-### Version 1.24+ (Channel Name)
+### Advanced Usage
+
+#### Channel Name (channel_name)
 
 - Can be found in App Settings where user can turn on/off specific Notifications
 
 ```python
-# channel_id default is now channel_name in lowercase with spaces replaced for underscores(_)
-# In later version channel_id will be used to reference notification
+#  if not specified Channel Name default's to "Default Channel"
 send_notification(
     title="Download finished"
     message="How to Catch a Fish.mp4"
-    channel_name="Downlooad Notifications"
+    channel_name="Download Notifications"
 )
 ```
 
 **Sample Image:**  
-![channels](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
+![channels img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
+
+#### Channel Name (channel_id)
+
+You can customize notification channels for different types of notifications.(In later version channel_id will be used to reference notification)
+
+```python
+send_notification(
+    title='Custom Channel Notification',
+    message='This uses a custom notification channel.',
+    channel_id='custom_channel'
+)
+```
 
 ---
 
@@ -205,18 +234,6 @@ uri = get_image_uri('assets/imgs/icon.png')
 
 Returns - notification id
 
-### Advanced Usage
-
-You can customize notification channels for different types of notifications.
-
-```python
-send_notification(
-    title='Custom Channel Notification',
-    message='This uses a custom notification channel.',
-    channel_id='custom_channel'
-)
-```
-
 ## Contribution
 
 Feel free to open issues or submit pull requests for improvements!
@@ -247,6 +264,7 @@ If you find this project helpful, consider buying me a coffee! Or Giving it a st
 
 ## Acknowledgments
 
+- This Project was "Made For Android" and thoroughly "Tested by" the [Laner Project](https://github.com/Fector101/Laner/) - Laner is an application that creates a secure connection between your PC and Phone to Transfer Files Wirelessly.
 - Thanks to the Kivy and Pyjnius communities for their support.
 
 ---
