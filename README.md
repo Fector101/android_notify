@@ -115,9 +115,9 @@ send_notification(
     style='big_text'
 )
 ```
-
+<!-- 
 **Example Image:**  
-![Big Text Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg)
+![Big Text Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg) -->
 
 ---
 
