@@ -245,7 +245,7 @@ Found a bug? Please open an issue on our [GitHub Issues](https://github.com/Fect
 
 - Fabian - <fector101@yahoo.com>
 - GitHub: <https://github.com/Fector101/android_notify>
-- Twitter: <https://x.com/CodewithFabian> -- 😊 I'm sure to answer
+- Twitter: <https://twitter.com/intent/user?user_id=1246911115319263233> -- 😊 I'm sure to answer
 
 For feedback or contributions, feel free to reach out!
 
