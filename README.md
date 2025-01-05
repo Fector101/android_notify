@@ -104,7 +104,7 @@ send_notification(
 
 ---
 
-### Version 1.24 (Channel Name)
+### Version 1.24+ (Channel Name)
 
 - Can be found in App Settings where user can turn on/off specific Notifications
 
@@ -112,9 +112,9 @@ send_notification(
 # channel_id default is now channel_name in lowercase with spaces replaced for underscores(_)
 # In later version channel_id will be used to reference notification
 send_notification(
-    title="Downlooad Notifications"
+    title="Download finished"
     message="How to Catch a Fish.mp4"
-    channel_name="Download finished"
+    channel_name="Downlooad Notifications"
 )
 ```
 
