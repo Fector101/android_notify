@@ -110,14 +110,14 @@ send_notification(
 # channel_id default is now channel_name in lowercase with spaces replaced for underscores(_)
 # In later version channel_id will be used to reference notification
 send_notification(
-    title="Downlooad Done"
+    title="Downlooad Notifications"
     message="How to Catch a Fish.mp4"
     channel_name="Download finished"
 )
 ```
 
 **Sample Image:**  
-![channels](docs/imgs/channel_name)
+![channels](docs/imgs/channel_name.jpg)
 
 ---
 
