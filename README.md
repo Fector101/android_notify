@@ -99,7 +99,7 @@ send_notification(
 ```
 
 **Example Image:**
-![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inbox_noti.jpg)
+![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inboxnoti.jpg)
 
 #### Big Text Notification
 
