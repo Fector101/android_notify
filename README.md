@@ -104,6 +104,23 @@ send_notification(
 
 ---
 
+### Version 1.24 (Channel Name)
+
+```python
+# channel_id default is now channel_name in lowercase with spaces replaced for underscores(_)
+# In later version channel_id will be used to reference notification
+send_notification(
+    title="Downlooad Done"
+    message="How to Catch a Fish.mp4"
+    channel_name="Download finished"
+)
+```
+
+**Sample Image:**  
+![channels](docs/imgs/channel_name)
+
+---
+
 ### **Assist**
 
 - How to Copy image to app folder
@@ -218,7 +235,7 @@ For feedback or contributions, feel free to reach out!
 
 ## ☕ Support the Project
 
-If you find this project helpful, consider buying me a coffee! Your support helps maintain and improve the project.
+If you find this project helpful, consider buying me a coffee! Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify/) Your support helps maintain and improve the project.
 
 <a href="https://www.buymeacoffee.com/fector101" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">

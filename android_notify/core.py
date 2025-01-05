@@ -64,7 +64,7 @@ def get_image_uri(relative_path):
     return Uri.parse(f"file://{output_path}")
 
 
-def send_notification(title:str, message:str, style=None, img_path=None, channel_id:str="default_channel"):
+def send_notification(title:str, message:str, style=None, img_path=None, channel_name="Default Channel",channel_id:str="default_channel"):
     """
     Send a notification on Android.
 
@@ -72,13 +72,13 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
     :param message: Message body.
     :param style: Style of the notification ('big_text', 'big_picture', 'inbox', 'large_icon').
     :param img_path: Path to the image resource.
-    :param channel_id: Notification channel ID.
+    :param channel_id: Notification channel ID.(Default is lowercase channel name arg in lowercase)
     """
     if not ON_ANDROID:
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
     asks_permission_if_needed()
-    
+    channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
 
@@ -87,7 +87,7 @@ def send_notification(title:str, message:str, style=None, img_path=None, channel
     
     # Notification Channel (Required for Android 8.0+)
     if BuildVersion.SDK_INT >= 26:
-        channel = NotificationChannel(channel_id, "Default Channel",importance)
+        channel = NotificationChannel(channel_id, channel_name,importance)
         notification_manager.createNotificationChannel(channel)
 
     # Build the notification
