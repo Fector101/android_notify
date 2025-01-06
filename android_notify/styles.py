@@ -1,4 +1,4 @@
-class NotificationStyle():
+class NotificationStyles():
     DEFAULT = "simple"
     
     INBOX = "inbox"
