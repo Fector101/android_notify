@@ -64,7 +64,14 @@ def get_image_uri(relative_path):
     return Uri.parse(f"file://{output_path}")
 
 
-def send_notification(title:str, message:str, style=None, img_path=None, channel_name="Default Channel",channel_id:str="default_channel"):
+def send_notification(
+    title:str,
+    message:str,
+    style=None,
+    img_path=None,
+    channel_name="Default Channel",
+    channel_id:str="default_channel"
+    ):
     """
     Send a notification on Android.
 
