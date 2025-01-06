@@ -1,11 +1,8 @@
-import random,difflib
+from jnius import autoclass,cast
+import random,difflib,os
 
 DEV=0
 ON_ANDROID = False
-try:
-    NotificationManager = autoclass('android.app.NotificationManager')
-except Exception as e:
-    print('Found the reason ',e)
 try:
     # Get the required Java classes
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
@@ -16,10 +13,11 @@ try:
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     BuildVersion = autoclass('android.os.Build$VERSION')    
     
+    NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
     ON_ANDROID = True
 except Exception as e:
-    print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info. ' if not DEV else ' ' ,e)
+    print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' if not DEV else '')
 
 
 if ON_ANDROID:
@@ -120,7 +118,7 @@ class Notification:
         
     def send(self,silent:bool=False):
         self.silent=self.silent or silent
-        print("What is ANdroid",ON_ANDROID)
+        
         if ON_ANDROID:
             build = self.__startNotificationBuild()
             self.notification_manager.notify(self.__id, build())
@@ -181,7 +179,7 @@ class Notification:
         return self.__builder
     def __createBasicNotification(self):
         
-        importance= 0 if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
+        importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
         
         # Notification Channel (Required for Android 8.0+)
         if BuildVersion.SDK_INT >= 26:
