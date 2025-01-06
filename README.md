@@ -135,11 +135,11 @@ send_notification(
 ```
 
 **Sample Image:**  
-![channels img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
+![channel_name img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
 
 #### Channel Name (channel_id)
 
-You can customize notification channels for different types of notifications.(In later version channel_id will be used to reference notification)
+You can customize notification channels for different types of notifications.
 
 ```python
 send_notification(
