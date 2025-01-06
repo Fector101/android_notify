@@ -1,6 +1,6 @@
 # Android Notify
 
-`android_notify` is a Python module designed to simplify sending Android notifications using Kivy and Pyjnius. It supports multiple notification styles, including text, images, and inbox layouts.
+`android_notify` is a Python module for effortlessly sending Android notifications in Kivy android apps. It supports various styles and ensures seamless integration and customization.
 
 ## Features
 
