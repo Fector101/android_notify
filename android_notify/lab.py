@@ -57,7 +57,7 @@ class Notification:
     :param logs: Defaults to True
     """
     notification_ids=[]
-    style_values=['simple','big_text', 'inbox', 'big_picture', 'large_icon','both_imgs','custom'] # TODO make pattern for non-android Notifications
+    style_values=['','simple','big_text', 'inbox', 'big_picture', 'large_icon','both_imgs','custom'] # TODO make pattern for non-android Notifications
     defaults={
         'title':'Default Title',
         'message':'Default Message',
@@ -176,7 +176,7 @@ class Notification:
         self.__createBasicNotification()
         if self.style not in ['simple','']:
             self.addNotificationStyle()
-        return self.__builder
+        return self.__bu
     def __createBasicNotification(self):
         
         importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
