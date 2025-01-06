@@ -1,5 +1,4 @@
 import random,difflib
-from enum import Enum
 
 DEV=True
 ON_ANDROID = False
@@ -60,7 +59,7 @@ class Notification:
     style_values=['','simple','big_text', 'inbox', 'big_picture', 'large_icon','both_imgs','custom'] # TODO make pattern for non-android Notifications
     defaults={
         'title':'Default Title',
-        'message':'Default Message',
+        'message':'Default Message', # TODO Might change meassage para to list if style set to inbox
         'style':'simple',
         'big_picture_path':'',
         'large_icon_path':'',
@@ -305,9 +304,9 @@ class Notification:
 
 
 # Notification.logs=False # Add in Readme
-notify=Notification(style='large_icon',title='My Title',channel_name='Go')#,logs=False)
-# notify.channel_name='Downloads'
-notify.message="Blah"
-notify.send()
-notify.updateTitle('New Title')
-notify.updateMessage('New Message')
+# notify=Notification(style='large_icon',title='My Title',channel_name='Go')#,logs=False)
+# # notify.channel_name='Downloads'
+# notify.message="Blah"
+# notify.send()
+# notify.updateTitle('New Title')
+# notify.updateMessage('New Message')

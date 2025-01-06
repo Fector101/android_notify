@@ -5,5 +5,5 @@ try:
     # from .advanced import EnhancedNotificationManager
     # from ._dev import NotificationBuilder
 except Exception as e:
-    # print('Failed to Import Advanced Features:', e)
+    print('Failed to Import Advanced Features:', e)
     pass
