@@ -38,19 +38,6 @@ if ON_ANDROID:
         * android.permissions = POST_NOTIFICATIONS
         """)
 
-class NotificationStyle(Enum):
-    DEFAULT = "simple"
-    
-    INBOX = "inbox"
-    BIG_TEXT = "big_text"
-    MESSAGING = "messaging" # TODO
-    
-    LARGE_ICON = "large_icon"
-    BIG_PICTURE = "big_picture"
-    BOTH_IMGS = "both_imgs"
-    
-    CUSTOM = "custom" # TODO
-    
 class Notification:
     """
     Send a notification on Android.
