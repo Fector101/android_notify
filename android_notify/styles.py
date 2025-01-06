@@ -1,4 +1,4 @@
-class NotificationStyle(Enum):
+class NotificationStyle():
     DEFAULT = "simple"
     
     INBOX = "inbox"
