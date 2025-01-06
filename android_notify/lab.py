@@ -1,4 +1,5 @@
 import random,difflib
+from enum import Enum
 
 DEV=True
 ON_ANDROID = False
@@ -37,6 +38,19 @@ if ON_ANDROID:
         * android.permissions = POST_NOTIFICATIONS
         """)
 
+class NotificationStyle(Enum):
+    DEFAULT = "simple"
+    
+    INBOX = "inbox"
+    BIG_TEXT = "big_text"
+    MESSAGING = "messaging" # TODO
+    
+    LARGE_ICON = "large_icon"
+    BIG_PICTURE = "big_picture"
+    BOTH_IMGS = "both_imgs"
+    
+    CUSTOM = "custom" # TODO
+    
 class Notification:
     """
     Send a notification on Android.
@@ -91,32 +105,36 @@ class Notification:
         # During Dev on PC
         self.logs=self.logs
         
-        self.id = self.__getUniqueID()
+        
+        
+        # Private (Don't Touch)
+        self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
+        self.__builder=None
         
         if not ON_ANDROID:
             return
-        
         self.__asks_permission_if_needed() # TODO make send method wait for __asks_permission_if_needed method
-        
         self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE) 
         
         
         
     def updateTitle(self,new_title):
         self.title=new_title
-        # getNotification.title=new_title
+        if ON_ANDROID:
+            self.__builder.setContentTitle(new_title)
 
     def updateMessage(self,new_message):
         self.message=new_message
-        # getNotification.title=new_title
+        if ON_ANDROID:
+            self.__builder.setContentText(new_message)
         
     def send(self,silent:bool=False):
         self.silent=self.silent or silent
         
         if ON_ANDROID:
             build = self.__startNotificationBuild()
-            self.notification_manager.notify(self.id, build())
+            self.notification_manager.notify(self.__id, build())
         elif self.logs:
             print(f"""
     Dev Notification Properties:
@@ -168,10 +186,9 @@ class Notification:
         for key,value in options_dict.items():
             setattr(self,key, getValue(key,options_dict,self.defaults[key]))
     def __startNotificationBuild(self):
-        notification = self.__createBasicNotification()
+        self.__createBasicNotification()
         if self.style not in ['simple','']:
-            notification = self.addNotificationStyle(basic_notification)
-        
+            self.addNotificationStyle()
         
     def __createBasicNotification(self):
         
@@ -183,16 +200,15 @@ class Notification:
             self.notification_manager.createNotificationChannel(channel)
         
         # Build the notification
-        builder = NotificationCompatBuilder(context, self.channel_id)
-        builder.setContentTitle(self.title)
-        builder.setContentText(self.message)
-        builder.setSmallIcon(context.getApplicationInfo().icon)
-        builder.setDefaults(NotificationCompat.DEFAULT_ALL) 
+        self.__builder = NotificationCompatBuilder(context, self.channel_id)
+        self.__builder.setContentTitle(self.title)
+        self.__builder.setContentText(self.message)
+        self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+        self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) 
         if not self.silent:
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH)
-        return builder
+            self.__builder.setPriority(NotificationCompat.PRIORITY_HIGH)
 
-    def __addNotificationStyle(self,builder):
+    def __addNotificationStyle(self):
         
         large_icon_javapath=None
         if self.large_icon_path:
@@ -212,38 +228,36 @@ class Notification:
         if self.style == "big_text":
             big_text_style = NotificationCompatBigTextStyle()
             big_text_style.bigText(message)
-            builder.setStyle(big_text_style)
+            self.__builder.setStyle(big_text_style)
             
         elif self.style == "inbox":
             inbox_style = NotificationCompatInboxStyle()
             for line in message.split("\n"):
                 inbox_style.addLine(line)
-            builder.setStyle(inbox_style)
+            self.__builder.setStyle(inbox_style)
         
         elif self.style == "big_picture" and img_path:
             big_pic_bitmap = self.__getBitmap(big_pic_javapath)
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
-            builder.setStyle(big_picture_style)
+            self.__builder.setStyle(big_picture_style)
         
         elif self.style == "large_icon" and img_path:
             large_icon_bitmap = self.__getBitmap(large_icon_javapath)
-            builder.setLargeIcon(large_icon_bitmap)
+            self.__builder.setLargeIcon(large_icon_bitmap)
         
         elif self.style == 'both_imgs':
             big_pic_bitmap = self.__getBitmap(big_pic_javapath)
             large_icon_bitmap = self.__getBitmap(large_icon_javapath)
             
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
-            builder.setLargeIcon(large_icon_bitmap)
-            builder.setStyle(big_picture_style)
+            self.__builder.setLargeIcon(large_icon_bitmap)
+            self.__builder.setStyle(big_picture_style)
         elif self.style == 'custom':
-            builder = self.__doCustomStyle(builder)
+            self.__builder = self.__doCustomStyle()
                 
-        return builder
-    
-    def __doCustomStyle(self, builder):
+    def __doCustomStyle(self):
         # TODO Will implement when needed
-        return builder
+        return self.__builder
     
     def __getUniqueID(self):
         reasonable_amount_of_notifications=101
@@ -285,6 +299,8 @@ class Notification:
         return Uri.parse(f"file://{output_path}")
     def __getBitmap(self,img_path):
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img_path))
+
+
 # try:
 #     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
 #     # notify.channel_name='Downloads'
@@ -299,7 +315,9 @@ class Notification:
 # notify=Notification(title='My Title1')
 # # notify.updateTitle('New Title1')
 # notify.send()
-Notification.logs=False # Add in Readme
+
+
+# Notification.logs=False # Add in Readme
 notify=Notification(style='large_icon',title='My Title',channel_name='Go')#,logs=False)
 # notify.channel_name='Downloads'
 notify.message="Blah"
