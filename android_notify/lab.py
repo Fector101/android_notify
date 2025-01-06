@@ -1,6 +1,6 @@
 import random,difflib
 
-DEV=True
+DEV=0
 ON_ANDROID = False
 try:
     # Get the required Java classes
@@ -14,7 +14,7 @@ try:
     
     NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
-    ON_ANDROID=True
+    ON_ANDROID = True
 except Exception as e:
     print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' if not DEV else '')
 
@@ -175,7 +175,7 @@ class Notification:
         self.__createBasicNotification()
         if self.style not in ['simple','']:
             self.addNotificationStyle()
-        return self.__bu
+        return self.__builder
     def __createBasicNotification(self):
         
         importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
