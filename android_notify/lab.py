@@ -176,7 +176,7 @@ class Notification:
         self.__createBasicNotification()
         if self.style not in ['simple','']:
             self.addNotificationStyle()
-        
+        return self.__builder
     def __createBasicNotification(self):
         
         importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
