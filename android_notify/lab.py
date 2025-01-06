@@ -117,7 +117,7 @@ class Notification:
         
     def send(self,silent:bool=False):
         self.silent=self.silent or silent
-        
+        print("What is ANdroid",ON_ANDROID)
         if ON_ANDROID:
             build = self.__startNotificationBuild()
             self.notification_manager.notify(self.__id, build())
