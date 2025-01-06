@@ -27,10 +27,12 @@ if ON_ANDROID:
 
         # Notification Design
         NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
+        print(NotificationCompatBuilder,' SOme object')
         NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
     except Exception as e:
+        print(e if DEV else '')
         print("""
         Dependency Error: Add the following in buildozer.spec:
         * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
@@ -120,8 +122,8 @@ class Notification:
         self.silent=self.silent or silent
         
         if ON_ANDROID:
-            build = self.__startNotificationBuild()
-            self.notification_manager.notify(self.__id, build())
+            self.__startNotificationBuild()
+            self.notification_manager.notify(self.__id, self.__builder.build())
         elif self.logs:
             print(f"""
     Dev Notification Properties:
@@ -176,7 +178,7 @@ class Notification:
         self.__createBasicNotification()
         if self.style not in ['simple','']:
             self.addNotificationStyle()
-        return self.__builder
+
     def __createBasicNotification(self):
         
         importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
