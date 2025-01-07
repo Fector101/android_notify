@@ -193,30 +193,6 @@ send_notification(
 asks_permission_if_needed()
 ```
 
----
-
-### 2. `get_image_uri(relative_path)`
-
-**Description:**
-
-- Resolves the absolute URI for an image in the app's storage.
-
-**Parameters:**
-
-- `relative_path` *(str)*: Path to the image (e.g., `assets/imgs/icon.png`).
-
-**Returns:**
-
-- `Uri`: Android URI object for the image.
-
-**Usage:**
-
-```python
-uri = get_image_uri('assets/imgs/icon.png')
-```
-
----
-
 ### 3. `send_notification(title, message, style=None, img_path=None, channel_id='default_channel')`
 
 **Description:**
@@ -229,7 +205,8 @@ uri = get_image_uri('assets/imgs/icon.png')
 - `message` *(str)*: Notification message.
 - `style` *(str, optional)*: Notification style (`big_text`, `big_picture`, `inbox`, `large_icon`).
 - `img_path` *(str, optional)*: Path to the image resource.(for `big_picture` or `large_icon` styles).
-- `channel_id` *(str, optional)*: Notification channel ID.
+- `channel_name` *(str, optional)*: Notification channel Name.(Keep Short and Precise with `len(channel_name) < 40`)
+- `channel_id` *(str, optional)*: Notification channel ID.(Keep Short and Precise with `len(channel_id) < 50`, You can only assign Channel name and Channel ID will be automatical Genrated)
 
 Returns - notification id
 

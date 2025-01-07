@@ -2,9 +2,10 @@
 import difflib
 import random
 import os
+import re
 from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
-DEV=0
+DEV=1
 ON_ANDROID = False
 
 try:
@@ -13,32 +14,32 @@ try:
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
-    context = PythonActivity.mActivity # Get the app's context 
+    context = PythonActivity.mActivity # Get the app's context
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')    
+    BuildVersion = autoclass('android.os.Build$VERSION')
     NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
-    print(MESSAGE if not DEV else '')
+    print(MESSAGE if DEV else '')
 
 if ON_ANDROID:
     try:
         from android.permissions import request_permissions, Permission,check_permission # pylint: disable=E0401
         from android.storage import app_storage_path  # pylint: disable=E0401
-        
+
         NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
         NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
 
         # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        print(NotificationCompatBuilder,' SOme object')
+        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder') # pylint: disable=C0301
         NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle') # pylint: disable=C0301
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle') # pylint: disable=C0301
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
     except Exception as e:# pylint: disable=W0718
-        print(e if DEV else '')
+        print(e if DEV else '','Import Fector101')
+        # print(e if DEV else '')
         print("""
         Dependency Error: Add the following in buildozer.spec:
         * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
@@ -146,7 +147,7 @@ class Notification:
             self.__builder.setContentText(String(message))
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.__id, self.__builder.build())
-       
+
     def send(self,silent:bool=False):
         """Sends notification
         
@@ -169,7 +170,9 @@ class Notification:
         channel_name: '{self.channel_name}'
     (Won't Print Logs When Complied,except if selected `Notification(logs=True)`
               """)
-            print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if not DEV else '\n') # pylint: disable=C0301
+            if DEV:
+                print(f'Channel ID: {self.channel_id}, id: {self.__id}')
+            print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
 
     def __validateArgs(self,inputted_kwargs):
 
@@ -188,7 +191,7 @@ class Notification:
                 suggestion_text='\n'.join(suggestions)
                 hint_msg=singularForm(input_type) if len(invalid_args) < 2 else input_type
 
-                raise ValueError(f"Invalid {hint_msg} provided: \n\t{suggestion_text}\n\t* list of valid {input_type}: [{', '.join(accepteable_inputs)}]") # pylint: disable=C0301
+                raise ValueError(f"Invalid {hint_msg} provided: \n\t{suggestion_text}\n\t* list of valid {input_type}: [{', '.join(accepteable_inputs)}]")
 
         allowed_keywords=self.defaults.keys()
         inputted_keywords_=inputted_kwargs.keys()
@@ -200,7 +203,15 @@ class Notification:
 
     def __setArgs(self,options_dict:dict):
         for key,value in options_dict.items():
+            if key == 'channel_name':
+                setattr(self,key, value[:40] if value else self.defaults[key])
+            elif key == 'channel_id' and value:
+                setattr(self,key, self.__generate_channel_id(value) if value else self.defaults[key])
+
             setattr(self,key, value if value else self.defaults[key])
+
+        if "channel_id" not in options_dict and 'channel_name' in options_dict:
+            setattr(self,'channel_id', self.__generate_channel_id(options_dict['channel_name']))
 
     def __startNotificationBuild(self):
         self.__createBasicNotification()
@@ -208,19 +219,24 @@ class Notification:
             self.__addNotificationStyle()
 
     def __createBasicNotification(self):
-        importance=  NotificationManager.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=E0606,C0301
         # Notification Channel (Required for Android 8.0+)
-        if BuildVersion.SDK_INT >= 26:
-            channel = NotificationChannel(self.channel_id, self.channel_name,importance)
+        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
+            importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=possibly-used-before-assignment
+            channel = NotificationChannel(
+                self.channel_id,
+                self.channel_name,
+                importance
+            )
             self.notification_manager.createNotificationChannel(channel)
+
         # Build the notification
-        self.__builder = NotificationCompatBuilder(context, self.channel_id)
+        self.__builder = NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
         self.__builder.setContentTitle(self.title)
         self.__builder.setContentText(self.message)
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         if not self.silent:
-            self.__builder.setPriority(NotificationCompat.PRIORITY_HIGH)
+            self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
 
     def __addNotificationStyle(self):
         # pylint: disable=trailing-whitespace
@@ -268,6 +284,8 @@ class Notification:
             self.__builder.setLargeIcon(large_icon_bitmap)
             self.__builder.setStyle(big_picture_style)
         elif self.style == 'progress':
+            self.__builder.setContentTitle(String(self.title))
+            self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
             
         elif self.style == 'custom':
@@ -315,6 +333,23 @@ class Notification:
     def __getBitmap(self,img_path):
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img_path))
 
+    def __generate_channel_id(self,channel_name: str) -> str:
+        """
+        Generate a readable and consistent channel ID from a channel name.
+        
+        Args:
+            channel_name (str): The name of the notification channel.
+        
+        Returns:
+            str: A sanitized channel ID.
+        """
+        # Normalize the channel name
+        channel_id = channel_name.strip().lower()
+        # Replace spaces and special characters with underscores
+        channel_id = re.sub(r'[^a-z0-9]+', '_', channel_id)
+        # Remove leading/trailing underscores
+        channel_id = channel_id.strip('_')
+        return channel_id[:50]
 
 # try:
 #     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
@@ -333,7 +368,7 @@ class Notification:
 
 
 # Notification.logs=False # Add in Readme
-# notify=Notification(style='large_icon',title='My Title',channel_name='Go')#,logs=False)
+# notify=Notification(style='large_icon',title='My Title',channel_name='Some thing about a thing ')#,logs=False)
 # # notify.channel_name='Downloads'
 # notify.message="Blah"
 # notify.send()
