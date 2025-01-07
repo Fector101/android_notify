@@ -27,21 +27,19 @@ pip install android-notify
 from android_notify import EnhancedNotificationManager, NotificationStyle, NotificationImportance
 
 # Create a notification manager
-notification = EnhancedNotificationManager(
+notification = Notification(
+    title="Hello!",
+    message="Welcome to Android Notify Enhanced",
     channel_id="messages",
     channel_name="Messages",
     importance=NotificationImportance.HIGH
 )
 
-# Set content
-notification.set_content(
-    title="Hello!",
-    message="Welcome to Android Notify Enhanced",
-    style=NotificationStyle.BIG_TEXT
-)
-
 # Send notification
 notification.send()
+
+# Update Title
+notification.updateTitle("Download Complete")
 ```
 
 MIT License
