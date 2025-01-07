@@ -1,4 +1,8 @@
+""" For Packing"""
 from setuptools import setup, find_packages
+
+with open("README.md", "r", encoding="utf-8") as readme_data:
+    long_description = readme_data.read()
 
 setup(
     name="android-notify",
@@ -6,7 +10,7 @@ setup(
     author="Fabian",
     author_email='fector101@yahoo.com',
     description="A Python package that simpilfies creating Android Post notifications using PyJNIus in Kivy apps.",
-    long_description=open("README.md").read(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/fector101/android-notify",
     packages=find_packages(),
@@ -28,12 +32,15 @@ setup(
         "notifications",
         "kivy",
         "mobile",
-        "post notifications",
+        "post-notifications",
         "pyjnius",
-        "android notifications",
-        "kivy notifications",
-        "python android",
-        "mobile development"
+        "android-notifications",
+        "kivy-notifications",
+        "python-android",
+        "mobile-development",
+        'push-notifications',
+        'mobile-app',
+        'kivy-application'
     ],
     project_urls={
         "Documentation": "https://github.com/fector101/android-notify/",  # Replace with your documentation URL
