@@ -24,7 +24,7 @@ pip install android-notify
 ## Quick Start
 
 ```python
-from android_notify import EnhancedNotificationManager, NotificationStyle, NotificationImportance
+from android_notify import Notification
 
 # Create a notification manager
 notification = Notification(
@@ -32,7 +32,6 @@ notification = Notification(
     message="Welcome to Android Notify Enhanced",
     channel_id="messages",
     channel_name="Messages",
-    importance=NotificationImportance.HIGH
 )
 
 # Send notification
