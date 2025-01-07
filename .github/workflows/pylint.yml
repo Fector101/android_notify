@@ -25,5 +25,5 @@ jobs:
         possibly-used-before-assignment,missing-module-docstring,broad-exception-caught,\
         import-error,too-many-locals,inconsistent-return-statements,\
         unspecified-encoding,too-few-public-methods,\
-        duplicate-code,too-many-arguments,too-many-instance-attributes \
+        duplicate-code,too-many-arguments,too-many-instance-attributes,too-many-positional-arguments \
          $(git ls-files '*.py')
