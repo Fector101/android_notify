@@ -1,7 +1,7 @@
-
-from jnius import autoclass,cast
+""" Non-Advanced Stuff """
 import random
 import os
+from jnius import autoclass,cast
 
 ON_ANDROID = False
 try:
