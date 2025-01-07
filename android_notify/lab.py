@@ -46,7 +46,7 @@ class Notification:
 
     :param title: Title of the notification.
     :param message: Message body.
-    :param style: Style of the notification ('simple', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
+    :param style: Style of the notification ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
     :param big_picture_path: Path to the image resource.
     :param large_icon_path: Path to the image resource.
     ---
@@ -59,13 +59,16 @@ class Notification:
     :param logs: Defaults to True
     """
     notification_ids=[]
-    style_values=['','simple','big_text', 'inbox', 'big_picture', 'large_icon','both_imgs','custom'] # TODO make pattern for non-android Notifications
+    style_values=['','simple','progress','big_text', 'inbox', 'big_picture', 'large_icon','both_imgs','custom'] # TODO make pattern for non-android Notifications
     defaults={
         'title':'Default Title',
-        'message':'Default Message', # TODO Might change meassage para to list if style set to inbox
+        'message':'Default Message', # TODO Might change message para to list if style set to inbox
         'style':'simple',
         'big_picture_path':'',
         'large_icon_path':'',
+        'progress_max_value': 100,
+        'progress_current_value': 0,
+        
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
         'logs':True,
@@ -83,7 +86,8 @@ class Notification:
         self.style=''
         self.large_icon_path=''
         self.big_picture_path=''
-        
+        self.progress_current_value=0
+        self.progress_max_value=100
         
         # Advance Options
         self.channel_name=''
@@ -117,6 +121,20 @@ class Notification:
         self.message=new_message
         if ON_ANDROID:
             self.__builder.setContentText(new_message)
+    def updateProgressBar(self,current_value,message:str=''):
+        """message defaults to last message"""
+        self.__builder.setProgress(self.progress_max_value, current_value, False)
+        
+        if message:
+            self.__builder.setContentText(String(message))
+        
+        self.notification_manager.notify(self.id, self.__builder.build())
+        
+    def removeProgressBar(self,message=''):
+        """message defaults to last message"""
+        self.__builder.setContentText(String(message))
+        self.__builder.setProgress(0, 0, False)
+        self.notification_manager.notify(self.id, self.__builder.build())
         
     def send(self,silent:bool=False):
         self.silent=self.silent or silent
@@ -177,7 +195,7 @@ class Notification:
     def __startNotificationBuild(self):
         self.__createBasicNotification()
         if self.style not in ['simple','']:
-            self.addNotificationStyle()
+            self.__addNotificationStyle()
 
     def __createBasicNotification(self):
         
@@ -241,6 +259,9 @@ class Notification:
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
             self.__builder.setLargeIcon(large_icon_bitmap)
             self.__builder.setStyle(big_picture_style)
+        elif self.style == 'progress':
+            self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
+            
         elif self.style == 'custom':
             self.__builder = self.__doCustomStyle()
                 

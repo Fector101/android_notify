@@ -1,6 +1,7 @@
 class NotificationStyles():
     DEFAULT = "simple"
     
+    PROGRESS = "progress"
     INBOX = "inbox"
     BIG_TEXT = "big_text"
     
