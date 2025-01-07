@@ -1,17 +1,22 @@
-# Android Notify
+# Android Notification Library Documentation
 
-`android_notify` is a Python module for effortlessly sending Android notifications in Kivy android apps. It supports various styles and ensures seamless integration and customization.
+A Python library for effortlessly creating and managing Android notifications  in Kivy android apps.
+Supports various styles and ensures seamless integration and customization.
 
 ## Features
 
-- Send Android notifications with custom titles and messages.
-- Support for multiple notification styles:
-  - Big Text
-  - Big Picture
-  - Large Icon
-  - Inbox
+- Compatible with Android 8.0+.
 - Supports including images in notifications.
-- Compatible with Android 8.0+ (Notification Channels).
+- Support for multiple notification styles:
+  - Progress
+  - Big Picture
+  - Inbox
+  - Big Text
+  - Large Icon
+
+This module automatically handles:
+
+- Permission requests for notifications
 - Customizable notification channels.
 
 ## Installation
@@ -26,7 +31,6 @@ pip install android-notify
 
 **Prerequisites:**  
 
-- Buildozer  
 - Kivy
 
 In your **`buildozer.spec`** file, ensure you include the following:
@@ -45,113 +49,114 @@ android.enable_androidx = True
 
 ---
 
-### Example Notification
-
-#### Basic Notification
+## Basic Usage
 
 ```python
-from android_notify import send_notification
+from android_notify import Notification
 
-# Send a basic notification
-send_notification("Hello", "This is a basic notification.")
+# Create a simple notification
+notification = Notification(
+    title="Hello",
+    message="This is a basic notification"
+)
+notification.send()
 ```
 
-**Example Image:**  
-![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basicnoti.jpg)
-#### Notification with an Image (Big Picture Style)
+## Notification Styles
+
+The library supports multiple notification styles:
+
+1. `simple` - Basic notification with title and message
+2. `progress` - Shows a progress bar
+3. `big_text` - Expandable notification with long text
+4. `inbox` - List-style notification
+5. `big_picture` - Notification with a large image
+6. `large_icon` - Notification with a custom icon
+7. `both_imgs` - Combines big picture and large icon
+8. `custom` - For custom notification styles
+
+### Style Examples
 
 ```python
-# Send a notification with an image
-send_notification(
-    title='Picture Alert!',
-    message='This notification includes an image.',
-    style='big_picture',
-    img_path='assets/imgs/icon.png'
+# Big text notification
+notification = Notification(
+    title="Article",
+    message="Long article content...",
+    style="big_text"
+)
+
+# Progress bar notification
+notification = Notification(
+    title="Download",
+    message="Downloading file...",
+    style="progress",
+    progress_max_value=100,
+    progress_current_value=0
+)
+
+# Image notification
+notification = Notification(
+    title="New Photo",
+    message="Check out this image",
+    style="big_picture",
+    big_picture_path="assets/imgs/photo.png"
 )
 ```
 
-**Example Image:**
-![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
-#### Notification with an Image (Large Icon Style)
+## Advanced Features
+
+### Updating Notifications
 
 ```python
-# Send a notification with Large Icon
-send_notification(
-    title='Completed download',
-    message='profile.jpg',
-    style='large_icon',
-    img_path='assets/imgs/icon.png'
+notification = Notification(title="Initial Title")
+notification.send()
+
+# Update title
+notification.updateTitle("New Title")
+
+# Update message
+notification.updateMessage("New Message")
+```
+
+### Progress Bar Management
+
+```python
+notification = Notification(
+    title="Download Progress",
+    style="progress"
+)
+
+# Update progress
+notification.updateProgressBar(50, "50% Complete")
+
+# Remove progress bar
+notification.removeProgressBar("Download Complete")
+```
+
+### Channel Management
+
+Notifications are organized into channels. You can customize the channel name and ID:
+
+- Custom Channel Name's Gives User ability to turn on/off specific
+
+```python
+notification = Notification(
+    title="Channel Example",
+    channel_name="Downloads",  # Will create User-visible name "downloads"
+    channel_id="custom_downloads"  # Optional: specify custom channel ID
 )
 ```
 
-**Example Image:**  
-![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
+### Silent Notifications
 
-#### Inbox Notification Style
-
-```python
-# Send a notification with inbox style
-send_notification(
-    title='Inbox Notification',
-    message='Line 1\nLine 2\nLine 3',
-    style='inbox'
-)
-```
-
-**Example Image:**
-![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inboxnoti.jpg)
-
-#### Big Text Notification
-
-- (This will default to normal text if big text unsupported on device)
+To send a notification without sound or heads-up display:
 
 ```python
-# Send a Big Text notification
-send_notification(
-    title='Hello!',
-    message='This is a sample notification.',
-    style='big_text'
-)
-```
-<!-- 
-**Example Image:**  
-![Big Text Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg) -->
-
----
-
-### Advanced Usage
-
-#### Channel Name (channel_name)
-
-- Can be found in App Settings where user can turn on/off specific Notifications
-
-```python
-#  if not specified Channel Name default's to "Default Channel"
-send_notification(
-    title="Download finished"
-    message="How to Catch a Fish.mp4"
-    channel_name="Download Notifications"
-)
+notification = Notification(title="Silent Update")
+notification.send(silent=True)
 ```
 
-**Sample Image:**  
-![channel_name img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
-
-#### Channel Name (channel_id)
-
-You can customize notification channels for different types of notifications.
-
-```python
-send_notification(
-    title='Custom Channel Notification',
-    message='This uses a custom notification channel.',
-    channel_id='custom_channel'
-)
-```
-
----
-
-### **Assist**
+### Assist
 
 - How to Copy image to app folder
 
@@ -168,53 +173,72 @@ shutil.copy(image_path, os.path.join(app_path, "profile.png"))
 - Avoiding Human Error when using different notification styles
 
 ```python
-from android_notify import send_notification, NotificationStyles
-send_notification(
-    title='Picture Alert!',
-    message='This notification includes an image.',
-    img_path='assets/imgs/icon.png'
+from android_notify import Notification, NotificationStyles
+notification = Notification(
+    title="New Photo",
+    message="Check out this image",
     style=NotificationStyles.BIG_PICTURE,
-)
+    big_picture_path="assets/imgs/photo.png"
+).send()
 ```
 
----
+## Development Mode
 
-### **Functions Reference**
-
-### 1. `asks_permission_if_needed()`
-
-**Description:**
-
-- Checks if notification permissions are granted and requests them if missing.
-
-**Usage:**
+When developing on non-Android platforms, the library provides debugging output:
 
 ```python
-asks_permission_if_needed()
+# Enable logs (default is True when not on Android)
+Notification.logs = True
+
+# Create notification for testing
+notification = Notification(title="Test")
+notification.send()
+# Will print notification properties instead of sending
 ```
 
-### 3. `send_notification(title, message, style=None, img_path=None, channel_id='default_channel')`
+## Image Requirements
 
-**Description:**
+- Images must be located within your app's asset folder
+- Supported paths are relative to your app's storage path
+- Example: `assets/imgs/icon.png`
 
-- Sends an Android notification with optional styles and images.
+## Error Handling
 
-**Parameters:**
+The library validates arguments and provides helpful error messages:
 
-- `title` *(str)*: Notification title.
-- `message` *(str)*: Notification message.
-- `style` *(str, optional)*: Notification style (`big_text`, `big_picture`, `inbox`, `large_icon`).
-- `img_path` *(str, optional)*: Path to the image resource.(for `big_picture` or `large_icon` styles).
-- `channel_name` *(str, optional)*: Notification channel Name.(Keep Short and Precise with `len(channel_name) < 40`)
-- `channel_id` *(str, optional)*: Notification channel ID.(Keep Short and Precise with `len(channel_id) < 50`, You can only assign Channel name and Channel ID will be automatical Genrated)
+- Invalid style names will suggest the closest matching style
+- Invalid arguments will list all valid options
+- Missing image files will raise FileNotFoundError with the attempted path
 
-Returns - notification id
+## Limitations
+
+1. Only works on Android devices
+2. Images must be within the app's storage path
+3. Channel names are limited to 40 characters
+4. Channel IDs are limited to 50 characters
+
+## Best Practices
+
+1. Always handle permissions appropriately
+2. Use meaningful channel names for organization
+3. Keep progress bar updates reasonable (don't update too frequently)
+4. Test notifications on different Android versions
+5. Consider using silent notifications for frequent updates
+
+## Debugging Tips
+
+1. Enable logs during development: `Notification.logs = True`
+2. Check channel creation with Android's notification settings
+3. Verify image paths before sending notifications
+4. Test different styles to ensure proper display
+
+Remember to check Android's notification documentation for best practices and guidelines regarding notification frequency and content.
 
 ## Contribution
 
 Feel free to open issues or submit pull requests for improvements!
 
-## 🐛 Reporting Issues
+## Reporting Issues
 
 Found a bug? Please open an issue on our [GitHub Issues](https://github.com/Fector101/android_notify/issues) page.
 
@@ -222,7 +246,7 @@ Found a bug? Please open an issue on our [GitHub Issues](https://github.com/Fect
 
 - Fabian - <fector101@yahoo.com>
 - GitHub: [Android Notify Repo](https://github.com/Fector101/android_notify)
-- Twitter: [FabianDev_](https://twitter.com/intent/user?user_id=1246911115319263233) -- 😊 I'm sure to answer
+- Twitter: [FabianDev_](https://twitter.com/intent/user?user_id=1246911115319263233) --  I'm sure to answer
 
 For feedback or contributions, feel free to reach out!
 
@@ -230,7 +254,7 @@ For feedback or contributions, feel free to reach out!
 
 ## ☕ Support the Project
 
-If you find this project helpful, consider buying me a coffee! Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify/) Your support helps maintain and improve the project.
+If you find this project helpful, consider buying me a coffee! 😊 Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify/) Your support helps maintain and improve the project.
 
 <a href="https://www.buymeacoffee.com/fector101" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">
@@ -240,8 +264,8 @@ If you find this project helpful, consider buying me a coffee! Or Giving it a st
 
 ## Acknowledgments
 
-- This Project was "Made For Android" and thoroughly "Tested by" the [Laner Project](https://github.com/Fector101/Laner/) - Laner is an application that creates a secure connection between your PC and Phone to Transfer Files Wirelessly.
-- Thanks to the Kivy and Pyjnius communities for their support.
+- This Project was thoroughly Tested by the [Laner Project](https://github.com/Fector101/Laner/) - A application for Securely Transfering Files Wirelessly between your PC and Phone.
+- Thanks to the Kivy and Pyjnius communities.
 
 ---
 
