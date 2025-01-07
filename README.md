@@ -62,6 +62,9 @@ notification = Notification(
 notification.send()
 ```
 
+**Sample Image:**  
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basicnoti.jpg)
+
 ## Notification Styles
 
 The library supports multiple notification styles:
@@ -77,23 +80,9 @@ The library supports multiple notification styles:
 
 ### Style Examples
 
+#### Notification with an Image (Big Picture Style)
+
 ```python
-# Big text notification
-notification = Notification(
-    title="Article",
-    message="Long article content...",
-    style="big_text"
-)
-
-# Progress bar notification
-notification = Notification(
-    title="Download",
-    message="Downloading file...",
-    style="progress",
-    progress_max_value=100,
-    progress_current_value=0
-)
-
 # Image notification
 notification = Notification(
     title="New Photo",
@@ -102,6 +91,64 @@ notification = Notification(
     big_picture_path="assets/imgs/photo.png"
 )
 ```
+
+**Sample Image:**
+![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
+
+#### Inbox Notification Style
+
+```python
+# Send a notification with inbox style
+notification = Notification(
+    title='Inbox Notification',
+    message='Line 1\nLine 2\nLine 3',
+    style='inbox'
+)
+```
+
+**Sample Image:**
+![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inboxnoti.jpg)
+
+#### Big text notification (Will Display as simple text if Device dosen't support)
+
+```python
+notification = Notification(
+    title="Article",
+    message="Long article content...",
+    style="big_text"
+)
+```
+
+#### Progress bar notification
+
+```python
+notification = Notification(
+    title="Download",
+    message="Downloading file...",
+    style="progress",
+    progress_max_value=100,
+    progress_current_value=0
+)
+
+```
+
+**Sample Image:**
+![progress img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
+
+#### Notification with an Image (Large Icon Style)
+
+```python
+notification = Notification(
+    title="Completed download",
+    message="profile.jpg",
+    style="large_icon",
+    large_icon_path="assets/imgs/profile.png"
+)
+
+```
+
+**Sample Image:**  
+![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
 
 ## Advanced Features
 
@@ -141,11 +188,15 @@ Notifications are organized into channels. You can customize the channel name an
 
 ```python
 notification = Notification(
-    title="Channel Example",
-    channel_name="Downloads",  # Will create User-visible name "downloads"
+    title="Download finished",
+    message="How to Catch a Fish.mp4",
+    channel_name="Download Notifications",  # Will create User-visible name "downloads"
     channel_id="custom_downloads"  # Optional: specify custom channel ID
 )
 ```
+
+**Sample Image:**  
+![channels img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/channel_name.jpg)
 
 ### Silent Notifications
 
