@@ -132,7 +132,8 @@ class Notification:
         
     def removeProgressBar(self,message=''):
         """message defaults to last message"""
-        self.__builder.setContentText(String(message))
+        if message:
+            self.__builder.setContentText(String(message))
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.id, self.__builder.build())
         
