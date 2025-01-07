@@ -85,8 +85,8 @@ The library supports multiple notification styles:
 ```python
 # Image notification
 notification = Notification(
-    title="New Photo",
-    message="Check out this image",
+    title='Picture Alert!',
+    message='This notification includes an image.',
     style="big_picture",
     big_picture_path="assets/imgs/photo.png"
 )
