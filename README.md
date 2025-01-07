@@ -1,7 +1,14 @@
-# Android-Notifiy
+<div align="center">
+    <br>
+    <h1> Android-Notifiy </h1>
+    <p> A Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
+    <p>
+    Supports various styles and ensures seamless integration and customization.
+    </p>
+    <br>
+    <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
+</div>
 
-A Python library for effortlessly creating and managing Android notifications  in Kivy android apps.
-Supports various styles and ensures seamless integration and customization.
 
 ## Features
 
@@ -297,7 +304,7 @@ Found a bug? Please open an issue on our [GitHub Issues](https://github.com/Fect
 
 - Fabian - <fector101@yahoo.com>
 - GitHub: [Android Notify Repo](https://github.com/Fector101/android_notify)
-- Twitter: [FabianDev_](https://twitter.com/intent/user?user_id=1246911115319263233) --  I'm sure to answer
+- Twitter: [FabianDev_](https://twitter.com/intent/user?user_id=1246911115319263233)
 
 For feedback or contributions, feel free to reach out!
 
