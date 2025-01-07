@@ -5,7 +5,7 @@ import os
 import re
 from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
-DEV=1
+DEV=0
 ON_ANDROID = False
 
 try:
@@ -167,11 +167,10 @@ class Notification:
         big_picture_path: '{self.big_picture_path}'
         style: '{self.style}'
         Silent: '{self.silent}'
-        channel_name: '{self.channel_name}'
-    (Won't Print Logs When Complied,except if selected `Notification(logs=True)`
+    (Won't Print Logs When Complied,except if selected `Notification.logs=True`
               """)
             if DEV:
-                print(f'Channel ID: {self.channel_id}, id: {self.__id}')
+                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.__id}')
             print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
 
     def __validateArgs(self,inputted_kwargs):
@@ -276,13 +275,14 @@ class Notification:
             large_icon_bitmap = self.__getBitmap(large_icon_javapath)
             self.__builder.setLargeIcon(large_icon_bitmap)
         
-        elif self.style == 'both_imgs':
-            big_pic_bitmap = self.__getBitmap(big_pic_javapath)
-            large_icon_bitmap = self.__getBitmap(large_icon_javapath)
-            
-            big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
-            self.__builder.setLargeIcon(large_icon_bitmap)
-            self.__builder.setStyle(big_picture_style)
+        elif self.style == 'both_imgs' and (large_icon_javapath or big_pic_javapath):
+            if big_pic_javapath:
+                big_pic_bitmap = self.__getBitmap(big_pic_javapath)
+                big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
+                self.__builder.setStyle(big_picture_style)
+            elif large_icon_javapath:
+                large_icon_bitmap = self.__getBitmap(large_icon_javapath)
+                self.__builder.setLargeIcon(large_icon_bitmap)
         elif self.style == 'progress':
             self.__builder.setContentTitle(String(self.title))
             self.__builder.setContentText(String(self.message))
