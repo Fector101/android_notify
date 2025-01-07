@@ -1,4 +1,4 @@
-# Android Notification Library Documentation
+# Android-Notifiy
 
 A Python library for effortlessly creating and managing Android notifications  in Kivy android apps.
 Supports various styles and ensures seamless integration and customization.

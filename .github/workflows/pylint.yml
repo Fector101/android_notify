@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --disable=trailing-whitespace, trailing-newlines, unused-import, import-outside-toplevel, possibly-used-before-assignment, missing-module-docstring, broad-exception-caught, import-error,too-many-locals,inconsistent-return-statements,unspecified-encoding,too-few-public-methods,duplicate-code $(git ls-files '*.py')
+        pylint --disable=trailing-whitespace,trailing-newlines,unused-import,import-outside-toplevel,possibly-used-before-assignment,missing-module-docstring,broad-exception-caught,import-error,too-many-locals,inconsistent-return-statements,unspecified-encoding,too-few-public-methods,duplicate-code $(git ls-files '*.py')
