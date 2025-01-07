@@ -287,13 +287,12 @@ class Notification:
             self.__builder.setContentTitle(String(self.title))
             self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
-            
-        elif self.style == 'custom':
-            self.__builder = self.__doCustomStyle()
+        # elif self.style == 'custom':
+        #     self.__builder = self.__doCustomStyle()
 
-    def __doCustomStyle(self):
-        # TODO Will implement when needed
-        return self.__builder
+    # def __doCustomStyle(self):
+    #     # TODO Will implement when needed
+    #     return self.__builder
 
     def __getUniqueID(self):
         reasonable_amount_of_notifications=101

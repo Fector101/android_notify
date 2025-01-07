@@ -1,4 +1,5 @@
 class NotificationStyles():
+    """ Safely Adding Styles"""
     DEFAULT = "simple"
     
     PROGRESS = "progress"
