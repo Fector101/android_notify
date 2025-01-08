@@ -5,7 +5,7 @@ import os
 import re
 from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
-DEV=0
+DEV=1
 ON_ANDROID = False
 
 try:
@@ -67,6 +67,7 @@ class Notification:
     :param logs: Defaults to True
     """
     notification_ids=[]
+    button_ids=[]
     style_values=[
                   '','simple',
                   'progress','big_text',
@@ -80,7 +81,7 @@ class Notification:
         'style':'simple',
         'big_picture_path':'',
         'large_icon_path':'',
-        'progress_max_value': 100,
+        'progress_max_value': 0,
         'progress_current_value': 0,
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
@@ -97,22 +98,22 @@ class Notification:
         self.large_icon_path=''
         self.big_picture_path=''
         self.progress_current_value=0
-        self.progress_max_value=100
+        self.progress_max_value=0
         # Advance Options
-        self.channel_name=''
-        self.channel_id=''
+        self.channel_name='Default Channel'
+        self.channel_id='default_channel'
         self.silent=False
         # During Dev on PC
         self.logs=self.logs
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
-        self.__builder=None
         if not ON_ANDROID:
             return
         # TODO make send method wait for __asks_permission_if_needed method
         self.__asks_permission_if_needed()
         self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
+        self.__builder=NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
 
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -136,6 +137,11 @@ class Notification:
 
     def updateProgressBar(self,current_value,message:str=''):
         """message defaults to last message"""
+        if not ON_ANDROID:
+            return
+            
+        if self.logs:
+            print(f'Progress Bar Update value: {current_value}')
         self.__builder.setProgress(self.progress_max_value, current_value, False)
         if message:
             self.__builder.setContentText(String(message))
@@ -159,16 +165,12 @@ class Notification:
             self.__startNotificationBuild()
             self.notification_manager.notify(self.__id, self.__builder.build())
         elif self.logs:
-            print(f"""
-    Dev Notification Properties:
-        title: '{self.title}'
-        message: '{self.message}'
-        large_icon_path: '{self.large_icon_path}'
-        big_picture_path: '{self.big_picture_path}'
-        style: '{self.style}'
-        Silent: '{self.silent}'
-    (Won't Print Logs When Complied,except if selected `Notification.logs=True`
-              """)
+            string_to_display=''
+            for name,value in vars(self).items():
+                if value and name not in ['logs','_Notification__id']:
+                    string_to_display += f'\n {name}: {value}'
+            string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
+            print(string_to_display)
             if DEV:
                 print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.__id}')
             print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
@@ -202,14 +204,14 @@ class Notification:
 
     def __setArgs(self,options_dict:dict):
         for key,value in options_dict.items():
-            if key == 'channel_name':
-                setattr(self,key, value[:40] if value else self.defaults[key])
-            elif key == 'channel_id' and value:
-                setattr(self,key, self.__generate_channel_id(value) if value else self.defaults[key])
+            if key == 'channel_name' and value.strip():
+                setattr(self,key, value[:40])
+            elif key == 'channel_id' and value.strip(): # If user input's a channel id (i format properly)
+                setattr(self,key, self.__generate_channel_id(value))
+            else:
+                setattr(self,key, value if value else self.defaults[key])
 
-            setattr(self,key, value if value else self.defaults[key])
-
-        if "channel_id" not in options_dict and 'channel_name' in options_dict:
+        if "channel_id" not in options_dict and 'channel_name' in options_dict: # if User doesn't input channel id but inputs channel_name
             setattr(self,'channel_id', self.__generate_channel_id(options_dict['channel_name']))
 
     def __startNotificationBuild(self):
@@ -219,8 +221,10 @@ class Notification:
 
     def __createBasicNotification(self):
         # Notification Channel (Required for Android 8.0+)
+        # print("THis is cchannel is ",self.channel_id) #"BLAH"
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
             importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=possibly-used-before-assignment
+            # importance = 3 or 4
             channel = NotificationChannel(
                 self.channel_id,
                 self.channel_name,
@@ -229,14 +233,13 @@ class Notification:
             self.notification_manager.createNotificationChannel(channel)
 
         # Build the notification
-        self.__builder = NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
+        # self.__builder = NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
         self.__builder.setContentTitle(self.title)
         self.__builder.setContentText(self.message)
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
-        if not self.silent:
-            self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
-
+        self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
+        self.__addIntentToOpenApp()
     def __addNotificationStyle(self):
         # pylint: disable=trailing-whitespace
         
@@ -298,7 +301,7 @@ class Notification:
         reasonable_amount_of_notifications=101
         notification_id = random.randint(1, reasonable_amount_of_notifications)
         while notification_id in self.notification_ids:
-            notification_id = random.randint(1, 100)
+            notification_id = random.randint(1, reasonable_amount_of_notifications)
         self.notification_ids.append(notification_id)
         return notification_id
 
@@ -349,8 +352,65 @@ class Notification:
         # Remove leading/trailing underscores
         channel_id = channel_id.strip('_')
         return channel_id[:50]
+    def __addIntentToOpenApp(self):
+        intent = Intent(context, PythonActivity)
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        pending_intent = PendingIntent.getActivity(
+                            context, 0,
+                            intent, PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 31 else PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+        self.__builder.setContentIntent(pending_intent)
+        self.__builder.setAutoCancel(True)
 
-# try:
+    def __getIDForButton(self):
+        reasonable_amount_of_notifications=101
+        btn_id = random.randint(1, reasonable_amount_of_notifications)
+        while btn_id in self.button_ids:
+            btn_id = random.randint(1, reasonable_amount_of_notifications)
+        self.button_ids.append(btn_id)
+        return str(btn_id)
+
+    def addButton(self, text:str,on_release):
+        """For adding action buttons
+
+        Args:
+            text (str): Text For Button
+        """
+        if not ON_ANDROID:
+            return
+
+        if self.logs:
+            print('Added Button: '+text)
+        action_intent = Intent(context, PythonActivity)
+        action_intent.setAction("ACTION "+ self.__getIDForButton())
+        pending_action_intent = PendingIntent.getActivity(
+            context,
+            0,
+            action_intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        # Convert text to CharSequence
+        action_text = cast('java.lang.CharSequence', String(text))
+        # Add action with proper types
+        self.__builder.addAction(
+            int(context.getApplicationInfo().icon),  # Cast icon to int
+            action_text,                             # CharSequence text
+            pending_action_intent                    # PendingIntent
+        )
+        # Set content intent for notification tap
+        self.__builder.setContentIntent(pending_action_intent)
+                # on_release()
+
+def buttonsListener():
+    """Handle notification button clicks"""
+    try:
+        intent = context.getIntent()
+        action = context.getAction()
+        print("The Action --> ",action)
+        intent.setAction("")
+        context.setIntent(intent)
+    except Exception as e:
+        print("Catching Intents Error ",e)
 #     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
 #     # notify.channel_name='Downloads'
 #     notify.message="Blah"
