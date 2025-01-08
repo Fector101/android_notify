@@ -9,7 +9,7 @@
 
 ## Features
 
-- Compatible with Android 8.0+.
+- Also Compatible with Android 8.0+.
 - Supports including images in notifications.
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
