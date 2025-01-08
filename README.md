@@ -176,16 +176,19 @@ notification.updateMessage("New Message")
 
 ```python
 notification = Notification(
-    title="Download Progress",
+    title="Download..",
     style="progress"
 )
 
 # Update progress
-notification.updateProgressBar(50, "50% Complete")
+notification.updateProgressBar(30, "30% Complete")
 
 # Remove progress bar
 notification.removeProgressBar("Download Complete")
 ```
+
+**Sample Image:**  
+![progressbar img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
 
 ### Channel Management
 
