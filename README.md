@@ -42,7 +42,7 @@ pip install android-notify
 In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
-# Add pyjnius so it's packaged with the build
+# Add pyjnius so ensure it's packaged with the build
 requirements = python3, kivy, pyjnius, android-notify
 
 # Add permission for notifications
@@ -63,7 +63,7 @@ from android_notify import Notification
 # Create a simple notification
 notification = Notification(
     title="Hello",
-    message="This is a basic notification"
+    message="This is a basic notification."
 )
 notification.send()
 ```
@@ -260,7 +260,7 @@ notification.send()
 
 ## Image Requirements
 
-- Images must be located within your app's asset folder
+- Images must be located within your app's folder
 - Supported paths are relative to your app's storage path
 - Example: `assets/imgs/icon.png`
 
