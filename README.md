@@ -2,10 +2,8 @@
     <br>
     <h1> Android-Notifiy </h1>
     <p> A Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
-    <p>
-    Supports various styles and ensures seamless integration and customization.
-    </p>
-    <br>
+    <p>Supports various styles and ensures seamless integration and customization.</p>
+    <!-- <br> -->
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
 
@@ -14,11 +12,12 @@
 - Compatible with Android 8.0+.
 - Supports including images in notifications.
 - Support for multiple notification styles:
-  - Progress
-  - Big Picture
-  - Inbox
-  - Big Text
-  - Large Icon
+  - [Simple](#basic-usage)
+  - [Progress](#progress-bar-notification)
+  - [Big Picture](#notification-with-an-image-big-picture-style)
+  - [Inbox](#inbox-notification-style)
+  - [Large Icon](#notification-with-an-image-large-icon-style)
+  - [Big Text](#big-text-notification-will-display-as-simple-text-if-device-dosent-support)
 
 This module automatically handles:
 
@@ -86,6 +85,25 @@ The library supports multiple notification styles:
 
 ### Style Examples
 
+#### Progress Bar notification
+
+```python
+import time
+notification = Notification(
+    title="Downloading...",
+    message="0% downloaded",
+    style="progress",
+    progress_max_value=100,
+    progress_current_value=0
+)
+notification.send()
+time.sleep(350)
+notification.updateProgressBar(30, "30% downloaded")
+```
+
+**Sample Image:**
+![progress img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
+
 #### Notification with an Image (Big Picture Style)
 
 ```python
@@ -96,6 +114,8 @@ notification = Notification(
     style="big_picture",
     big_picture_path="assets/imgs/photo.png"
 )
+notification.send()
+
 ```
 
 **Sample Image:**
@@ -110,6 +130,8 @@ notification = Notification(
     message='Line 1\nLine 2\nLine 3',
     style='inbox'
 )
+notification.send()
+
 ```
 
 **Sample Image:**
@@ -124,27 +146,6 @@ notification = Notification(
     style="big_text"
 )
 ```
-
-#### Progress bar notification
-
-```python
-import time
-notification = Notification(
-    title="Downloading...",
-    message="0% downloaded",
-    style="progress",
-    progress_max_value=100,
-    progress_current_value=0
-)
-notification.send()
-time.sleep(350)
-notification.updateProgressBar(30, "30% downloaded")
-
-
-```
-
-**Sample Image:**
-![progress img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
 
 #### Notification with an Image (Large Icon Style)
 
@@ -201,8 +202,8 @@ Notifications are organized into channels. You can customize the channel name an
 notification = Notification(
     title="Download finished",
     message="How to Catch a Fish.mp4",
-    channel_name="Download Notifications",  # Will create User-visible name "downloads"
-    channel_id="custom_downloads"  # Optional: specify custom channel ID
+    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
+    channel_id="downloads_notifications"  # Optional: specify custom channel ID
 )
 ```
 
@@ -236,7 +237,7 @@ shutil.copy(image_path, os.path.join(app_path, "profile.png"))
 
 ```python
 from android_notify import Notification, NotificationStyles
-notification = Notification(
+Notification(
     title="New Photo",
     message="Check out this image",
     style=NotificationStyles.BIG_PICTURE,
