@@ -136,6 +136,8 @@ notification = Notification(
     progress_max_value=100,
     progress_current_value=0
 )
+notification.send()
+notification.updateProgressBar(30, "30% Complete")
 
 ```
 
