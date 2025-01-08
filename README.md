@@ -9,7 +9,6 @@
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
 
-
 ## Features
 
 - Compatible with Android 8.0+.
@@ -129,15 +128,18 @@ notification = Notification(
 #### Progress bar notification
 
 ```python
+import time
 notification = Notification(
-    title="Download",
-    message="Downloading file...",
+    title="Downloading...",
+    message="0% downloaded",
     style="progress",
     progress_max_value=100,
     progress_current_value=0
 )
 notification.send()
-notification.updateProgressBar(30, "30% Complete")
+time.sleep(350)
+notification.updateProgressBar(30, "30% downloaded")
+
 
 ```
 
@@ -183,14 +185,11 @@ notification = Notification(
 )
 
 # Update progress
-notification.updateProgressBar(30, "30% Complete")
+notification.updateProgressBar(30, "30% downloaded")
 
 # Remove progress bar
 notification.removeProgressBar("Download Complete")
 ```
-
-**Sample Image:**  
-![progressbar img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
 
 ### Channel Management
 
