@@ -5,7 +5,7 @@ import os
 import re
 from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
-DEV=1
+DEV=0
 ON_ANDROID = False
 
 try:
@@ -401,16 +401,17 @@ class Notification:
         self.__builder.setContentIntent(pending_action_intent)
                 # on_release()
 
-def buttonsListener():
-    """Handle notification button clicks"""
-    try:
-        intent = context.getIntent()
-        action = context.getAction()
-        print("The Action --> ",action)
-        intent.setAction("")
-        context.setIntent(intent)
-    except Exception as e:
-        print("Catching Intents Error ",e)
+# def buttonsListener():
+#     """Handle notification button clicks"""
+#     try:
+#         intent = context.getIntent()
+#         action = context.getAction()
+#         print("The Action --> ",action)
+#         intent.setAction("")
+#         context.setIntent(intent)
+#     except Exception as e:
+#         print("Catching Intents Error ",e)
+
 #     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
 #     # notify.channel_name='Downloads'
 #     notify.message="Blah"

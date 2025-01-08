@@ -172,6 +172,9 @@ notification.addButton(text="Watch Later",on_release=watchLater)
 notification.send()
 ```
 
+**Sample Image:**  
+![btns img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/btns.jpg)
+
 #### Big text notification (Will Display as normal text if Device dosen't support)
 
 ```python
