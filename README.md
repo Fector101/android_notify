@@ -17,6 +17,7 @@
   - [Big Picture](#notification-with-an-image-big-picture-style)
   - [Inbox](#inbox-notification-style)
   - [Large Icon](#notification-with-an-image-large-icon-style)
+  - [Buttons](#notification-with-buttons)
   - [Big Text](#big-text-notification-will-display-as-simple-text-if-device-dosent-support)
 
 This module automatically handles:
@@ -88,7 +89,8 @@ The library supports multiple notification styles:
 #### Progress Bar notification
 
 ```python
-import time
+from kivy.clock import Clock
+
 notification = Notification(
     title="Downloading...",
     message="0% downloaded",
@@ -97,8 +99,7 @@ notification = Notification(
     progress_current_value=0
 )
 notification.send()
-time.sleep(350)
-notification.updateProgressBar(30, "30% downloaded")
+Clock.schedule_once(lambda dt: notification.updateProgressBar(30, "30% downloaded"), 350)
 ```
 
 **Sample Image:**
@@ -137,16 +138,6 @@ notification.send()
 **Sample Image:**
 ![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inboxnoti.jpg)
 
-#### Big text notification (Will Display as simple text if Device dosen't support)
-
-```python
-notification = Notification(
-    title="Article",
-    message="Long article content...",
-    style="big_text"
-)
-```
-
 #### Notification with an Image (Large Icon Style)
 
 ```python
@@ -161,6 +152,35 @@ notification = Notification(
 
 **Sample Image:**  
 ![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
+
+#### Notification with Buttons
+
+```python
+notification = Notification(title="Jane Dough", message="How to use android-notify #coding #purepython")
+def playVideo():
+    print('Playing Video')
+
+def turnOffNoti():
+    print('Please Turn OFf Noti')
+
+def watchLater():
+    print('Add to Watch Later')
+
+notification.addButton(text="Play",on_release=playVideo)
+notification.addButton(text="Turn Off",on_release=turnOffNoti)
+notification.addButton(text="Watch Later",on_release=watchLater)
+notification.send()
+```
+
+#### Big text notification (Will Display as normal text if Device dosen't support)
+
+```python
+notification = Notification(
+    title="Article",
+    message="Long article content...",
+    style="big_text"
+)
+```
 
 ## Advanced Features
 
