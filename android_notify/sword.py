@@ -5,7 +5,7 @@ import os
 import re
 from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
-DEV=1
+DEV=0
 ON_ANDROID = False
 
 try:
@@ -68,6 +68,7 @@ class Notification:
     """
     notification_ids=[]
     button_ids=[]
+    btns_box={}
     style_values=[
                   '','simple',
                   'progress','big_text',
@@ -283,7 +284,7 @@ class Notification:
                 big_pic_bitmap = self.__getBitmap(big_pic_javapath)
                 big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
                 self.__builder.setStyle(big_picture_style)
-            elif large_icon_javapath:
+            if large_icon_javapath:
                 large_icon_bitmap = self.__getBitmap(large_icon_javapath)
                 self.__builder.setLargeIcon(large_icon_bitmap)
         elif self.style == 'progress':
@@ -376,17 +377,25 @@ class Notification:
         Args:
             text (str): Text For Button
         """
+        if self.logs:
+            print('Added Button: '+text)
+
         if not ON_ANDROID:
             return
 
-        if self.logs:
-            print('Added Button: '+text)
+        btn_id="ACTION " + self.__getIDForButton()
         action_intent = Intent(context, PythonActivity)
-        action_intent.setAction("ACTION "+ self.__getIDForButton())
+        action_intent.setAction(btn_id)
+        action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        
+        self.btns_box[btn_id] = on_release
+        if self.logs:
+            print('Button id: '+btn_id)
         pending_action_intent = PendingIntent.getActivity(
             context,
             0,
             action_intent,
+            # PendingIntent.FLAG_MUTABLE
             PendingIntent.FLAG_IMMUTABLE
         )
         # Convert text to CharSequence
@@ -401,20 +410,40 @@ class Notification:
         self.__builder.setContentIntent(pending_action_intent)
                 # on_release()
 
-def buttonsListener():
+def notificationHandler(i):
     """Handle notification button clicks"""
+    print("Handle notification button clicks")
+    buttons_object=Notification.btns_box
+    if not ON_ANDROID:# or not bool(buttons_object):
+        return
+    # try:
+    #     from android import activity
+    #     activity.getAction()
+    # except Exception as e:
+    #     print("1011 ",e)
     try:
-        intent = context.getIntent()
-        action = context.getAction()
-        print("The Action --> ",action)
-        intent.setAction("")
-        context.setIntent(intent)
+        # PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        # context = PythonActivity.mActivity
+        intent = i.getIntent()
+        # intent = context.getIntent()
+        action = intent.getAction()
+        print("The Intent: ",intent, "The Action --> ",action)
+        # if action:
+        #     function = buttons_object[action]
+        #     function()
+        #     intent.setAction("")
+        #     context.setIntent(intent)
     except Exception as e:
         print("Catching Intents Error ",e)
-#     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
-#     # notify.channel_name='Downloads'
+
+# notify=Notification(title='My Title',channel_name='Go')#,logs=False)
+# notify.addButton(text="Play",on_release=lambda :print(1))
+# notify.send()
+# notificationHandler()
+
+# notify.buttonsListener()
 #     notify.message="Blah"
-#     notify.send()
+#     # notify.channel_name='Downloads'
 #     notify.updateTitle('New Title')
 #     notify.updateMessage('New Message')
 #     notify.send(True)
