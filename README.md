@@ -142,8 +142,8 @@ notification.send()
 
 ```python
 notification = Notification(
-    title="Completed download",
-    message="profile.jpg",
+    title="FabianDev_",
+    message="A twitter about some programming stuff",
     style="large_icon",
     large_icon_path="assets/imgs/profile.png"
 )
