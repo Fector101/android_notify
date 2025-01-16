@@ -1,0 +1,3 @@
+* URL for images property url="", if user sets URL and an property img use the IMG property as a placeholder 
+
+* make it possible to pass in functions for every notification, create a function called `notifyListener` use intents and same logic as notification buttons, create an object to store the functions use __id property's as keys and functions as values `notify_funtions={}`
