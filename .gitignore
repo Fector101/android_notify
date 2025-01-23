@@ -1,6 +1,5 @@
 android_notify.egg-info
 lab/
-.idea/
 upload_pypi.sh
 auto_stuff.sh
 todo.txt
