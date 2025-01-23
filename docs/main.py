@@ -84,7 +84,18 @@ class Laner(MDApp):
     def on_resume(self):
         PythonActivity = autoclass('org.kivy.android.PythonActivity')
         context = PythonActivity.mActivity
+
+        intent = context.getIntent()
+        action = intent.getAction()
+        print("Action:", action)
+        print("getExtra1 --> ", context.getIntent().getExtra("button_id"))
+        extras = intent.getExtras()
+        if extras:
+            print("getExtras Cyper--> ", extras.getInt("key_int"))
+            print("getStringExtra -->", extras.getString("button_id"))
+        
         notificationHandler(context)
+
     def use_android_notify(self,widget):
 
         style=self.ids['style'].text

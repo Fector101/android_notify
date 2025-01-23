@@ -3,12 +3,12 @@ import difflib
 import random
 import os
 import re
-from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
 DEV=0
 ON_ANDROID = False
 
 try:
+    from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
     # Get the required Java classes
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     String = autoclass('java.lang.String')
@@ -66,8 +66,8 @@ class Notification:
     (Options during Dev On PC)
     :param logs: Defaults to True
     """
-    notification_ids=[]
-    button_ids=[]
+    notification_ids=[0]
+    button_ids=[0]
     btns_box={}
     style_values=[
                   '','simple',
@@ -139,8 +139,7 @@ class Notification:
     def updateProgressBar(self,current_value,message:str=''):
         """message defaults to last message"""
         if not ON_ANDROID:
-            return
-            
+            return           
         if self.logs:
             print(f'Progress Bar Update value: {current_value}')
         self.__builder.setProgress(self.progress_max_value, current_value, False)
@@ -240,7 +239,7 @@ class Notification:
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
-        self.__addIntentToOpenApp()
+        # self.__addIntentToOpenApp()
     def __addNotificationStyle(self):
         # pylint: disable=trailing-whitespace
         
@@ -299,10 +298,7 @@ class Notification:
     #     return self.__builder
 
     def __getUniqueID(self):
-        reasonable_amount_of_notifications=101
-        notification_id = random.randint(1, reasonable_amount_of_notifications)
-        while notification_id in self.notification_ids:
-            notification_id = random.randint(1, reasonable_amount_of_notifications)
+        notification_id = self.notification_ids[-1] + 1
         self.notification_ids.append(notification_id)
         return notification_id
 
@@ -364,42 +360,57 @@ class Notification:
         self.__builder.setAutoCancel(True)
 
     def __getIDForButton(self):
-        reasonable_amount_of_notifications=101
-        btn_id = random.randint(1, reasonable_amount_of_notifications)
-        while btn_id in self.button_ids:
-            btn_id = random.randint(1, reasonable_amount_of_notifications)
+        btn_id = self.button_ids[-1] + 1
         self.button_ids.append(btn_id)
-        return str(btn_id)
+        return btn_id
 
-    def addButton(self, text:str,on_release):
+    def addButton(self, text: str, on_release):
         """For adding action buttons
 
         Args:
             text (str): Text For Button
         """
         if self.logs:
-            print('Added Button: '+text)
+            print('Added Button: ', text)
 
         if not ON_ANDROID:
             return
 
-        btn_id="ACTION " + self.__getIDForButton()
+        btn_id = self.__getIDForButton()
+        action = f"android.intent.action.ACTION_{btn_id}"
+
+        PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        context = cast('android.content.Context', PythonActivity.mActivity)
         action_intent = Intent(context, PythonActivity)
-        action_intent.setAction(btn_id)
-        action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        
+        action_intent.setAction(action)
+
         self.btns_box[btn_id] = on_release
+        try:
+            Bundle = autoclass('android.os.Bundle')
+            bundle = Bundle()
+
+            # Set values
+            bundle.putString("button_id", "Hello from Python")
+            bundle.putInt("key_int", 123)
+            action_intent.putExtras(bundle)
+        except Exception as e:
+            print('Bundle ',e)
+        action_intent.putExtra("button_id", btn_id)  # Pass the button ID as an extra
+        action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
         if self.logs:
-            print('Button id: '+btn_id)
+            print('Button id:', btn_id)
+
         pending_action_intent = PendingIntent.getActivity(
             context,
             0,
             action_intent,
-            # PendingIntent.FLAG_MUTABLE
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         )
+
         # Convert text to CharSequence
         action_text = cast('java.lang.CharSequence', String(text))
+
         # Add action with proper types
         self.__builder.addAction(
             int(context.getApplicationInfo().icon),  # Cast icon to int
@@ -408,7 +419,7 @@ class Notification:
         )
         # Set content intent for notification tap
         self.__builder.setContentIntent(pending_action_intent)
-                # on_release()
+
 
 def notificationHandler(i):
     """Handle notification button clicks"""
@@ -435,30 +446,3 @@ def notificationHandler(i):
         #     context.setIntent(intent)
     except Exception as e:
         print("Catching Intents Error ",e)
-
-# notify=Notification(title='My Title',channel_name='Go')#,logs=False)
-# notify.addButton(text="Play",on_release=lambda :print(1))
-# notify.send()
-# notificationHandler()
-
-# notify.buttonsListener()
-#     notify.message="Blah"
-#     # notify.channel_name='Downloads'
-#     notify.updateTitle('New Title')
-#     notify.updateMessage('New Message')
-#     notify.send(True)
-# except Exception as e:
-#     print(e)
-
-# notify=Notification(title='My Title1')
-# # notify.updateTitle('New Title1')
-# notify.send()
-
-
-# Notification.logs=False # Add in Readme
-# notify=Notification(style='large_icon',title='My Title',channel_name='Some thing about a thing ')#,logs=False)
-# # notify.channel_name='Downloads'
-# notify.message="Blah"
-# notify.send()
-# notify.updateTitle('New Title')
-# notify.updateMessage('New Message')
