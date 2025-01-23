@@ -1,10 +1,10 @@
 """ Non-Advanced Stuff """
 import random
 import os
-from jnius import autoclass,cast
 
 ON_ANDROID = False
 try:
+    from jnius import autoclass,cast # Needs Java to be installed
     # Get the required Java classes
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     NotificationChannel = autoclass('android.app.NotificationChannel')

@@ -3,12 +3,12 @@ import difflib
 import random
 import os
 import re
-from jnius import autoclass,cast  # pylint: disable=W0611, C0114
 
 DEV=0
 ON_ANDROID = False
 
 try:
+    from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
     # Get the required Java classes
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     String = autoclass('java.lang.String')
