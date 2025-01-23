@@ -66,8 +66,9 @@ class Notification:
     (Options during Dev On PC)
     :param logs: Defaults to True
     """
-    notification_ids=[]
-    button_ids=[]
+    notification_ids=[0]
+    button_ids=[0]
+    btns_box={}
     style_values=[
                   '','simple',
                   'progress','big_text',
@@ -298,10 +299,7 @@ class Notification:
     #     return self.__builder
 
     def __getUniqueID(self):
-        reasonable_amount_of_notifications=101
-        notification_id = random.randint(1, reasonable_amount_of_notifications)
-        while notification_id in self.notification_ids:
-            notification_id = random.randint(1, reasonable_amount_of_notifications)
+        notification_id = self.notification_ids[-1] + 1
         self.notification_ids.append(notification_id)
         return notification_id
 
@@ -363,12 +361,9 @@ class Notification:
         self.__builder.setAutoCancel(True)
 
     def __getIDForButton(self):
-        reasonable_amount_of_notifications=101
-        btn_id = random.randint(1, reasonable_amount_of_notifications)
-        while btn_id in self.button_ids:
-            btn_id = random.randint(1, reasonable_amount_of_notifications)
+        btn_id = self.button_ids[-1] + 1
         self.button_ids.append(btn_id)
-        return str(btn_id)
+        return btn_id
 
     def addButton(self, text:str,on_release):
         """For adding action buttons
@@ -376,13 +371,23 @@ class Notification:
         Args:
             text (str): Text For Button
         """
+        if self.logs:
+            print('Added Button: ', text)
+
         if not ON_ANDROID:
             return
 
-        if self.logs:
-            print('Added Button: '+text)
+        btn_id= self.__getIDForButton()
+        action = f"ACTION_{btn_id}"
+
         action_intent = Intent(context, PythonActivity)
-        action_intent.setAction("ACTION "+ self.__getIDForButton())
+        action_intent.setAction(action)
+        self.btns_box[btn_id] = on_release
+        # action_intent.putExtra("button_id", btn_id)  # Pass the button ID as an extra
+        # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
+        if self.logs:
+            print('Button id: ',btn_id)
         pending_action_intent = PendingIntent.getActivity(
             context,
             0,
@@ -391,6 +396,9 @@ class Notification:
         )
         # Convert text to CharSequence
         action_text = cast('java.lang.CharSequence', String(text))
+
+
+
         # Add action with proper types
         self.__builder.addAction(
             int(context.getApplicationInfo().icon),  # Cast icon to int
@@ -399,38 +407,28 @@ class Notification:
         )
         # Set content intent for notification tap
         self.__builder.setContentIntent(pending_action_intent)
-                # on_release()
-
-# def buttonsListener():
-#     """Handle notification button clicks"""
-#     try:
-#         intent = context.getIntent()
-#         action = context.getAction()
-#         print("The Action --> ",action)
-#         intent.setAction("")
-#         context.setIntent(intent)
-#     except Exception as e:
-#         print("Catching Intents Error ",e)
-
-#     notify=Notification(titl='My Title',channel_name='Go')#,logs=False)
-#     # notify.channel_name='Downloads'
-#     notify.message="Blah"
-#     notify.send()
-#     notify.updateTitle('New Title')
-#     notify.updateMessage('New Message')
-#     notify.send(True)
-# except Exception as e:
-#     print(e)
-
-# notify=Notification(title='My Title1')
-# # notify.updateTitle('New Title1')
-# notify.send()
 
 
-# Notification.logs=False # Add in Readme
-# notify=Notification(style='large_icon',title='My Title',channel_name='Some thing about a thing ')#,logs=False)
-# # notify.channel_name='Downloads'
-# notify.message="Blah"
-# notify.send()
-# notify.updateTitle('New Title')
-# notify.updateMessage('New Message')
+def notificationHandler(i):
+    """Handle notification button clicks"""
+    print("notificationHandler running..")
+    buttons_object=Notification.btns_box
+    if not ON_ANDROID:# or not bool(buttons_object):
+        return
+    try:
+        try:
+            print(i.getStringExtra("button_id"))
+        except Exception as e:
+            print("Error 101:",e)
+        intent = i.getIntent()
+        # intent.getStringExtra("button_id")
+        # intent = context.getIntent()
+        action = intent.getAction()
+        print("The Intent: ",intent, "The Action --> ",action)
+        # if action:
+        #     function = buttons_object[action]
+        #     function()
+        #     intent.setAction("")
+        #     context.setIntent(intent)
+    except Exception as e:
+        print("Catching Intents Error 101",e)
