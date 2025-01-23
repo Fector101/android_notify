@@ -93,7 +93,7 @@ class Laner(MDApp):
         if extras:
             print("getExtras Cyper--> ", extras.getInt("key_int"))
             print("getStringExtra -->", extras.getString("button_id"))
-        
+            # print("getStringExtra -->", extras.getString("button_id")) # might be useful
         notificationHandler(context)
 
     def use_android_notify(self,widget):
