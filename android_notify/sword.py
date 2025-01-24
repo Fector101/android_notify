@@ -284,7 +284,7 @@ class Notification:
                 big_pic_bitmap = self.__getBitmap(big_pic_javapath)
                 big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
                 self.__builder.setStyle(big_picture_style)
-            elif large_icon_javapath:
+            if large_icon_javapath:
                 large_icon_bitmap = self.__getBitmap(large_icon_javapath)
                 self.__builder.setLargeIcon(large_icon_bitmap)
         elif self.style == 'progress':
