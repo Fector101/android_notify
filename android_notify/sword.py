@@ -368,7 +368,7 @@ class Notification:
 
     def __addIntentToOpenApp(self):
         intent = Intent(context, PythonActivity)
-        action = self.identifer or f"ACTION_{self.__id}"
+        action = str(self.identifer) or f"ACTION_{self.__id}"
         intent.setAction(action)
         self.__addDataToIntent(intent)
         self.main_functions[action]=self.callback
