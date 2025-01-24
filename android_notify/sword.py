@@ -1,6 +1,6 @@
 """This Module Contain Class for creating Notification With Java"""
 import difflib
-import random
+import traceback
 import os
 import re
 
@@ -9,7 +9,10 @@ ON_ANDROID = False
 
 try:
     from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
+    from android import activity # pylint: disable=import-error
+
     # Get the required Java classes
+    Bundle = autoclass('android.os.Bundle')
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
@@ -56,19 +59,21 @@ class Notification:
     :param style: Style of the notification 
     ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs').
     both_imgs == using lager icon and big picture
-    :param big_picture_path: Path to the image resource.
-    :param large_icon_path: Path to the image resource.
+    :param big_picture_path: Relative Path to the image resource.
+    :param large_icon_path: Relative Path to the image resource.
+    :param callback: Function for notification Click.
     ---
     (Advance Options)
-    :param channel_name: Defaults to "Default Channel"
-    :param channel_id: Defaults to "default_channel"
+    :param channel_name: - str Defaults to "Default Channel"
+    :param channel_id: - str Defaults to "default_channel"
     ---
     (Options during Dev On PC)
-    :param logs: Defaults to True
+    :param logs: - Bool Defaults to True
     """
     notification_ids=[0]
     button_ids=[0]
     btns_box={}
+    main_functions={}
     style_values=[
                   '','simple',
                   'progress','big_text',
@@ -87,6 +92,8 @@ class Notification:
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
         'logs':True,
+        "identifer": None,
+        'callback': None
     }
     # During Development (When running on PC)
     logs=not ON_ANDROID
@@ -100,6 +107,11 @@ class Notification:
         self.big_picture_path=''
         self.progress_current_value=0
         self.progress_max_value=0
+
+        # For Nofitication Functions
+        self.identifer=None
+        self.callback = None
+        
         # Advance Options
         self.channel_name='Default Channel'
         self.channel_id='default_channel'
@@ -235,8 +247,8 @@ class Notification:
 
         # Build the notification
         # self.__builder = NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
-        self.__builder.setContentTitle(self.title)
-        self.__builder.setContentText(self.message)
+        self.__builder.setContentTitle(str(self.title))
+        self.__builder.setContentText(str(self.message))
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
@@ -350,15 +362,28 @@ class Notification:
         # Remove leading/trailing underscores
         channel_id = channel_id.strip('_')
         return channel_id[:50]
+
     def __addIntentToOpenApp(self):
         intent = Intent(context, PythonActivity)
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        action = self.identifer or f"ACTION_{self.__id}"
+        intent.setAction(action)
+        self.__addDataToIntent(intent)
+        self.main_functions[action]=self.callback
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
         pending_intent = PendingIntent.getActivity(
                             context, 0,
                             intent, PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 31 else PendingIntent.FLAG_UPDATE_CURRENT
                         )
         self.__builder.setContentIntent(pending_intent)
         self.__builder.setAutoCancel(True)
+
+    def __addDataToIntent(self,intent):
+        """Persit Some data to notification object for later use"""
+        bundle = Bundle()
+        bundle.putString("title",  self.title or 'Title Placeholder')
+        bundle.putInt("notify_id", self.__id)
+        intent.putExtras(bundle)
 
     def __getIDForButton(self):
         btn_id = self.button_ids[-1] + 1
@@ -382,7 +407,7 @@ class Notification:
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
-        self.btns_box[btn_id] = on_release
+        self.btns_box[action] = on_release
         # action_intent.putExtra("button_id", btn_id)  # Pass the button ID as an extra
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
@@ -409,26 +434,70 @@ class Notification:
         self.__builder.setContentIntent(pending_action_intent)
 
 
-def notificationHandler(i):
-    """Handle notification button clicks"""
-    print("notificationHandler running..")
-    buttons_object=Notification.btns_box
+def notificationHandler(intent):
+    """Calls Function Attached to notification on click.
+    
+    Returns:
+        str: The Identiter of Nofication that was clicked.
+    """
+    print("notificationHandler ------..")
     if not ON_ANDROID:# or not bool(buttons_object):
-        return
+        return "Not on Android"
+    buttons_object=Notification.btns_box
+    notifty_functions=Notification.main_functions
+    action = None
     try:
-        try:
-            print(i.getStringExtra("button_id"))
-        except Exception as e:
-            print("Error 101:",e)
-        intent = i.getIntent()
-        # intent.getStringExtra("button_id")
-        # intent = context.getIntent()
         action = intent.getAction()
-        print("The Intent: ",intent, "The Action --> ",action)
-        # if action:
-        #     function = buttons_object[action]
-        #     function()
-        #     intent.setAction("")
-        #     context.setIntent(intent)
-    except Exception as e:
-        print("Catching Intents Error 101",e)
+        print(intent.getStringExtra("title"))
+        print("The Action --> ",action)
+
+        if DEV:
+            print("notifty_functions ",notifty_functions)
+            print("buttons_object", buttons_object)
+        if action in notifty_functions and notifty_functions[action]:
+            try:
+                notifty_functions[action]()
+            except Exception as e: # pylint: disable=broad-exception-caught
+                print('Failed to run function: ', traceback.format_exc())
+                print("Error Type ",e)
+        elif action in buttons_object:
+            try:
+                buttons_object[action]()
+            except Exception as e: # pylint: disable=broad-exception-caught
+                print('Failed to run function: ', traceback.format_exc())
+                print("Error Type ",e)
+    except Exception as e: # pylint: disable=broad-exception-caught
+        print('Notify Hanlder Failed ',e)
+    finally:
+        return action
+
+def bindNotifyListener():
+    """In your main.py file, call this function to bind the notification listener to your app.\n\n
+        ```
+            from kivy.app import App
+            from android_notify import bindNotifyListener
+            class Myapp(App):
+                def on_start(self):
+                    bindNotifyListener() # if successfull returns True
+        ```
+    """
+    if not ON_ANDROID:
+        return "Not on Android"
+    #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
+    try:
+        activity.bind(on_new_intent=notificationHandler)
+        return True
+    except Exception as e: # pylint: disable=broad-exception-caught
+        print('Failed to bin notitfications listener',e)
+        return False
+
+def unbindNotifyListener():
+    """Removes Listener for Notifications Click"""
+    if not ON_ANDROID:
+        return "Not on Android"
+
+    #Beta TODO use BroadcastReceiver
+    try:
+        activity.unbind(on_new_intent=notificationHandler)
+    except Exception as e: # pylint: disable=broad-exception-caught
+        print("Failed to unbind notifications listener: ",e)
