@@ -111,16 +111,19 @@ class Notification:
         # For Nofitication Functions
         self.identifer=None
         self.callback = None
-        
+
         # Advance Options
         self.channel_name='Default Channel'
         self.channel_id='default_channel'
         self.silent=False
+
         # During Dev on PC
         self.logs=self.logs
+
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
+
         if not ON_ANDROID:
             return
         # TODO make send method wait for __asks_permission_if_needed method
@@ -434,69 +437,83 @@ class Notification:
         self.__builder.setContentIntent(pending_action_intent)
 
 
-def notificationHandler(intent):
-    """Calls Function Attached to notification on click.
-    
-    Returns:
-        str: The Identiter of Nofication that was clicked.
-    """
-    print("notificationHandler ------..")
-    if not ON_ANDROID:# or not bool(buttons_object):
-        return "Not on Android"
-    buttons_object=Notification.btns_box
-    notifty_functions=Notification.main_functions
-    action = None
-    try:
-        action = intent.getAction()
-        print(intent.getStringExtra("title"))
-        print("The Action --> ",action)
+class NotificationHandler:
+    """For Notification Operations """
+    __identifer = None
+    def getIdentifer(self):
+        """Returns identifer for Clicked Notification.
 
+        Returns:
+            str: unqiue identifer for notification
+        """
+        return self.__identifer
+
+    def __notificationHandler(self,intent):
+        """Calls Function Attached to notification on click.
+            Don't Call this function manual, it's Already Attach to Notification.
+        
+        Returns:
+            str: The Identiter of Nofication that was clicked.
+        """
+        print("notificationHandler ------..")
+        if not ON_ANDROID:# or not bool(buttons_object):
+            return "Not on Android"
+        buttons_object=Notification.btns_box
+        notifty_functions=Notification.main_functions
         if DEV:
             print("notifty_functions ",notifty_functions)
             print("buttons_object", buttons_object)
-        if action in notifty_functions and notifty_functions[action]:
+        action = None
+        try:
+            action = intent.getAction()
+            self.__identifer = action
+
+            print("The Action --> ",action)
+            if action == "android.intent.action.MAIN": # Not Open From Notification
+                return 'Not notification'
+
+            print(intent.getStringExtra("title"))
             try:
-                notifty_functions[action]()
+                if action in notifty_functions and notifty_functions[action]:
+                    notifty_functions[action]()
+                elif action in buttons_object:
+                    buttons_object[action]()
             except Exception as e: # pylint: disable=broad-exception-caught
                 print('Failed to run function: ', traceback.format_exc())
                 print("Error Type ",e)
-        elif action in buttons_object:
-            try:
-                buttons_object[action]()
-            except Exception as e: # pylint: disable=broad-exception-caught
-                print('Failed to run function: ', traceback.format_exc())
-                print("Error Type ",e)
-    except Exception as e: # pylint: disable=broad-exception-caught
-        print('Notify Hanlder Failed ',e)
-    return action
+        except Exception as e: # pylint: disable=broad-exception-caught
+            print('Notify Hanlder Failed ',e)
+        return action
 
-def bindNotifyListener():
-    """In your main.py file, call this function to bind the notification listener to your app.\n\n
-        ```
-            from kivy.app import App
-            from android_notify import bindNotifyListener
-            class Myapp(App):
-                def on_start(self):
-                    bindNotifyListener() # if successfull returns True
-        ```
-    """
-    if not ON_ANDROID:
-        return "Not on Android"
-    #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
-    try:
-        activity.bind(on_new_intent=notificationHandler)
-        return True
-    except Exception as e: # pylint: disable=broad-exception-caught
-        print('Failed to bin notitfications listener',e)
-        return False
+    def bindNotifyListener(self):
+        """In your main.py file, call this function to bind the notification listener to your app.\n\n
+            ```
+                from kivy.app import App
+                from android_notify import bindNotifyListener
+                class Myapp(App):
+                    def on_start(self):
+                        bindNotifyListener() # if successfull returns True
+            ```
+        """
+        if not ON_ANDROID:
+            return "Not on Android"
+        #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
+        try:
+            activity.bind(on_new_intent=self.__notificationHandler)
+            return True
+        except Exception as e: # pylint: disable=broad-exception-caught
+            print('Failed to bin notitfications listener',e)
+            return False
 
-def unbindNotifyListener():
-    """Removes Listener for Notifications Click"""
-    if not ON_ANDROID:
-        return "Not on Android"
+    def unbindNotifyListener(self):
+        """Removes Listener for Notifications Click"""
+        if not ON_ANDROID:
+            return "Not on Android"
 
-    #Beta TODO use BroadcastReceiver
-    try:
-        activity.unbind(on_new_intent=notificationHandler)
-    except Exception as e: # pylint: disable=broad-exception-caught
-        print("Failed to unbind notifications listener: ",e)
+        #Beta TODO use BroadcastReceiver
+        try:
+            activity.unbind(on_new_intent=self.__notificationHandler)
+            return True
+        except Exception as e: # pylint: disable=broad-exception-caught
+            print("Failed to unbind notifications listener: ",e)
+            return False
