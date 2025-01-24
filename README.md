@@ -288,9 +288,6 @@ class Myapp(MDApp):
         elif notify_identifer == 'change_app_color':
             # Code to change Screen Color
             pass
-        
-    def doSomething(self):
-        print("print in Debug Console")
 ```
 
 
