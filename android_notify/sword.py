@@ -468,8 +468,7 @@ def notificationHandler(intent):
                 print("Error Type ",e)
     except Exception as e: # pylint: disable=broad-exception-caught
         print('Notify Hanlder Failed ',e)
-    finally:
-        return action
+    return action
 
 def bindNotifyListener():
     """In your main.py file, call this function to bind the notification listener to your app.\n\n
