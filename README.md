@@ -11,6 +11,7 @@
 
 - Also Compatible with Android 8.0+.
 - Supports including images in notifications.
+- All Notifications can take Functions (version 1.5+) [functions docs](#functions).
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
   - [Progress](#progress-bar-notification)
@@ -241,6 +242,58 @@ To send a notification without sound or heads-up display:
 notification = Notification(title="Silent Update")
 notification.send(silent=True)
 ```
+
+## Functions
+
+### NotificationHandler - To Attach Listener
+
+Add this to your main.py App Class so it runs Once, In later Versions It'll be Attached Automatical
+
+```python
+from kivymd.app import MDApp
+from android_notify import Notification, NotificationHandler
+
+class Myapp(MDApp):
+
+    def on_start(self):
+        # Is called Once when app is Starts up
+        NotificationHandler.bindNotifyListener() # if successfull returns True
+        Notification(title="Hello", message="This is a basic notification.",callback=self.doSomething).send()
+
+    def doSomething(self):
+        print("print in Debug Console")
+```
+
+### Get Which Notification was used to Open App (identifer)
+
+If you just want to get the Exact Notification Clicked to Open App, you can use to get unique NotificationHandler to get identifer
+
+```python
+from kivymd.app import MDApp
+from android_notify import Notification, NotificationHandler
+
+class Myapp(MDApp):
+    
+    def on_start(self):
+        notify = Notification(title="Change Page", message="Click to change App page.", identifer='change_app_page')
+        Notification(title="Change Colour", message="Click to change App Colour", identifer='change_app_color').send()
+        notify.send()
+        
+    def on_resume(self):
+        # Is called everytime app is reopened
+        notify_identifer = NotificationHandler.getIdentifer()
+        if notify_identifer == 'change_app_page':
+            # Code to change Screen
+            pass
+        elif notify_identifer == 'change_app_color':
+            # Code to change Screen Color
+            pass
+        
+    def doSomething(self):
+        print("print in Debug Console")
+```
+
+
 
 ### Assist
 
