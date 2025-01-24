@@ -275,9 +275,12 @@ from android_notify import Notification, NotificationHandler
 class Myapp(MDApp):
     
     def on_start(self):
+        
         notify = Notification(title="Change Page", message="Click to change App page.", identifer='change_app_page')
-        Notification(title="Change Colour", message="Click to change App Colour", identifer='change_app_color').send()
         notify.send()
+
+        notify1 = Notification(title="Change Colour", message="Click to change App Colour", identifer='change_app_color')
+        notify1.send()
         
     def on_resume(self):
         # Is called everytime app is reopened
