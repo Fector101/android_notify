@@ -266,7 +266,7 @@ class Myapp(MDApp):
 
 ### Get Which Notification was used to Open App - identifer (str)
 
-If you just want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique to get identifer
+If you just want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer
 
 ```python
 from kivymd.app import MDApp
