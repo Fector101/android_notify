@@ -281,6 +281,8 @@ class Myapp(MDApp):
 
         notify1 = Notification(title="Change Colour", message="Click to change App Colour", identifer='change_app_color')
         notify1.send()
+
+         NotificationHandler.bindNotifyListener()
         
     def on_resume(self):
         # Is called everytime app is reopened
