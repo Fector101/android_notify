@@ -11,7 +11,7 @@
 
 - Also Compatible with Android 8.0+.
 - Supports including images in notifications.
-- All Notifications can take Functions (version 1.5+) [functions docs](#functions).
+- All Notifications can take Functions (version 1.50+) [functions docs](#functions).
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
   - [Progress](#progress-bar-notification)
