@@ -92,7 +92,7 @@ class Notification:
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
         'logs':True,
-        "identifer": None,
+        "identifer": '',
         'callback': None
     }
     # During Development (When running on PC)
@@ -109,7 +109,7 @@ class Notification:
         self.progress_max_value=0
 
         # For Nofitication Functions
-        self.identifer=None
+        self.identifer=''
         self.callback = None
 
         # Advance Options
@@ -440,15 +440,18 @@ class Notification:
 class NotificationHandler:
     """For Notification Operations """
     __identifer = None
-    def getIdentifer(self):
+
+    @classmethod
+    def getIdentifer(cls):
         """Returns identifer for Clicked Notification.
 
         Returns:
             str: unqiue identifer for notification
         """
-        return self.__identifer
+        return cls.__identifer
 
-    def __notificationHandler(self,intent):
+    @classmethod
+    def __notificationHandler(cls,intent):
         """Calls Function Attached to notification on click.
             Don't Call this function manual, it's Already Attach to Notification.
         
@@ -456,7 +459,7 @@ class NotificationHandler:
             str: The Identiter of Nofication that was clicked.
         """
         print("notificationHandler ------..")
-        if not ON_ANDROID:# or not bool(buttons_object):
+        if not cls.is_on_android():
             return "Not on Android"
         buttons_object=Notification.btns_box
         notifty_functions=Notification.main_functions
@@ -466,7 +469,7 @@ class NotificationHandler:
         action = None
         try:
             action = intent.getAction()
-            self.__identifer = action
+            cls.__identifer = action
 
             print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
@@ -485,8 +488,9 @@ class NotificationHandler:
             print('Notify Hanlder Failed ',e)
         return action
 
-    def bindNotifyListener(self):
-        """In your main.py file, call this function to bind the notification listener to your app.\n\n
+    @classmethod
+    def bindNotifyListener(cls):
+        """Binds the notification listener.\n\n
             ```
                 from kivy.app import App
                 from android_notify import bindNotifyListener
@@ -495,25 +499,30 @@ class NotificationHandler:
                         bindNotifyListener() # if successfull returns True
             ```
         """
-        if not ON_ANDROID:
+        if not cls.is_on_android():
             return "Not on Android"
         #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
         try:
-            activity.bind(on_new_intent=self.__notificationHandler)
+            activity.bind(on_new_intent=cls.__notificationHandler)
             return True
         except Exception as e: # pylint: disable=broad-exception-caught
             print('Failed to bin notitfications listener',e)
             return False
-
-    def unbindNotifyListener(self):
+    @classmethod
+    def unbindNotifyListener(cls):
         """Removes Listener for Notifications Click"""
-        if not ON_ANDROID:
+        if not cls.is_on_android():
             return "Not on Android"
 
         #Beta TODO use BroadcastReceiver
         try:
-            activity.unbind(on_new_intent=self.__notificationHandler)
+            activity.unbind(on_new_intent=cls.__notificationHandler)
             return True
         except Exception as e: # pylint: disable=broad-exception-caught
             print("Failed to unbind notifications listener: ",e)
             return False
+
+    @staticmethod
+    def is_on_android():
+        """Utility to check if the app is running on Android."""
+        return ON_ANDROID
