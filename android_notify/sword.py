@@ -220,7 +220,11 @@ class Notification:
             checkInReference([inputted_kwargs['style']],self.style_values,'values')
 
     def __setArgs(self,options_dict:dict):
+        non_string_keys=['progress_max_value','progress_current_value','callback','logs']
+
         for key,value in options_dict.items():
+            if key not in non_string_keys: # Fixing Types
+                value = str(value)
             if key == 'channel_name' and value.strip():
                 setattr(self,key, value[:40])
             elif key == 'channel_id' and value.strip(): # If user input's a channel id (i format properly)
@@ -509,15 +513,7 @@ class NotificationHandler:
 
     @classmethod
     def bindNotifyListener(cls):
-        """Binds the notification listener.\n\n
-            ```
-                from kivy.app import App
-                from android_notify import bindNotifyListener
-                class Myapp(App):
-                    def on_start(self):
-                        bindNotifyListener() # if successfull returns True
-            ```
-        """
+        """This Creates a Listener for All Notification Clicks and Functions"""
         if not cls.is_on_android():
             return "Not on Android"
         #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
