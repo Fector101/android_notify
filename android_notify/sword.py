@@ -10,6 +10,7 @@ ON_ANDROID = False
 try:
     from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
     from android import activity # pylint: disable=import-error
+    from android.config import ACTIVITY_CLASS_NAME # pylint: disable=import-error
 
     # Get the required Java classes
     Bundle = autoclass('android.os.Bundle')
@@ -155,7 +156,7 @@ class Notification:
         """message defaults to last message"""
         if not ON_ANDROID:
             return
-            
+
         if self.logs:
             print(f'Progress Bar Update value: {current_value}')
         self.__builder.setProgress(self.progress_max_value, current_value, False)
@@ -410,8 +411,14 @@ class Notification:
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
+        action_intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        bundle = Bundle()
+        bundle.putString("title", self.title or 'Title Placeholder')
+        bundle.putInt("key_int", 123)
+        action_intent.putExtras(bundle)
+        action_intent.putExtra("button_id", btn_id)
+
         self.btns_box[action] = on_release
-        # action_intent.putExtra("button_id", btn_id)  # Pass the button ID as an extra
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         if self.logs:
@@ -420,7 +427,7 @@ class Notification:
             context,
             0,
             action_intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         )
         # Convert text to CharSequence
         action_text = cast('java.lang.CharSequence', String(text))
@@ -443,12 +450,25 @@ class NotificationHandler:
 
     @classmethod
     def getIdentifer(cls):
-        """Returns identifer for Clicked Notification.
+        """Returns identifer for Clicked Notification."""
+        if not cls.is_on_android():
+            return "Not on Android"
 
-        Returns:
-            str: unqiue identifer for notification
-        """
-        return cls.__identifer
+        saved_intent = cls.__identifer
+        if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
+            # All other notifications are not None after First notification opens app
+            # NOTE these notifications are also from Last time app was opened and they Still Give Value after first one opens App
+            # TODO Find a way to get intent when App if Swiped From recents
+            __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
+            __mactivity = __PythonActivity.mActivity
+            __context = cast('android.content.Context', __mactivity)
+            __Intent = autoclass('android.content.Intent')
+            __intent = __Intent(__context, __PythonActivity)
+            action = __intent.getAction()
+            print('Start up Intent ----', action)
+            print('start Up Title --->',__intent.getStringExtra("title"))
+
+        return saved_intent
 
     @classmethod
     def __notificationHandler(cls,intent):
@@ -458,7 +478,6 @@ class NotificationHandler:
         Returns:
             str: The Identiter of Nofication that was clicked.
         """
-        print("notificationHandler ------..")
         if not cls.is_on_android():
             return "Not on Android"
         buttons_object=Notification.btns_box
