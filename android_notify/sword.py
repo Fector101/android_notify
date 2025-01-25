@@ -407,7 +407,7 @@ class Notification:
             return
 
         btn_id= self.__getIDForButton()
-        action = f"ACTION_{btn_id}"
+        action = f"BTN_ACTION_{btn_id}"
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
