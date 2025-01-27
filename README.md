@@ -1,4 +1,7 @@
 # Un-released - V1.51
+this version hasn't been released because: 
+- working on adding user-specified online images quietly to notification without pop-up.
+- 🙃 plus electricity problem is hindering development
 [new-feature](online images new feature)
 (fixes) 
 (change)
