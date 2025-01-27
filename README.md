@@ -7,7 +7,7 @@ Removed `FileNotFoundError` from package, if file is not found it'll be simply l
 ## 🥳 Online images [new feature]
 You can finally use online images in your notifications
 ### Requirements :
-1. In your buildozer file add `requirements=`INTERNET`
+1. In your buildozer file add `requirements=INTERNET`
 2. All Online images to be added should be inputted with their full URL, that is should start with `https://` or `http://`
 ### Online Images Con
 1. Online Images might take up to half a second to be added to notification depending on Internet speed
