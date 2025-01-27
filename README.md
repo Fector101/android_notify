@@ -19,4 +19,4 @@ You can finally use online images in your notifications
 2. Types: most of `Notification` arguments are strings and return strings except `['progress_max_value','progress_current_value','callback','logs']`
 
 ### NotificationHandler [change]
-No need to bind listener in your app, This will now be done automatically, You can unbind by using `NotificationHandler.unbindNotifyListener` 
+No need to bind listener in your app, This will now be done automatically, If you want to listen to notification clicks in your app You unbind using `NotificationHandler.unbindNotifyListener` 
