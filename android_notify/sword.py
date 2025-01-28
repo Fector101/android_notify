@@ -184,7 +184,7 @@ class Notification:
         elif self.logs:
             string_to_display=''
             for name,value in vars(self).items():
-                if value and name not in ['logs','_Notification__id']:
+                if value and name in ["title", "message", "style", "subject", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
                     string_to_display += f'\n {name}: {value}'
             string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
             print(string_to_display)
