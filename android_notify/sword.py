@@ -3,6 +3,7 @@ import difflib
 import traceback
 import os
 import re
+from .styles import NotificationStyles
 
 DEV=0
 ON_ANDROID = False
@@ -62,9 +63,12 @@ class Notification:
     both_imgs == using lager icon and big picture
     :param big_picture_path: Relative Path to the image resource.
     :param large_icon_path: Relative Path to the image resource.
-    :param callback: Function for notification Click.
+    :param progress_current_value: interger To set progress bar current value.
+    :param progress_max_value: interger To set Max range for progress bar.
+    :param subject: Preview text For `big_Text` style `message`.
     ---
     (Advance Options)
+    :param callback: Function for notification Click.
     :param channel_name: - str Defaults to "Default Channel"
     :param channel_id: - str Defaults to "default_channel"
     ---
@@ -90,12 +94,17 @@ class Notification:
         'large_icon_path':'',
         'progress_max_value': 0,
         'progress_current_value': 0,
+        'subject':'',
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
         'logs':True,
         "identifer": '',
         'callback': None
     }
+    # TODO specify types in a better way instead of using
+    # if key not in non_string_keys: value = str(value) to fix
+    #non_string_keys=['progress_max_value','progress_current_value','callback','logs']
+    # TODO using default values to check types 
     # During Development (When running on PC)
     logs=not ON_ANDROID
     def __init__(self,**kwargs):
@@ -108,6 +117,7 @@ class Notification:
         self.big_picture_path=''
         self.progress_current_value=0
         self.progress_max_value=0
+        self.subject= ''
 
         # For Nofitication Functions
         self.identifer=''
@@ -254,9 +264,13 @@ class Notification:
             self.notification_manager.createNotificationChannel(channel)
 
         # Build the notification
-        # self.__builder = NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
+        # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
+        # TODO fix this by creating a on_Title method in other versions
         self.__builder.setContentTitle(str(self.title))
-        self.__builder.setContentText(str(self.message))
+        if self.style == NotificationStyles.BIG_TEXT:
+            self.__builder.setContentText(str(self.subject))
+        else:
+            self.__builder.setContentText(str(self.message))
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
