@@ -358,7 +358,7 @@ class Notification:
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
         output_path = os.path.join(app_folder, relative_path)
         if not os.path.exists(output_path):
-            print(f"Image not found at path: {output_path}, (Can Only Use Images in App Path)")
+            print(f"\nImage not found at path: {output_path}, (Local images gotten from App Path)")
             print("These are the existing files in your app Folder:")
             print('['+', '.join(os.listdir(app_folder)) + ']')
             return None
