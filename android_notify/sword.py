@@ -172,7 +172,8 @@ class Notification:
         self.message=new_message
         if ON_ANDROID:
             self.__builder.setContentText(new_message)
-
+            return True
+        return 'Updated'
     def updateProgressBar(self,current_value,message:str=''):
         """message defaults to last message"""
         if not ON_ANDROID:
@@ -187,8 +188,11 @@ class Notification:
 
     def removeProgressBar(self,message=''):
         """message defaults to last message"""
+        if not ON_ANDROID:
+            return 'removed'
         if message:
             self.__builder.setContentText(String(message))
+            return True
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.__id, self.__builder.build())
 
@@ -204,6 +208,7 @@ class Notification:
             self.notification_manager.notify(self.__id, self.__builder.build())
         elif self.logs:
             string_to_display=''
+            print("\n Sent Notification!!!")
             for name,value in vars(self).items():
                 if value and name in ["title", "message", "style", "subject", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
                     string_to_display += f'\n {name}: {value}'
