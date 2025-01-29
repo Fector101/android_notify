@@ -108,6 +108,9 @@ Clock.schedule_once(lambda dt: notification.updateProgressBar(30, "30% downloade
 
 #### Notification with an Image (Big Picture Style)
 
+> [!NOTE]
+> Online Images should start with `http://` or `https://`
+
 ```python
 # Image notification
 notification = Notification(
@@ -123,8 +126,23 @@ notification.send()
 **Sample Image:**
 ![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
 
+#### Notification with an Image (Large Icon Style)
+
 > [!NOTE]
-> Version 1.51 will have Online Image feature working currently working on making this feature stable
+> Online Images should start with `http://` or `https://`
+
+```python
+notification = Notification(
+    title="FabianDev_",
+    message="A twitter about some programming stuff",
+    style="large_icon",
+    large_icon_path="assets/imgs/profile.png"
+)
+
+```
+
+**Sample Image:**  
+![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
 
 #### Inbox Notification Style
 
@@ -141,21 +159,6 @@ notification.send()
 
 **Sample Image:**
 ![Inbox Notification sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inboxnoti.jpg)
-
-#### Notification with an Image (Large Icon Style)
-
-```python
-notification = Notification(
-    title="FabianDev_",
-    message="A twitter about some programming stuff",
-    style="large_icon",
-    large_icon_path="assets/imgs/profile.png"
-)
-
-```
-
-**Sample Image:**  
-![large_icon img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/large_icon.jpg)
 
 #### Notification with Buttons
 
@@ -179,15 +182,18 @@ notification.send()
 **Sample Image:**  
 ![btns img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/btns.jpg)
 
-#### Big text notification (Will Display as normal text if Device dosen't support)
+#### Big text notification
 
 ```python
 notification = Notification(
     title="Article",
-    message="Long article content...",
+    subject="Histroy of Loerm Ipsuim"
+    message="Lorem Ipsum is simply dummy text of the printing and ...",
     style="big_text"
 )
 ```
+
+![big_text img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/big_text.jpg)
 
 ## Advanced Features
 
@@ -248,19 +254,13 @@ notification.send(silent=True)
 
 ## Functions
 
-### NotificationHandler - To Attach Listener
-
-Add this to your main.py App Class so it runs Once, In later Versions It'll be Attached Automatical
-
 ```python
 from kivymd.app import MDApp
-from android_notify import Notification, NotificationHandler
+from android_notify import Notification
 
 class Myapp(MDApp):
 
     def on_start(self):
-        # Is called Once when app is Starts up
-        NotificationHandler.bindNotifyListener() # if successfull returns True
         Notification(title="Hello", message="This is a basic notification.",callback=self.doSomething).send()
 
     def doSomething(self):
@@ -285,8 +285,6 @@ class Myapp(MDApp):
         notify1 = Notification(title="Change Colour", message="Click to change App Colour", identifer='change_app_color')
         notify1.send()
 
-        NotificationHandler.bindNotifyListener()
-        
     def on_resume(self):
         # Is called everytime app is reopened
         notify_identifer = NotificationHandler.getIdentifer()
@@ -298,21 +296,7 @@ class Myapp(MDApp):
             pass
 ```
 
-
-
 ### Assist
-
-- How to Copy image to app folder
-
-```python
-import shutil,os # These modules come packaged with python
-from android.storage import app_storage_path # type: ignore -- This works only on android 
-
-app_path = os.path.join(app_storage_path(),'app')
-image_path= "/storage/emulated/0/Download/profile.png"
-
-shutil.copy(image_path, os.path.join(app_path, "profile.png"))
-```
 
 - Avoiding Human Error when using different notification styles
 
@@ -341,10 +325,9 @@ notification.send()
 ```
 
 ## Image Requirements
-- Images must be located within your app's folder
-- Supported paths are relative to your app's storage path
-- Example: `assets/imgs/icon.png`
 
+- Online Images should start with `http://` or `https://`
+- Local Images must be located within your app's folder
 
 ## Error Handling
 
@@ -352,22 +335,20 @@ The library validates arguments and provides helpful error messages:
 
 - Invalid style names will suggest the closest matching style
 - Invalid arguments will list all valid options
-- Missing image files will raise FileNotFoundError with the attempted path
+- Missing image files will list all files in App Directory
 
-## Limitations
+## Limitation
 
 1. Only works on Android devices
-2. Images must be within the app's storage path
-3. Channel names are limited to 40 characters
-4. Channel IDs are limited to 50 characters
 
 ## Best Practices
 
 1. Always handle permissions appropriately
-2. Use meaningful channel names for organization
-3. Keep progress bar updates reasonable (don't update too frequently)
-4. Test notifications on different Android versions
-5. Consider using silent notifications for frequent updates
+2. use `NotificationStyles` to set `style`, use `style=NotificationStyles.LARGE_ICON` instead of `style="large_icon"`
+3. Use meaningful channel names for organization
+4. Keep progress bar updates reasonable (don't update too frequently)
+5. Test notifications on different Android versions
+6. Consider using silent notifications for frequent updates
 
 ## Debugging Tips
 
