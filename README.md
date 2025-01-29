@@ -338,10 +338,10 @@ notification.send()
 ```
 
 ## Image Requirements
-
 - Images must be located within your app's folder
 - Supported paths are relative to your app's storage path
 - Example: `assets/imgs/icon.png`
+- Version 1.51 will have Online Image feature working currently working on making this feature stable 
 
 ## Error Handling
 
