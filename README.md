@@ -123,8 +123,8 @@ notification.send()
 **Sample Image:**
 ![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
 
-[!NOTE]
-Version 1.51 will have Online Image feature working currently working on making this feature stable
+> [!NOTE]
+> Version 1.51 will have Online Image feature working currently working on making this feature stable
 
 #### Inbox Notification Style
 
