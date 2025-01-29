@@ -175,7 +175,7 @@ class Notification:
             return True
         return 'Updated'
     def updateProgressBar(self,current_value,message:str=''):
-        """message defaults to last message"""
+        """current_value is the value to set progressbar, message defaults to last message"""
         if not ON_ANDROID:
             return
 
