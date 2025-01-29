@@ -176,11 +176,13 @@ class Notification:
         return 'Updated'
     def updateProgressBar(self,current_value,message:str=''):
         """current_value is the value to set progressbar, message defaults to last message"""
-        if not ON_ANDROID:
-            return
 
         if self.logs:
             print(f'Progress Bar Update value: {current_value}')
+
+        if not ON_ANDROID:
+            return
+
         self.__builder.setProgress(self.progress_max_value, current_value, False)
         if message:
             self.__builder.setContentText(String(message))
@@ -188,8 +190,13 @@ class Notification:
 
     def removeProgressBar(self,message=''):
         """message defaults to last message"""
+
+        if self.logs:
+            print('removed')
+
         if not ON_ANDROID:
-            return 'removed'
+            return True
+
         if message:
             self.__builder.setContentText(String(message))
             return True
