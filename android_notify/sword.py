@@ -2,6 +2,7 @@
 import difflib
 import traceback
 import os
+import threading
 import re
 from .styles import NotificationStyles
 
@@ -9,9 +10,11 @@ DEV=0
 ON_ANDROID = False
 
 try:
+    # Android Imports
     from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
     from android import activity # pylint: disable=import-error
     from android.config import ACTIVITY_CLASS_NAME # pylint: disable=import-error
+    from android.runnable import run_on_ui_thread # pylint: disable=import-error
 
     # Get the required Java classes
     Bundle = autoclass('android.os.Bundle')
@@ -28,6 +31,14 @@ try:
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
     print(MESSAGE if DEV else '')
+
+    # This is so no crashes when developing on PC
+    def run_on_ui_thread(func):
+        """Fallback for Developing on PC"""
+        def wrapper(*args, **kwargs):
+            print("Simulating run on UI thread")
+            return func(*args, **kwargs)
+        return wrapper
 
 if ON_ANDROID:
     try:
@@ -88,7 +99,7 @@ class Notification:
                 ] # TODO make pattern for non-android Notifications
     defaults={
         'title':'Default Title',
-        'message':'Default Message', # TODO Might change message para to list if style set to inbox
+        'message':'Default Message',
         'style':'simple',
         'big_picture_path':'',
         'large_icon_path':'',
@@ -104,7 +115,7 @@ class Notification:
     # TODO specify types in a better way instead of using
     # if key not in non_string_keys: value = str(value) to fix
     #non_string_keys=['progress_max_value','progress_current_value','callback','logs']
-    # TODO using default values to check types 
+    # TODO using default values to check types
     # During Development (When running on PC)
     logs=not ON_ANDROID
     def __init__(self,**kwargs):
@@ -274,63 +285,105 @@ class Notification:
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
+        self.__builder.setOnlyAlertOnce(True)
         self.__addIntentToOpenApp()
+
     def __addNotificationStyle(self):
-        # pylint: disable=trailing-whitespace
-        
-        large_icon_javapath=None
-        if self.large_icon_path:
-            try:
-                large_icon_javapath = self.__get_image_uri(self.large_icon_path)
-            except FileNotFoundError as e:
-                print('Failed Adding Big Picture Bitmap: ',e)
-        
-        big_pic_javapath=None
-        if self.big_picture_path:
-            try:
-                big_pic_javapath = self.__get_image_uri(self.big_picture_path)
-            except FileNotFoundError as e:
-                print('Failed Adding Lagre Icon Bitmap: ',e)
-        
-        
-        if self.style == "big_text":
+        if self.style == NotificationStyles.BIG_TEXT:
             big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
             big_text_style.bigText(self.message)
             self.__builder.setStyle(big_text_style)
-            
-        elif self.style == "inbox":
+
+        elif self.style == NotificationStyles.INBOX:
             inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
             for line in self.message.split("\n"):
                 inbox_style.addLine(line)
             self.__builder.setStyle(inbox_style)
-            
-        elif self.style == "big_picture" and big_pic_javapath:
-            big_pic_bitmap = self.__getBitmap(big_pic_javapath)
-            big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap) # pylint: disable=E0606
-            self.__builder.setStyle(big_picture_style)
-        
-        elif self.style == "large_icon" and large_icon_javapath:
-            large_icon_bitmap = self.__getBitmap(large_icon_javapath)
-            self.__builder.setLargeIcon(large_icon_bitmap)
-        
-        elif self.style == 'both_imgs' and (large_icon_javapath or big_pic_javapath):
-            if big_pic_javapath:
-                big_pic_bitmap = self.__getBitmap(big_pic_javapath)
-                big_picture_style = NotificationCompatBigPictureStyle().bigPicture(big_pic_bitmap)
-                self.__builder.setStyle(big_picture_style)
-            if large_icon_javapath:
-                large_icon_bitmap = self.__getBitmap(large_icon_javapath)
-                self.__builder.setLargeIcon(large_icon_bitmap)
+
+        elif self.style == NotificationStyles.BIG_PICTURE and self.big_picture_path:
+            self.__buildImg(self.big_picture_path, self.style)
+
+        elif self.style == NotificationStyles.LARGE_ICON and self.large_icon_path:
+            self.__buildImg(self.large_icon_path, self.style)
+
+        elif self.style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
+            if self.big_picture_path:
+                self.__buildImg(self.big_picture_path, NotificationStyles.BIG_PICTURE)
+            if self.large_icon_path:
+                self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
+
         elif self.style == 'progress':
             self.__builder.setContentTitle(String(self.title))
             self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
+
         # elif self.style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
     # def __doCustomStyle(self):
     #     # TODO Will implement when needed
     #     return self.__builder
+
+    def __buildImg(self, user_img,img_style):
+        if user_img.startswith('http://') or user_img.startswith('https://'):
+            thread = threading.Thread(
+                                        target=self.__getImgFromURL,
+                                        args=(user_img,img_style,)
+                                    )
+            thread.start()
+        else:
+            if NotificationStyles.BIG_PICTURE:
+                bitmap = self.__getImgFromPath(user_img)
+                if bitmap:
+                    big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap) # pylint: disable=E0606
+                    self.__builder.setStyle(big_picture_style)
+            elif NotificationStyles.LARGE_ICON:
+                bitmap = self.__getImgFromPath(user_img)
+                if bitmap:
+                    self.__builder.setLargeIcon(bitmap)
+
+    def __getImgFromPath(self, relative_path):
+        app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
+        output_path = os.path.join(app_folder, relative_path)
+        if not os.path.exists(output_path):
+            print(f"Image not found at path: {output_path}, (Can Only Use Images in App Path)")
+            print("These are the existing files in your app Folder:")
+            print('['+', '.join(os.listdir(app_folder)) + ']')
+            return None
+        Uri = autoclass('android.net.Uri')
+        uri = Uri.parse(f"file://{output_path}")
+        return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+
+    def __getImgFromURL(self,url,img_style):
+        print("getting image from URL---")
+        try:
+            URL = autoclass('java.net.URL')
+            url = URL(url)
+            connection = url.openConnection()
+            connection.connect()
+            input_stream = connection.getInputStream()
+            bitmap = BitmapFactory.decodeStream(input_stream)
+            input_stream.close()
+            self.__applyNotificationImage(bitmap,img_style)
+        except Exception as e:
+            # TODO get type of JAVA Error
+            print('Error Type ',e)
+            print('Failed to get Img from URL ',traceback.format_exc())
+
+    @run_on_ui_thread
+    def __applyNotificationImage(self,bitmap,img_style):
+        print('appying notification image thread ', bitmap)
+        try:
+            if img_style == NotificationStyles.BIG_PICTURE:
+                big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap) # pylint: disable=E0606
+                self.__builder.setStyle(big_picture_style)
+            elif img_style == NotificationStyles.LARGE_ICON:
+                self.__builder.setLargeIcon(bitmap)
+            self.notification_manager.notify(self.__id, self.__builder.build())
+            print('added notification image done-------')
+        except Exception as e:
+            print('I could stop ',e)
+            print('could stop get Img from URL ',traceback.format_exc())
 
     def __getUniqueID(self):
         notification_id = self.notification_ids[-1] + 1
@@ -348,24 +401,6 @@ class Notification:
         permissions=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
         if not all(check_permission(p) for p in permissions):
             request_permissions(permissions,on_permissions_result) # pylint: disable=E0606
-
-    def __get_image_uri(self,relative_path):
-        """
-        Get the absolute URI for an image in the assets folder.
-        :param relative_path: The relative path to the image (e.g., 'assets/imgs/icon.png').
-        :return: Absolute URI java Object (e.g., 'file:///path/to/file.png').
-        """
-
-        output_path = os.path.join(app_storage_path(),'app', relative_path) # pylint: disable=possibly-used-before-assignment
-        # print(output_path)  # /data/user/0/(package.domain+package.name)/files/app/assets/imgs/icon.png | pylint: disable=:line-too-long
-
-        if not os.path.exists(output_path):
-            # TODO Use images From Any where even Web
-            raise FileNotFoundError(f"Image not found at path: {output_path}, (Can Only Use Images in App Path)")
-        Uri = autoclass('android.net.Uri')
-        return Uri.parse(f"file://{output_path}")
-    def __getBitmap(self,img_path):
-        return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img_path))
 
     def __generate_channel_id(self,channel_name: str) -> str:
         """
@@ -465,6 +500,7 @@ class Notification:
 class NotificationHandler:
     """For Notification Operations """
     __identifer = None
+    __bound = False
 
     @classmethod
     def getIdentifer(cls):
@@ -530,9 +566,13 @@ class NotificationHandler:
         """This Creates a Listener for All Notification Clicks and Functions"""
         if not cls.is_on_android():
             return "Not on Android"
-        #Beta TODO Automatic bind when Notification object is called the first time use keep trying BroadcastReceiver
+        #TODO keep trying BroadcastReceiver
+        if cls.__bound:
+            print("bounding done already ")
+            return True
         try:
             activity.bind(on_new_intent=cls.__notificationHandler)
+            cls.__bound = True
             return True
         except Exception as e: # pylint: disable=broad-exception-caught
             print('Failed to bin notitfications listener',e)
@@ -555,3 +595,5 @@ class NotificationHandler:
     def is_on_android():
         """Utility to check if the app is running on Android."""
         return ON_ANDROID
+
+NotificationHandler.bindNotifyListener()
