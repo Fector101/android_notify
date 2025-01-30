@@ -112,7 +112,8 @@ Clock.schedule_once(lambda dt: notification.updateProgressBar(30, "30% downloade
 
 > [!NOTE]
 > Online Images should start with `http://` or `https://`
-> android.permissions = INTERNET
+> And request for permission, android.permissions = INTERNET
+> No additionally permissions needed for images in App folder
 
 ```python
 # Image notification
