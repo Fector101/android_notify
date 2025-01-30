@@ -11,7 +11,7 @@
 
 - Also Compatible with Android 8.0+.
 - Supports including images in notifications.
-- All Notifications can take Functions (version 1.50+) [functions docs](#functions).
+- All Notifications can take Functions (version 1.50+) [functions section](#functions).
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
   - [Progress](#progress-bar-notification)
@@ -106,10 +106,13 @@ Clock.schedule_once(lambda dt: notification.updateProgressBar(30, "30% downloade
 **Sample Image:**
 ![progress img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progress.jpg)
 
-#### Notification with an Image (Big Picture Style)
+#### Images
+
+##### Notification with an Image (Big Picture Style)
 
 > [!NOTE]
 > Online Images should start with `http://` or `https://`
+> android.permissions = INTERNET
 
 ```python
 # Image notification
@@ -126,10 +129,7 @@ notification.send()
 **Sample Image:**
 ![big_picture img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/bigpicturenoti.jpg)
 
-#### Notification with an Image (Large Icon Style)
-
-> [!NOTE]
-> Online Images should start with `http://` or `https://`
+##### Notification with an Image (Large Icon Style)
 
 ```python
 notification = Notification(
