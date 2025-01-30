@@ -188,7 +188,7 @@ notification.send()
 ```python
 notification = Notification(
     title="Article",
-    subject="Histroy of Loerm Ipsuim"
+    subject="Histroy of Loerm Ipsuim",
     message="Lorem Ipsum is simply dummy text of the printing and ...",
     style="big_text"
 )
