@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as readme_data:
 
 setup(
     name="android-notify",
-    version="1.51",
+    version="1.51.1",
     author="Fabian",
     author_email='fector101@yahoo.com',
     description="A Python package that simpilfies creating Android notifications in Kivy apps.",

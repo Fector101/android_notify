@@ -52,6 +52,7 @@ android.permissions = POST_NOTIFICATIONS
 # Required dependencies (write exactly as shown, no quotation marks)
 android.gradle_dependencies = androidx.core:core:1.6.0, androidx.core:core-ktx:1.15.0
 android.enable_androidx = True
+android.api = 35
 ```
 
 ---
