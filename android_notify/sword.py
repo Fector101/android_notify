@@ -162,7 +162,6 @@ class Notification:
         self.title=new_title
         if ON_ANDROID:
             self.__builder.setContentTitle(new_title)
-            # self.notification_manager.notify(self.__id, self.__builder.build())
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -173,7 +172,6 @@ class Notification:
         self.message=new_message
         if ON_ANDROID:
             self.__builder.setContentText(new_message)
-            # self.notification_manager.notify(self.__id, self.__builder.build())
             
             return True
         return 'Updated'
