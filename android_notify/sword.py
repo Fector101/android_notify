@@ -76,7 +76,7 @@ class Notification:
     :param large_icon_path: Relative Path to the image resource.
     :param progress_current_value: interger To set progress bar current value.
     :param progress_max_value: interger To set Max range for progress bar.
-    :param subject: Preview text For `big_Text` style `message`.
+    :param body: large text For `big_Text` style, while `message` acts as sub-title.
     ---
     (Advance Options)
     :param callback: Function for notification Click.
@@ -105,7 +105,7 @@ class Notification:
         'large_icon_path':'',
         'progress_max_value': 0,
         'progress_current_value': 0,
-        'subject':'',
+        'body':'',
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
         'logs':True,
@@ -116,6 +116,7 @@ class Notification:
     # if key not in non_string_keys: value = str(value) to fix
     #non_string_keys=['progress_max_value','progress_current_value','callback','logs']
     # TODO using default values to check types
+    
     # During Development (When running on PC)
     logs=not ON_ANDROID
     def __init__(self,**kwargs):
@@ -128,7 +129,7 @@ class Notification:
         self.big_picture_path=''
         self.progress_current_value=0
         self.progress_max_value=0
-        self.subject= ''
+        self.body= ''
 
         # For Nofitication Functions
         self.identifer=''
@@ -140,7 +141,7 @@ class Notification:
         self.silent=False
 
         # During Dev on PC
-        self.logs=self.logs
+        # self.logs=self.logs
 
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
@@ -218,7 +219,7 @@ class Notification:
             string_to_display=''
             print("\n Sent Notification!!!")
             for name,value in vars(self).items():
-                if value and name in ["title", "message", "style", "subject", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
+                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
                     string_to_display += f'\n {name}: {value}'
             string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
             print(string_to_display)
@@ -291,10 +292,7 @@ class Notification:
         # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
         # TODO fix this by creating a on_Title method in other versions
         self.__builder.setContentTitle(str(self.title))
-        if self.style == NotificationStyles.BIG_TEXT:
-            self.__builder.setContentText(str(self.subject))
-        else:
-            self.__builder.setContentText(str(self.message))
+        self.__builder.setContentText(str(self.message))
         self.__builder.setSmallIcon(context.getApplicationInfo().icon)
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
@@ -303,7 +301,7 @@ class Notification:
     @run_on_ui_thread
     def addNotificationStyle(self,style:str,already_sent=False):
         """Adds Style to Notification
-            Version 1.51.2+ Exposing to Users (Note): Always Call On UI Thread
+            Version 1.51.2+ Exposes method to Users (Note): Always try to Call On UI Thread
 
         Args:
             style (str): required style
@@ -315,7 +313,7 @@ class Notification:
         
         if style == NotificationStyles.BIG_TEXT:
             big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
-            big_text_style.bigText(self.message)
+            big_text_style.bigText(self.body)
             self.__builder.setStyle(big_text_style)
 
         elif style == NotificationStyles.INBOX:
@@ -324,11 +322,9 @@ class Notification:
                 inbox_style.addLine(line)
             self.__builder.setStyle(inbox_style)
 
-        elif style == NotificationStyles.BIG_PICTURE and self.big_picture_path:
-            self.__buildImg(self.big_picture_path, style)
-
-        elif style == NotificationStyles.LARGE_ICON and self.large_icon_path:
-            self.__buildImg(self.large_icon_path, style)
+        elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
+            img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
+            self.__buildImg(img, style)
 
         elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
             if self.big_picture_path:
@@ -336,7 +332,7 @@ class Notification:
             if self.large_icon_path:
                 self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
 
-        elif style == 'progress':
+        elif style == NotificationStyles.PROGRESS:
             self.__builder.setContentTitle(String(self.title))
             self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
