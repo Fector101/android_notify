@@ -12,6 +12,7 @@
 - Also Compatible with Android 8.0+.
 - Supports including images in notifications.
 - All Notifications can take Functions (version 1.50+) [functions section](#functions).
+- Advanced Notification Handling [section](advanced-features).
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
   - [Progress](#progress-bar-notification)
@@ -19,7 +20,7 @@
   - [Inbox](#inbox-notification-style)
   - [Large Icon](#notification-with-an-image-large-icon-style)
   - [Buttons](#notification-with-buttons)
-  - [Big Text](#big-text-notification-will-display-as-simple-text-if-device-dosent-support)
+  - [Big Text](#big-text-notification)
 
 This module automatically handles:
 
@@ -240,6 +241,24 @@ notification = Notification(
     channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
     channel_id="downloads_notifications"  # Optional: specify custom channel ID
 )
+```
+
+### Changing Style When Already Sent
+
+```python
+from android_notify import NotificationStyles
+
+notification = Notification(
+    title="Download..",
+    style="progress"
+)
+notification.send()
+
+notification.updateTitle("Download Completed")
+notification.removeProgressBar()
+notification.large_icon_path="users/imgs/profile1234.png"
+notification.addNotificationStyle(NotificationStyles.LARGE_ICON,already_sent=True)
+
 ```
 
 **Sample Image:**  
