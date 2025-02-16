@@ -162,6 +162,7 @@ class Notification:
         self.title=new_title
         if ON_ANDROID:
             self.__builder.setContentTitle(new_title)
+            # self.notification_manager.notify(self.__id, self.__builder.build())
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -172,6 +173,8 @@ class Notification:
         self.message=new_message
         if ON_ANDROID:
             self.__builder.setContentText(new_message)
+            # self.notification_manager.notify(self.__id, self.__builder.build())
+            
             return True
         return 'Updated'
     def updateProgressBar(self,current_value,message:str=''):
@@ -271,11 +274,11 @@ class Notification:
     def __startNotificationBuild(self):
         self.__createBasicNotification()
         if self.style not in ['simple','']:
-            self.__addNotificationStyle()
+            self.addNotificationStyle(self.style)
 
     def __createBasicNotification(self):
         # Notification Channel (Required for Android 8.0+)
-        # print("THis is cchannel is ",self.channel_id) #"BLAH"
+        # print("THis is cchannel is ",self.channel_id) #"
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
             importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=possibly-used-before-assignment
             # importance = 3 or 4
@@ -299,37 +302,51 @@ class Notification:
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
         self.__addIntentToOpenApp()
+    @run_on_ui_thread
+    def addNotificationStyle(self,style:str,already_sent=False):
+        """Adds Style to Notification
+            Version 1.51.2+ Exposing to Users (Note): Always Call On UI Thread
 
-    def __addNotificationStyle(self):
-        if self.style == NotificationStyles.BIG_TEXT:
+        Args:
+            style (str): required style
+        """
+        
+        if not ON_ANDROID:
+            # TODO for logs when not on android and style related to imgs etraxct app path from buildozer.spec and print
+            return
+        
+        if style == NotificationStyles.BIG_TEXT:
             big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
             big_text_style.bigText(self.message)
             self.__builder.setStyle(big_text_style)
 
-        elif self.style == NotificationStyles.INBOX:
+        elif style == NotificationStyles.INBOX:
             inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
             for line in self.message.split("\n"):
                 inbox_style.addLine(line)
             self.__builder.setStyle(inbox_style)
 
-        elif self.style == NotificationStyles.BIG_PICTURE and self.big_picture_path:
-            self.__buildImg(self.big_picture_path, self.style)
+        elif style == NotificationStyles.BIG_PICTURE and self.big_picture_path:
+            self.__buildImg(self.big_picture_path, style)
 
-        elif self.style == NotificationStyles.LARGE_ICON and self.large_icon_path:
-            self.__buildImg(self.large_icon_path, self.style)
+        elif style == NotificationStyles.LARGE_ICON and self.large_icon_path:
+            self.__buildImg(self.large_icon_path, style)
 
-        elif self.style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
+        elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
             if self.big_picture_path:
                 self.__buildImg(self.big_picture_path, NotificationStyles.BIG_PICTURE)
             if self.large_icon_path:
                 self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
 
-        elif self.style == 'progress':
+        elif style == 'progress':
             self.__builder.setContentTitle(String(self.title))
             self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
 
-        # elif self.style == 'custom':
+        if already_sent:
+            self.notification_manager.notify(self.__id, self.__builder.build())
+            
+        # elif style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
     # def __doCustomStyle(self):
@@ -344,15 +361,10 @@ class Notification:
                                     )
             thread.start()
         else:
-            if NotificationStyles.BIG_PICTURE:
-                bitmap = self.__getImgFromPath(user_img)
-                if bitmap:
-                    big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap) # pylint: disable=E0606
-                    self.__builder.setStyle(big_picture_style)
-            elif NotificationStyles.LARGE_ICON:
-                bitmap = self.__getImgFromPath(user_img)
-                if bitmap:
-                    self.__builder.setLargeIcon(bitmap)
+            bitmap = self.__getImgFromPath(user_img)
+            if bitmap:
+                self.__applyNotificationImage(bitmap,img_style)
+                
 
     def __getImgFromPath(self, relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
