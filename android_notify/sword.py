@@ -313,13 +313,13 @@ class Notification:
         
         if style == NotificationStyles.BIG_TEXT:
             big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
-            big_text_style.bigText(self.body)
+            big_text_style.bigText(str(self.body))
             self.__builder.setStyle(big_text_style)
 
         elif style == NotificationStyles.INBOX:
             inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
             for line in self.message.split("\n"):
-                inbox_style.addLine(line)
+                inbox_style.addLine(str(line))
             self.__builder.setStyle(inbox_style)
 
         elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
