@@ -80,11 +80,11 @@ The library supports multiple notification styles:
 
 1. `simple` - Basic notification with title and message
 2. `progress` - Shows a progress bar
-3. `big_text` - Expandable notification with long text
-4. `inbox` - List-style notification
-5. `big_picture` - Notification with a large image
-6. `large_icon` - Notification with a custom icon
-7. `both_imgs` - Combines big picture and large icon
+3. `big_picture` - Notification with a large image
+4. `large_icon` - Notification with a custom icon
+5. `both_imgs` - Combines big picture and large icon
+6. `inbox` - List-style notification
+7. `big_text` - Expandable notification with long text
 8. `custom` - For custom notification styles
 
 ### Style Examples
@@ -102,7 +102,7 @@ notification = Notification(
     progress_current_value=0
 )
 notification.send()
-Clock.schedule_once(lambda dt: notification.updateProgressBar(30, "30% downloaded"), 350)
+Clock.schedule_interval(lambda dt: notification.updateProgressBar(dt, f"{dt}% downloaded"), 30)
 ```
 
 **Sample Image:**
@@ -187,11 +187,13 @@ notification.send()
 
 #### Big text notification
 
+When using `big_text` style `message` acts as sub-title, Then when notification drop down button is pressed `body` is revealed
+
 ```python
 notification = Notification(
     title="Article",
-    subject="Histroy of Loerm Ipsuim",
-    message="Lorem Ipsum is simply dummy text of the printing and ...",
+    message="Histroy of Loerm Ipsuim",
+    body="Lorem Ipsum is simply dummy text of the printing and ...",
     style="big_text"
 )
 ```
@@ -243,6 +245,8 @@ notification.send()
 
 notification.updateTitle("Download Completed")
 notification.removeProgressBar()
+
+# Add New Style
 notification.large_icon_path="users/imgs/profile1234.png"
 notification.addNotificationStyle(NotificationStyles.LARGE_ICON,already_sent=True)
 
@@ -252,7 +256,7 @@ notification.addNotificationStyle(NotificationStyles.LARGE_ICON,already_sent=Tru
 
 Notifications are organized into channels. You can customize the channel name and ID:
 
-- Custom Channel Name's Gives User ability to turn on/off specific
+- Custom Channel Name's Gives User ability to turn on/off specific notifications
 
 ```python
 notification = Notification(
