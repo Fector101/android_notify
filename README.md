@@ -220,27 +220,14 @@ notification = Notification(
     title="Download..",
     style="progress"
 )
+# send notification
+notification.send()
 
 # Update progress
 notification.updateProgressBar(30, "30% downloaded")
 
 # Remove progress bar
 notification.removeProgressBar("Download Complete")
-```
-
-### Channel Management
-
-Notifications are organized into channels. You can customize the channel name and ID:
-
-- Custom Channel Name's Gives User ability to turn on/off specific
-
-```python
-notification = Notification(
-    title="Download finished",
-    message="How to Catch a Fish.mp4",
-    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
-    channel_id="downloads_notifications"  # Optional: specify custom channel ID
-)
 ```
 
 ### Changing Style When Already Sent
@@ -259,6 +246,21 @@ notification.removeProgressBar()
 notification.large_icon_path="users/imgs/profile1234.png"
 notification.addNotificationStyle(NotificationStyles.LARGE_ICON,already_sent=True)
 
+```
+
+### Channel Management
+
+Notifications are organized into channels. You can customize the channel name and ID:
+
+- Custom Channel Name's Gives User ability to turn on/off specific
+
+```python
+notification = Notification(
+    title="Download finished",
+    message="How to Catch a Fish.mp4",
+    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
+    channel_id="downloads_notifications"  # Optional: specify custom channel ID
+)
 ```
 
 **Sample Image:**  
