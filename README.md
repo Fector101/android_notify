@@ -232,7 +232,9 @@ notification.updateProgressBar(30, "30% downloaded")
 notification.removeProgressBar("Download Complete")
 ```
 
-### Changing Style When Already Sent
+### Adding Style even when already sent
+
+This is how you add a new style to notification, If already sent or not
 
 ```python
 from android_notify import NotificationStyles
