@@ -36,7 +36,7 @@ except Exception as e:# pylint: disable=W0718
     def run_on_ui_thread(func):
         """Fallback for Developing on PC"""
         def wrapper(*args, **kwargs):
-            print("Simulating run on UI thread")
+            # print("Simulating run on UI thread")
             return func(*args, **kwargs)
         return wrapper
 
