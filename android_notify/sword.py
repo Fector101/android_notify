@@ -192,11 +192,12 @@ class Notification:
             self.progress_current_value = current_value
         
             if not ON_ANDROID:
-                return
+                return False
             self.__builder.setProgress(self.progress_max_value, current_value, False)
             if message:
                 self.updateMessage(message)
             self.notification_manager.notify(self.__id, self.__builder.build())
+            return True
 
         # Start a new timer that runs after 0.5 seconds
         self.__update_timer = threading.Timer(0.5, delayed_update)
@@ -207,6 +208,7 @@ class Notification:
 
         if self.__update_timer:
             self.__update_timer.cancel()
+            self.__update_timer = None
         
         if self.logs:
             print(f'removed progress bar with message: {self.message}')
