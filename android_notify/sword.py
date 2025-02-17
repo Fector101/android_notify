@@ -140,9 +140,6 @@ class Notification:
         self.channel_id='default_channel'
         self.silent=False
 
-        # During Dev on PC
-        # self.logs=self.logs
-
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
@@ -161,6 +158,8 @@ class Notification:
             new_title (str): New Notification Title
         """
         self.title=new_title
+        if self.logs:
+            print(f'new notification title: {new_title}')
         if ON_ANDROID:
             self.__builder.setContentTitle(new_title)
 
@@ -171,11 +170,11 @@ class Notification:
             new_message (str): New Notification Message
         """
         self.message=new_message
+        if self.logs:
+            print(f'new notification message: {new_message}')
         if ON_ANDROID:
             self.__builder.setContentText(new_message)
-            
-            return True
-        return 'Updated'
+
     def updateProgressBar(self,current_value,message:str=''):
         """current_value is the value to set progressbar, message defaults to last message"""
 
@@ -194,7 +193,7 @@ class Notification:
         """message defaults to last message"""
 
         if self.logs:
-            print('removed')
+            print(f'removed progress bar with message: {self.message}')
 
         if not ON_ANDROID:
             return True
