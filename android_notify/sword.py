@@ -144,7 +144,7 @@ class Notification:
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
-        self.last_update_time = 0  # Track progressbar last update timestamp (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
+        self.__update_timer = None  # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
 
         if not ON_ANDROID:
             return
@@ -180,26 +180,34 @@ class Notification:
     def updateProgressBar(self,current_value,message:str=''):
         """current_value is the value to set progressbar, message defaults to last message"""
 
-        now = time.time()
-        if now - self.last_update_time < 0.5:  # Limit updates to every 0.5 seconds
-            return
+        # Cancel any existing timer before setting a new one
+        if self.__update_timer:
+            return False
 
-        self.last_update_time = now
+        def delayed_update():
+            self.__update_timer = None
+            if self.logs:
+                print(f'Progress Bar Update value: {current_value}')
+
+            self.progress_current_value = current_value
         
-        if self.logs:
-            print(f'Progress Bar Update value: {current_value}')
+            if not ON_ANDROID:
+                return
+            self.__builder.setProgress(self.progress_max_value, current_value, False)
+            if message:
+                self.updateMessage(message)
+            self.notification_manager.notify(self.__id, self.__builder.build())
 
-        if not ON_ANDROID:
-            return
-
-        self.__builder.setProgress(self.progress_max_value, current_value, False)
-        if message:
-            self.updateMessage(message)
-        self.notification_manager.notify(self.__id, self.__builder.build())
-
+        # Start a new timer that runs after 0.5 seconds
+        self.__update_timer = threading.Timer(0.5, delayed_update)
+        self.__update_timer.start()
+        
     def removeProgressBar(self,message=''):
         """message defaults to last message"""
 
+        if self.__update_timer:
+            self.__update_timer.cancel()
+        
         if self.logs:
             print(f'removed progress bar with message: {self.message}')
 
