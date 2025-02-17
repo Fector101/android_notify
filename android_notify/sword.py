@@ -4,6 +4,7 @@ import traceback
 import os
 import threading
 import re
+import time
 from .styles import NotificationStyles
 
 DEV=0
@@ -143,6 +144,7 @@ class Notification:
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
+        self.last_update_time = 0  # Track progressbar last update timestamp (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
 
         if not ON_ANDROID:
             return
@@ -178,6 +180,12 @@ class Notification:
     def updateProgressBar(self,current_value,message:str=''):
         """current_value is the value to set progressbar, message defaults to last message"""
 
+        now = time.time()
+        if now - self.last_update_time < 0.5:  # Limit updates to every 0.5 seconds
+            return
+
+        self.last_update_time = now
+        
         if self.logs:
             print(f'Progress Bar Update value: {current_value}')
 
