@@ -441,7 +441,8 @@ class Notification:
 
     @run_on_ui_thread
     def __applyNotificationImage(self,bitmap,img_style):
-        print('appying notification image thread ', bitmap)
+        if self.logs:
+            print('appying notification image-------')
         try:
             if img_style == NotificationStyles.BIG_PICTURE:
                 big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap) # pylint: disable=E0606
@@ -449,9 +450,11 @@ class Notification:
             elif img_style == NotificationStyles.LARGE_ICON:
                 self.__builder.setLargeIcon(bitmap)
             self.notification_manager.notify(self.__id, self.__builder.build())
-            print('added notification image done-------')
+            if self.logs:
+                print('Done adding image to notification-------')
         except Exception as e:
-            print('I could stop ',e)
+            img = self.large_icon_path if img_style == NotificationStyles.LARGE_ICON else self.big_picture_path
+            print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {e}')
             print('could stop get Img from URL ',traceback.format_exc())
 
     def __getUniqueID(self):
