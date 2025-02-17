@@ -116,7 +116,7 @@ class Notification:
     # if key not in non_string_keys: value = str(value) to fix
     #non_string_keys=['progress_max_value','progress_current_value','callback','logs']
     # TODO using default values to check types
-    
+
     # During Development (When running on PC)
     logs=not ON_ANDROID
     def __init__(self,**kwargs):
@@ -196,13 +196,13 @@ class Notification:
             print(f'removed progress bar with message: {self.message}')
 
         if not ON_ANDROID:
-            return True
+            return False
 
         if message:
             self.__builder.setContentText(String(message))
-            return True
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.__id, self.__builder.build())
+        return True
 
     def send(self,silent:bool=False):
         """Sends notification
@@ -225,6 +225,101 @@ class Notification:
             if DEV:
                 print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.__id}')
             print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
+
+    def addButton(self, text:str,on_release):
+        """For adding action buttons
+
+        Args:
+            text (str): Text For Button
+        """
+        if self.logs:
+            print('Added Button: ', text)
+
+        if not ON_ANDROID:
+            return
+
+        btn_id= self.__getIDForButton()
+        action = f"BTN_ACTION_{btn_id}"
+
+        action_intent = Intent(context, PythonActivity)
+        action_intent.setAction(action)
+        action_intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        bundle = Bundle()
+        bundle.putString("title", self.title or 'Title Placeholder')
+        bundle.putInt("key_int", 123)
+        action_intent.putExtras(bundle)
+        action_intent.putExtra("button_id", btn_id)
+
+        self.btns_box[action] = on_release
+        # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
+        if self.logs:
+            print('Button id: ',btn_id)
+        pending_action_intent = PendingIntent.getActivity(
+            context,
+            0,
+            action_intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        )
+        # Convert text to CharSequence
+        action_text = cast('java.lang.CharSequence', String(text))
+
+
+
+        # Add action with proper types
+        self.__builder.addAction(
+            int(context.getApplicationInfo().icon),  # Cast icon to int
+            action_text,                             # CharSequence text
+            pending_action_intent                    # PendingIntent
+        )
+        # Set content intent for notification tap
+        self.__builder.setContentIntent(pending_action_intent)
+
+    @run_on_ui_thread
+    def addNotificationStyle(self,style:str,already_sent=False):
+        """Adds Style to Notification
+            Version 1.51.2+ Exposes method to Users (Note): Always try to Call On UI Thread
+
+        Args:
+            style (str): required style
+        """
+
+        if not ON_ANDROID:
+            # TODO for logs when not on android and style related to imgs etraxct app path from buildozer.spec and print
+            return False
+
+        if style == NotificationStyles.BIG_TEXT:
+            big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
+            big_text_style.bigText(str(self.body))
+            self.__builder.setStyle(big_text_style)
+
+        elif style == NotificationStyles.INBOX:
+            inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
+            for line in self.message.split("\n"):
+                inbox_style.addLine(str(line))
+            self.__builder.setStyle(inbox_style)
+
+        elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
+            img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
+            self.__buildImg(img, style)
+
+        elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
+            if self.big_picture_path:
+                self.__buildImg(self.big_picture_path, NotificationStyles.BIG_PICTURE)
+            if self.large_icon_path:
+                self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
+
+        elif style == NotificationStyles.PROGRESS:
+            self.__builder.setContentTitle(String(self.title))
+            self.__builder.setContentText(String(self.message))
+            self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
+
+        if already_sent:
+            self.notification_manager.notify(self.__id, self.__builder.build())
+
+        return True
+        # elif style == 'custom':
+        #     self.__builder = self.__doCustomStyle()
 
     def __validateArgs(self,inputted_kwargs):
 
@@ -297,51 +392,7 @@ class Notification:
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
         self.__addIntentToOpenApp()
-    @run_on_ui_thread
-    def addNotificationStyle(self,style:str,already_sent=False):
-        """Adds Style to Notification
-            Version 1.51.2+ Exposes method to Users (Note): Always try to Call On UI Thread
-
-        Args:
-            style (str): required style
-        """
-        
-        if not ON_ANDROID:
-            # TODO for logs when not on android and style related to imgs etraxct app path from buildozer.spec and print
-            return
-        
-        if style == NotificationStyles.BIG_TEXT:
-            big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
-            big_text_style.bigText(str(self.body))
-            self.__builder.setStyle(big_text_style)
-
-        elif style == NotificationStyles.INBOX:
-            inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
-            for line in self.message.split("\n"):
-                inbox_style.addLine(str(line))
-            self.__builder.setStyle(inbox_style)
-
-        elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
-            img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
-            self.__buildImg(img, style)
-
-        elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
-            if self.big_picture_path:
-                self.__buildImg(self.big_picture_path, NotificationStyles.BIG_PICTURE)
-            if self.large_icon_path:
-                self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
-
-        elif style == NotificationStyles.PROGRESS:
-            self.__builder.setContentTitle(String(self.title))
-            self.__builder.setContentText(String(self.message))
-            self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
-
-        if already_sent:
-            self.notification_manager.notify(self.__id, self.__builder.build())
-            
-        # elif style == 'custom':
-        #     self.__builder = self.__doCustomStyle()
-
+    
     # def __doCustomStyle(self):
     #     # TODO Will implement when needed
     #     return self.__builder
@@ -357,7 +408,7 @@ class Notification:
             bitmap = self.__getImgFromPath(user_img)
             if bitmap:
                 self.__applyNotificationImage(bitmap,img_style)
-                
+
 
     def __getImgFromPath(self, relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
@@ -372,7 +423,8 @@ class Notification:
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
     def __getImgFromURL(self,url,img_style):
-        print("getting image from URL---")
+        if self.logs:
+            print("getting image from URL---")
         try:
             URL = autoclass('java.net.URL')
             url = URL(url)
@@ -463,55 +515,6 @@ class Notification:
         btn_id = self.button_ids[-1] + 1
         self.button_ids.append(btn_id)
         return btn_id
-
-    def addButton(self, text:str,on_release):
-        """For adding action buttons
-
-        Args:
-            text (str): Text For Button
-        """
-        if self.logs:
-            print('Added Button: ', text)
-
-        if not ON_ANDROID:
-            return
-
-        btn_id= self.__getIDForButton()
-        action = f"BTN_ACTION_{btn_id}"
-
-        action_intent = Intent(context, PythonActivity)
-        action_intent.setAction(action)
-        action_intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        bundle = Bundle()
-        bundle.putString("title", self.title or 'Title Placeholder')
-        bundle.putInt("key_int", 123)
-        action_intent.putExtras(bundle)
-        action_intent.putExtra("button_id", btn_id)
-
-        self.btns_box[action] = on_release
-        # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-        if self.logs:
-            print('Button id: ',btn_id)
-        pending_action_intent = PendingIntent.getActivity(
-            context,
-            0,
-            action_intent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        )
-        # Convert text to CharSequence
-        action_text = cast('java.lang.CharSequence', String(text))
-
-
-
-        # Add action with proper types
-        self.__builder.addAction(
-            int(context.getApplicationInfo().icon),  # Cast icon to int
-            action_text,                             # CharSequence text
-            pending_action_intent                    # PendingIntent
-        )
-        # Set content intent for notification tap
-        self.__builder.setContentIntent(pending_action_intent)
 
 
 class NotificationHandler:
