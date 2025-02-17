@@ -157,11 +157,11 @@ class Notification:
         Args:
             new_title (str): New Notification Title
         """
-        self.title=new_title
+        self.title=str(new_title)
         if self.logs:
-            print(f'new notification title: {new_title}')
+            print(f'new notification title: {self.title}')
         if ON_ANDROID:
-            self.__builder.setContentTitle(new_title)
+            self.__builder.setContentTitle(String(self.title))
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -169,11 +169,11 @@ class Notification:
         Args:
             new_message (str): New Notification Message
         """
-        self.message=new_message
+        self.message=str(new_message)
         if self.logs:
-            print(f'new notification message: {new_message}')
+            print(f'new notification message: {self.message}')
         if ON_ANDROID:
-            self.__builder.setContentText(new_message)
+            self.__builder.setContentText(String(self.message))
 
     def updateProgressBar(self,current_value,message:str=''):
         """current_value is the value to set progressbar, message defaults to last message"""
@@ -186,7 +186,7 @@ class Notification:
 
         self.__builder.setProgress(self.progress_max_value, current_value, False)
         if message:
-            self.__builder.setContentText(String(message))
+            self.updateMessage(message)
         self.notification_manager.notify(self.__id, self.__builder.build())
 
     def removeProgressBar(self,message=''):
