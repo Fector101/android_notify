@@ -104,8 +104,8 @@ class Notification:
         'style':'simple',
         'big_picture_path':'',
         'large_icon_path':'',
-        'progress_max_value': 0,
-        'progress_current_value': 0,
+        'progress_max_value': 0.5,
+        'progress_current_value': 0.5,
         'body':'',
         'channel_name':'Default Channel',
         'channel_id':'default_channel',
@@ -128,8 +128,8 @@ class Notification:
         self.style=''
         self.large_icon_path=''
         self.big_picture_path=''
-        self.progress_current_value=0
-        self.progress_max_value=0
+        self.progress_current_value=0.5 
+        self.progress_max_value=0.5
         self.body= ''
 
         # For Nofitication Functions
