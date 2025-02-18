@@ -6,7 +6,7 @@ import threading
 import re
 import time
 from .styles import NotificationStyles
-
+from .facade import BaseNotification
 DEV=0
 ON_ANDROID = False
 
@@ -64,7 +64,7 @@ if ON_ANDROID:
         * android.permissions = POST_NOTIFICATIONS
         """)
 
-class Notification:
+class Notification(BaseNotification):
     """
     Send a notification on Android.
 
@@ -113,34 +113,10 @@ class Notification:
         "identifer": '',
         'callback': None
     }
-    # TODO specify types in a better way instead of using
-    # if key not in non_string_keys: value = str(value) to fix
-    #non_string_keys=['progress_max_value','progress_current_value','callback','logs']
-    # TODO using default values to check types
 
     # During Development (When running on PC)
     logs=not ON_ANDROID
-    def __init__(self,**kwargs):
-        self.__validateArgs(kwargs)
-        # Basic options
-        self.title=''
-        self.message=''
-        self.style=''
-        self.large_icon_path=''
-        self.big_picture_path=''
-        self.progress_current_value=0.5 
-        self.progress_max_value=0.5
-        self.body= ''
-
-        # For Nofitication Functions
-        self.identifer=''
-        self.callback = None
-
-        # Advance Options
-        self.channel_name='Default Channel'
-        self.channel_id='default_channel'
-        self.silent=False
-
+    def __init__(self,**kwargs): #pylint: disable=W0231 @dataclass already does work
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
         self.__setArgs(kwargs)
