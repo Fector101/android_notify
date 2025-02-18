@@ -178,7 +178,10 @@ class Notification:
             self.__builder.setContentText(String(self.message))
 
     def updateProgressBar(self,current_value,message:str=''):
-        """current_value is the value to set progressbar, message defaults to last message"""
+        """current_value is the value to set progressbar, message defaults to last message
+        
+        NOTE: There is a 0.5sec delay
+        """
 
         # Cancel any existing timer before setting a new one
         if self.__update_timer:
