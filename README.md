@@ -92,17 +92,23 @@ The library supports multiple notification styles:
 #### Progress Bar notification
 
 ```python
-from kivy.clock import Clock
+
+progress = 0
 
 notification = Notification(
-    title="Downloading...",
-    message="0% downloaded",
-    style="progress",
-    progress_max_value=100,
-    progress_current_value=0
-)
+    title="Downloading...", message="0% downloaded",
+    style= "progress",
+    progress_current_value=0,progress_max_value=100
+    )
 notification.send()
-Clock.schedule_interval(lambda dt: notification.updateProgressBar(dt, f"{dt}% downloaded"), 30)
+
+def update_progress(dt):
+    global progress
+    progress = min(progress + 10, 100)
+    notification.updateProgressBar(progress, f"{progress}% downloaded")
+    return progress < 100  # Stops when reaching 100%
+
+Clock.schedule_interval(update_progress, 3)
 ```
 
 **Sample Image:**
