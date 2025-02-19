@@ -22,10 +22,13 @@
   - [Buttons](#notification-with-buttons)
   - [Big Text](#big-text-notification)
 
+- persistenting notification [section](#methods)
+
 This module automatically handles:
 
 - Permission requests for notifications
 - Customizable notification channels.
+- Opening app on notification click
 
 ## Installation
 
@@ -235,7 +238,8 @@ notification.send()
 notification.updateProgressBar(30, "30% downloaded")
 
 # Remove progress bar
-notification.removeProgressBar("Download Complete")
+# show_on_update to notification briefly after removed progressbar
+notification.removeProgressBar("Download Complete",show_on_update=True)
 ```
 
 ### Adding Style even when already sent
@@ -358,6 +362,15 @@ notification = Notification(title="Test")
 notification.send()
 # Will print notification properties instead of sending
 ```
+
+### Methods
+
+### Instance.send
+
+args
+
+- persistent : To make notification stay after user clicks clear All
+- close_on_click : To close notification on click
 
 ## Image Requirements
 
