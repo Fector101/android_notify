@@ -4,7 +4,6 @@ import traceback
 import os
 import threading
 import re
-import time
 from .styles import NotificationStyles
 from .facade import BaseNotification
 DEV=0
@@ -183,9 +182,13 @@ class Notification(BaseNotification):
         self.__update_timer = threading.Timer(0.5, delayed_update)
         self.__update_timer.start()
         
-    def removeProgressBar(self,message=''):
-        """message defaults to last message"""
+    def removeProgressBar(self,message='',show_on_update=True) -> None:
+        """Removes Progress Bar from Notification
 
+        Args:
+            message (str, optional): notification message. Defaults to 'last message'.
+            show_on_update (bool, optional): To show notification brifely when progressbar removed. Defaults to True.
+        """
         if self.__update_timer:
             self.__update_timer.cancel()
             self.__update_timer = None
@@ -196,21 +199,24 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return False
 
+        self.__builder.setOnlyAlertOnce(not show_on_update)
         if message:
             self.__builder.setContentText(String(message))
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.__id, self.__builder.build())
         return True
 
-    def send(self,silent:bool=False):
+    def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
         
         Args:
             silent (bool): True if you don't want to show briefly on screen
+            persistent (bool): True To not remove Notification When User hits clears All notifications button
+            close_on_click (bool): True if you want Notification to be removed when clicked
         """
         self.silent=self.silent or silent
         if ON_ANDROID:
-            self.__startNotificationBuild()
+            self.__startNotificationBuild(persistent,close_on_click)
             self.notification_manager.notify(self.__id, self.__builder.build())
         elif self.logs:
             string_to_display=''
@@ -272,6 +278,15 @@ class Notification(BaseNotification):
         )
         # Set content intent for notification tap
         self.__builder.setContentIntent(pending_action_intent)
+
+    def removeButtons(self):
+        """Removes all notification buttons
+        """
+        if ON_ANDROID:
+            self.__builder.mActions.clear()
+            self.notification_manager.notify(self.__id, self.__builder.build())
+        if self.logs:
+            print('Removed Notication Buttons')
 
     @run_on_ui_thread
     def addNotificationStyle(self,style:str,already_sent=False):
@@ -362,12 +377,12 @@ class Notification(BaseNotification):
         if "channel_id" not in options_dict and 'channel_name' in options_dict: # if User doesn't input channel id but inputs channel_name
             setattr(self,'channel_id', self.__generate_channel_id(options_dict['channel_name']))
 
-    def __startNotificationBuild(self):
-        self.__createBasicNotification()
+    def __startNotificationBuild(self,persistent,close_on_click):
+        self.__createBasicNotification(persistent,close_on_click)
         if self.style not in ['simple','']:
             self.addNotificationStyle(self.style)
 
-    def __createBasicNotification(self):
+    def __createBasicNotification(self,persistent,close_on_click):
         # Notification Channel (Required for Android 8.0+)
         # print("THis is cchannel is ",self.channel_id) #"
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
@@ -389,6 +404,8 @@ class Notification(BaseNotification):
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
+        self.__builder.setOngoing(persistent)
+        self.__builder.setAutoCancel(close_on_click)
         self.__addIntentToOpenApp()
     
     # def __doCustomStyle(self):
@@ -503,8 +520,7 @@ class Notification(BaseNotification):
                             intent, PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 31 else PendingIntent.FLAG_UPDATE_CURRENT
                         )
         self.__builder.setContentIntent(pending_intent)
-        self.__builder.setAutoCancel(True)
-
+        
     def __addDataToIntent(self,intent):
         """Persit Some data to notification object for later use"""
         bundle = Bundle()
