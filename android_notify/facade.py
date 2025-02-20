@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class BaseNotification:
+    """Encapsulator"""
     
     # Basic options
     title: str = ''
