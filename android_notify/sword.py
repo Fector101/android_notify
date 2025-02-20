@@ -115,7 +115,7 @@ class Notification(BaseNotification):
 
     # During Development (When running on PC)
     logs=not ON_ANDROID
-    def __init__(self,**kwargs): #pylint: disable=W0231 @dataclass already does work
+    def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
         self.__validateArgs(kwargs)
         # Private (Don't Touch)
         self.__id = self.__getUniqueID()
