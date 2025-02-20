@@ -23,3 +23,4 @@ class BaseNotification:
     channel_name: str = 'Default Channel'
     channel_id: str = 'default_channel'
     silent: bool = False
+    app_icon: str = 'Defaults to package app icon'

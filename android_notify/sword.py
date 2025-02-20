@@ -404,7 +404,7 @@ class Notification(BaseNotification):
         # TODO fix this by creating a on_Title method in other versions
         self.__builder.setContentTitle(str(self.title))
         self.__builder.setContentText(str(self.message))
-        self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+        self.__insertAppIcon()
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
@@ -415,20 +415,45 @@ class Notification(BaseNotification):
     # def __doCustomStyle(self):
     #     # TODO Will implement when needed
     #     return self.__builder
-
+    def __insertAppIcon(self):
+        if self.app_icon not in ['','Defaults to package app icon']:
+            self.__setIconFromBitmap(self.app_icon)
+        else:
+            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+        
     def __buildImg(self, user_img,img_style):
         if user_img.startswith('http://') or user_img.startswith('https://'):
+            def callback(bitmap):
+                self.__applyNotificationImage(bitmap,img_style)
             thread = threading.Thread(
-                                        target=self.__getImgFromURL,
-                                        args=(user_img,img_style,)
+                                        target=self.__getBitmapFromURL,
+                                        args=[user_img,callback]
                                     )
             thread.start()
         else:
             bitmap = self.__getImgFromPath(user_img)
             if bitmap:
                 self.__applyNotificationImage(bitmap,img_style)
-
-
+    
+    def __setIconFromBitmap(self,img_path):
+        """Path can be link or relative path"""
+        if img_path.startswith('http://') or img_path.startswith('https://'):
+            def callback(bitmap):
+                self.__builder.setSmallIcon(bitmap)
+            threading.Thread(
+                                        target=self.__getBitmapFromURL,
+                                        args=[img_path,callback]
+                                    ).start()
+        else:
+            bitmap = self.__getImgFromPath(img_path)
+            if bitmap:
+                self.__builder.setSmallIcon(bitmap)
+            else:
+                if self.logs:
+                    print('Failed getting img for custom notification icon defaulting to app icon')
+                self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+                
+        
     def __getImgFromPath(self, relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
         output_path = os.path.join(app_folder, relative_path)
@@ -437,13 +462,20 @@ class Notification(BaseNotification):
             print("These are the existing files in your app Folder:")
             print('['+', '.join(os.listdir(app_folder)) + ']')
             return None
+        # TODO test with a badly written Image and catch error
         Uri = autoclass('android.net.Uri')
         uri = Uri.parse(f"file://{output_path}")
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
-    def __getImgFromURL(self,url,img_style):
+    def __getBitmapFromURL(self,url,callback):
+        """Gets Bitmap from url
+
+        Args:
+            url (str): img url
+            callback (function): method to be called after thread done -passes in bitmap data as argument
+        """
         if self.logs:
-            print("getting image from URL---")
+            print("getting Bitmap from URL---")
         try:
             URL = autoclass('java.net.URL')
             url = URL(url)
@@ -452,11 +484,33 @@ class Notification(BaseNotification):
             input_stream = connection.getInputStream()
             bitmap = BitmapFactory.decodeStream(input_stream)
             input_stream.close()
-            self.__applyNotificationImage(bitmap,img_style)
+            if bitmap:
+                callback(bitmap)
+            else:
+                print('Error No Bitmap ------------')
         except Exception as e:
-            # TODO get type of JAVA Error
+            # TODO get all types of JAVA Error
             print('Error Type ',e)
-            print('Failed to get Img from URL ',traceback.format_exc())
+            print('Failed to get Bitmap from URL ',traceback.format_exc())
+
+    # def __getImgFromURL(self,url,img_style):
+    #     if self.logs:
+    #         print("getting image from URL---")
+    #     try:
+    #         URL = autoclass('java.net.URL')
+    #         url = URL(url)
+    #         connection = url.openConnection()
+    #         connection.connect()
+    #         input_stream = connection.getInputStream()
+    #         bitmap = BitmapFactory.decodeStream(input_stream)
+    #         input_stream.close()
+    #         if bitmap:
+    #             self.__applyNotificationImage(bitmap,img_style)
+                
+    #     except Exception as e:
+    #         # TODO get type of JAVA Error
+    #         print('Error Type ',e)
+    #         print('Failed to get Img from URL ',traceback.format_exc())
 
     @run_on_ui_thread
     def __applyNotificationImage(self,bitmap,img_style):
