@@ -1,3 +1,4 @@
+"""Assists Notification Class with Args auto-complete: keeps sub class cleaner"""
 from dataclasses import dataclass
 
 @dataclass
