@@ -95,6 +95,7 @@ The library supports multiple notification styles:
 #### Progress Bar notification
 
 ```python
+from kivy.clock import Clock
 
 progress = 0
 
@@ -413,7 +414,7 @@ args
 This is useful to add style after Notification is sent or Add more styles to Notification
 args
 
-- style: choosen style options are in the `NotificationStyles` class `['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]`
+- style: choosen style. All options are in the `NotificationStyles` class `['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]`
 - already_sent: specfiy if notification.send() method has already been called, it defaults to false
 
 ## Image Requirements
