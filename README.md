@@ -174,6 +174,8 @@ notification.send()
 
 #### Notification with Buttons
 
+Here's a sample of how to add buttons below, To Remove Buttons Simply Call the `removeButtons` method on the Notification Instance
+
 ```python
 notification = Notification(title="Jane Dough", message="How to use android-notify #coding #purepython")
 def playVideo():
@@ -371,6 +373,48 @@ args
 
 - persistent : To make notification stay after user clicks clear All
 - close_on_click : To close notification on click
+
+### Instance.addButton
+
+args
+
+- text : Button Text
+
+### Instance.updateTitle
+
+args
+
+- new_title : String to be set as New notification Title
+
+### Instance.updateMessage
+
+args
+
+- new_message : String to be set as New notification Message
+
+### Instance.updateProgressBar
+
+args
+
+- current_value (str): the value from progressbar current progress
+- message (str,optional): defaults to last message
+
+### Instance.removeProgressBar
+
+This Removes Progress bar
+
+args
+
+- message (str, optional): notification message, Defaults to 'last message'.
+- show_on_update (bool, optional): To show notification brifely when progressbar removed. Defaults to True.
+
+### Instance.addNotificationStyle
+
+This is useful to add style after Notification is sent or Add more styles to Notification
+args
+
+- style: choosen style options are in the `NotificationStyles` class `['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]`
+- already_sent: specfiy if notification.send() method has already been called, it defaults to false
 
 ## Image Requirements
 

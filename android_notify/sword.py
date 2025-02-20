@@ -154,7 +154,11 @@ class Notification(BaseNotification):
             self.__builder.setContentText(String(self.message))
 
     def updateProgressBar(self,current_value,message:str=''):
-        """current_value is the value to set progressbar, message defaults to last message
+        """Updates progress bar current value
+        
+        Args:
+            current_value (str): the value from progressbar current progress
+            message (str): defaults to last message
         
         NOTE: There is a 0.5sec delay
         """
