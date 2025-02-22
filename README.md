@@ -368,6 +368,12 @@ notification.send()
 
 ### Methods
 
+### Instance.**init**
+
+args
+
+- app_icon: To Change Default app icon use PNG Or Image Will display as a Black Box
+
 ### Instance.send
 
 args
