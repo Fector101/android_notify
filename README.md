@@ -373,7 +373,7 @@ notification.send()
 
 args
 
-- app_icon: To Change Default app icon use PNG Or Image Will display as a Black Box
+- app_icon: If not specified defaults to app icon, To Change Default app icon use PNG format Or Image Will display as a Black Box
 
 ### Instance.send
 
