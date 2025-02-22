@@ -43,11 +43,11 @@ setup(
         'kivy-application'
     ],
     project_urls={
-        "Documentation": "https://github.com/fector101/android-notify/",  # Replace with your documentation URL
-        # "Documentation": "https://github.com/fector101/android-notify/wiki",  # Replace with your documentation URL
+        "Documentation": "https://github.com/fector101/android-notify/",
+        # "Documentation": "https://github.com/fector101/android-notify/wiki",
         "Source": "https://github.com/fector101/android-notify",
         "Tracker": "https://github.com/fector101/android-notify/issues",
-        "Funding": "https://www.buymeacoffee.com/fector101"  # Replace with your Buy Me a Coffee link
+        "Funding": "https://www.buymeacoffee.com/fector101"
     },
     license="MIT"
 )
