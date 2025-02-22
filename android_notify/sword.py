@@ -27,6 +27,7 @@ try:
     BuildVersion = autoclass('android.os.Build$VERSION')
     NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
+    IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
@@ -110,7 +111,8 @@ class Notification(BaseNotification):
         'channel_id':'default_channel',
         'logs':True,
         "identifer": '',
-        'callback': None
+        'callback': None,
+        'app_icon': 'Defaults to package app icon'
     }
 
     # During Development (When running on PC)
@@ -439,7 +441,8 @@ class Notification(BaseNotification):
         """Path can be link or relative path"""
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap):
-                self.__builder.setSmallIcon(bitmap)
+                icon = IconCompat.createWithBitmap(bitmap)
+                self.__builder.setSmallIcon(icon)
             threading.Thread(
                                         target=self.__getBitmapFromURL,
                                         args=[img_path,callback]
@@ -447,7 +450,8 @@ class Notification(BaseNotification):
         else:
             bitmap = self.__getImgFromPath(img_path)
             if bitmap:
-                self.__builder.setSmallIcon(bitmap)
+                icon = IconCompat.createWithBitmap(bitmap)
+                self.__builder.setSmallIcon(icon)
             else:
                 if self.logs:
                     print('Failed getting img for custom notification icon defaulting to app icon')

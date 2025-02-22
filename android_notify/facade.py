@@ -9,6 +9,8 @@ class BaseNotification:
     title: str = ''
     message: str = ''
     style: str = 'simple'
+    
+    # Style specfic attributes
     big_picture_path: str = ''
     large_icon_path: str = ''
     progress_max_value: int = 100
