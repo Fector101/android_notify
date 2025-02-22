@@ -13,6 +13,7 @@
 - Supports including images in notifications.
 - All Notifications can take Functions (version 1.50+) [functions section](#functions).
 - Advanced Notification Handling [section](#advanced-features).
+- Changing default app notification icon with PNG,
 - Support for multiple notification styles:
   - [Simple](#basic-usage)
   - [Progress](#progress-bar-notification)
