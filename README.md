@@ -353,7 +353,35 @@ Notification(
 ).send()
 ```
 
-## Development Mode
+#### To Use New Version Of Android-Notify
+
+To be safe Delete All Old Versions of Android-Notify from `.buildozer` directory
+
+##### On Linux run
+
+`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`
+
+##### On Windows (PowerShell) run
+
+- If command prints right folder paths Replace `Write-Output` with `Remove-Item`
+
+```sh
+cd .buildozer
+Get-ChildItem -Path . -Directory -Filter "android_notify*" | ForEach-Object { Write-Output $_.FullName }
+cd ..
+```
+
+##### On Windows Git Bash (if installed)
+
+`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`
+
+##### On macOS run
+
+`cd .buildozer && find . -type d -name "android_notify*" -exec rm -r {} + && cd ..`
+
+### Development Mode
+
+#### For Logs
 
 When developing on non-Android platforms, the library provides debugging output:
 
