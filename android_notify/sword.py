@@ -142,6 +142,7 @@ class Notification(BaseNotification):
             print(f'new notification title: {self.title}')
         if ON_ANDROID:
             self.__builder.setContentTitle(String(self.title))
+            self.notification_manager.notify(self.__id, self.__builder.build())
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -154,6 +155,7 @@ class Notification(BaseNotification):
             print(f'new notification message: {self.message}')
         if ON_ANDROID:
             self.__builder.setContentText(String(self.message))
+            self.notification_manager.notify(self.__id, self.__builder.build())
 
     def updateProgressBar(self,current_value,message:str=''):
         """Updates progress bar current value
