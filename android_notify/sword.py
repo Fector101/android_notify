@@ -31,7 +31,7 @@ try:
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
-    print(MESSAGE if DEV else '')
+    print(MESSAGE)
 
     # This is so no crashes when developing on PC
     def run_on_ui_thread(func):
@@ -55,7 +55,7 @@ if ON_ANDROID:
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle') # pylint: disable=C0301
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
     except Exception as e:# pylint: disable=W0718
-        print(e if DEV else '','Import Fector101')
+        print(e)# if DEV else '','Import Fector101')
         # print(e if DEV else '')
         print("""
         Dependency Error: Add the following in buildozer.spec:
