@@ -157,59 +157,71 @@ class Notification(BaseNotification):
             self.__builder.setContentText(String(self.message))
             self.notification_manager.notify(self.__id, self.__builder.build())
 
-    def updateProgressBar(self,current_value,message:str=''):
+    def updateProgressBar(self,current_value:int,message:str='',title:str=''):
         """Updates progress bar current value
         
         Args:
-            current_value (str): the value from progressbar current progress
+            current_value (int): the value from progressbar current progress
             message (str): defaults to last message
+            title (str): defaults to last title
         
-        NOTE: There is a 0.5sec delay
+        NOTE: There is a 0.5sec delay, if updating title,msg with progressbar frequenlty pass them in too to avoid update issues
         """
 
         # Cancel any existing timer before setting a new one
         if self.__update_timer:
             self.__update_timer.cancel()
-
-        def delayed_update():
             self.__update_timer = None
+            
+        def delayed_update():
+            if self.__update_timer is None:
+            # Ensure we are not executing an old timer
+                return
             if self.logs:
                 print(f'Progress Bar Update value: {current_value}')
 
             self.progress_current_value = current_value
         
             if not ON_ANDROID:
-                return False
+                return
             self.__builder.setProgress(self.progress_max_value, current_value, False)
             if message:
                 self.updateMessage(message)
+            if title:
+                self.updateTitle(title)
             self.notification_manager.notify(self.__id, self.__builder.build())
-           
+            self.__update_timer = None
+
 
         # Start a new timer that runs after 0.5 seconds
         self.__update_timer = threading.Timer(0.5, delayed_update)
         self.__update_timer.start()
         
-    def removeProgressBar(self,message='',show_on_update=True) -> None:
+    def removeProgressBar(self,message='',show_on_update=True, title:str='') -> None:
         """Removes Progress Bar from Notification
 
         Args:
             message (str, optional): notification message. Defaults to 'last message'.
             show_on_update (bool, optional): To show notification brifely when progressbar removed. Defaults to True.
+            title (str, optional): notification title. Defaults to 'last title'.
         """
         if self.__update_timer:
             self.__update_timer.cancel()
             self.__update_timer = None
         
         if self.logs:
-            print(f'removed progress bar with message: {self.message}')
+            msg = message or self.message
+            title_=title or self.title
+            print(f'removed progress bar with message: {msg} and title: {title_}')
 
         if not ON_ANDROID:
             return False
 
         self.__builder.setOnlyAlertOnce(not show_on_update)
         if message:
-            self.__builder.setContentText(String(message))
+            self.updateMessage(message)
+        if title:
+            self.updateTitle(title)
         self.__builder.setProgress(0, 0, False)
         self.notification_manager.notify(self.__id, self.__builder.build())
         return True
@@ -380,7 +392,7 @@ class Notification(BaseNotification):
             elif key == 'channel_id' and value.strip(): # If user input's a channel id (i format properly)
                 setattr(self,key, self.__generate_channel_id(value))
             else:
-                setattr(self,key, value if value else self.defaults[key])
+                setattr(self,key, value if value or isinstance(value, bool) else self.defaults[key])
 
         if "channel_id" not in options_dict and 'channel_name' in options_dict: # if User doesn't input channel id but inputs channel_name
             setattr(self,'channel_id', self.__generate_channel_id(options_dict['channel_name']))
