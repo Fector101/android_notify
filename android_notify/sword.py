@@ -169,7 +169,7 @@ class Notification(BaseNotification):
 
         # Cancel any existing timer before setting a new one
         if self.__update_timer:
-            return False
+            self.__update_timer.cancel()
 
         def delayed_update():
             self.__update_timer = None
@@ -184,7 +184,7 @@ class Notification(BaseNotification):
             if message:
                 self.updateMessage(message)
             self.notification_manager.notify(self.__id, self.__builder.build())
-            return True
+           
 
         # Start a new timer that runs after 0.5 seconds
         self.__update_timer = threading.Timer(0.5, delayed_update)
