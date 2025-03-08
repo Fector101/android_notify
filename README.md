@@ -430,10 +430,16 @@ args
 
 ### Instance.updateProgressBar
 
+if updating title,msg with progressbar frequenlty pass them in too to avoid update issues.
+According to android docs updates shouldn't be too frequent.
+
+`updateProgressBar` has a built-in delay of 0.5 secs
+
 args
 
 - current_value (str): the value from progressbar current progress
 - message (str,optional): defaults to last message
+- title (str,optional): defaults to last title
 
 ### Instance.removeProgressBar
 
@@ -443,6 +449,7 @@ args
 
 - message (str, optional): notification message, Defaults to 'last message'.
 - show_on_update (bool, optional): To show notification brifely when progressbar removed. Defaults to True.
+- title (str, optional): notification title, Defaults to 'last title'.
 
 ### Instance.addNotificationStyle
 
