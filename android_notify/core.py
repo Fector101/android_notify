@@ -1,7 +1,6 @@
 """ Non-Advanced Stuff """
 import random
 import os
-print("This function has deprecated use Notification() class")
 ON_ANDROID = False
 try:
     from jnius import autoclass,cast # Needs Java to be installed
