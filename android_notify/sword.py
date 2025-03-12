@@ -55,8 +55,7 @@ if ON_ANDROID:
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle') # pylint: disable=C0301
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
     except Exception as e:# pylint: disable=W0718
-        print(e)# if DEV else '','Import Fector101')
-        # print(e if DEV else '')
+        print(e)
         print("""
         Dependency Error: Add the following in buildozer.spec:
         * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
@@ -343,8 +342,6 @@ class Notification(BaseNotification):
                 self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
 
         elif style == NotificationStyles.PROGRESS:
-            self.__builder.setContentTitle(String(self.title))
-            self.__builder.setContentText(String(self.message))
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
 
         if already_sent:
