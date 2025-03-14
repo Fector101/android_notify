@@ -90,7 +90,7 @@ class Notification(BaseNotification):
     button_ids=[0]
     btns_box={}
     main_functions={}
-    
+
     # During Development (When running on PC)
     BaseNotification.logs=not ON_ANDROID
     def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
@@ -98,16 +98,13 @@ class Notification(BaseNotification):
 
         self.__id = self.__getUniqueID()
         self.__update_timer = None  # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
-
+        self.__formatChannel(kwargs)
         if not ON_ANDROID:
             return
         # TODO make send method wait for __asks_permission_if_needed method
         self.__asks_permission_if_needed()
         self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.__builder=NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
-    # def __post__init__(self):
-    #     print('child post init')
-    #     super().__post__init__()
 
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -216,12 +213,17 @@ class Notification(BaseNotification):
         if ON_ANDROID:
             self.__startNotificationBuild(persistent,close_on_click)
             self.notification_manager.notify(self.__id, self.__builder.build())
-        elif self.logs:
+        if self.logs:
             string_to_display=''
             print("\n Sent Notification!!!")
             for name,value in vars(self).items():
                 if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
-                    string_to_display += f'\n {name}: {value}'
+                    if name == "progress_max_value":
+                        if self.style == NotificationStyles.PROGRESS:
+                            string_to_display += f'\n {name}: {value}'
+                    else:
+                        string_to_display += f'\n {name}: {value}'
+
             string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
             print(string_to_display)
             if DEV:
@@ -330,21 +332,6 @@ class Notification(BaseNotification):
         # elif style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
-    def __setArgs(self,options_dict:dict):
-        non_string_keys=['progress_max_value','progress_current_value','callback','logs']
-
-        for key,value in options_dict.items():
-            if key not in non_string_keys: # Fixing Types
-                value = str(value)
-            if key == 'channel_name' and value.strip():
-                setattr(self,key, value[:40])
-            elif key == 'channel_id' and value.strip(): # If user input's a channel id (i format properly)
-                setattr(self,key, self.__generate_channel_id(value))
-            else:
-                setattr(self,key, value if value or isinstance(value, bool) else self.defaults[key])
-
-        if "channel_id" not in options_dict and 'channel_name' in options_dict: # if User doesn't input channel id but inputs channel_name
-            setattr(self,'channel_id', self.__generate_channel_id(options_dict['channel_name']))
 
     def __startNotificationBuild(self,persistent,close_on_click):
         self.__createBasicNotification(persistent,close_on_click)
@@ -494,24 +481,6 @@ class Notification(BaseNotification):
         if not all(check_permission(p) for p in permissions):
             request_permissions(permissions,on_permissions_result) # pylint: disable=E0606
 
-    def __generate_channel_id(self,channel_name: str) -> str:
-        """
-        Generate a readable and consistent channel ID from a channel name.
-        
-        Args:
-            channel_name (str): The name of the notification channel.
-        
-        Returns:
-            str: A sanitized channel ID.
-        """
-        # Normalize the channel name
-        channel_id = channel_name.strip().lower()
-        # Replace spaces and special characters with underscores
-        channel_id = re.sub(r'[^a-z0-9]+', '_', channel_id)
-        # Remove leading/trailing underscores
-        channel_id = channel_id.strip('_')
-        return channel_id[:50]
-
     def __addIntentToOpenApp(self):
         intent = Intent(context, PythonActivity)
         action = str(self.identifer) or f"ACTION_{self.__id}"
@@ -538,6 +507,37 @@ class Notification(BaseNotification):
         self.button_ids.append(btn_id)
         return btn_id
 
+    def __formatChannel(self, inputted_kwargs):
+        if 'channel_name' in inputted_kwargs:
+            cleaned_name = inputted_kwargs['channel_name'].strip()
+            self.channel_name = cleaned_name[:40] if cleaned_name != 'a' else 'Default Channel'
+            print('Set channel name:', self.channel_name)
+
+        if 'channel_id' in inputted_kwargs:
+            cleaned_id = inputted_kwargs['channel_id'].strip()
+            self.channel_id = self.__generate_channel_id(cleaned_id) if cleaned_id else 'default_channel'
+        elif 'channel_name' in inputted_kwargs:  
+            # Generate channel_id from channel_name if only channel_name is provided
+            generated_id = self.__generate_channel_id(inputted_kwargs['channel_name'])
+            self.channel_id = generated_id
+
+    def __generate_channel_id(self,channel_name: str) -> str:
+        """
+        Generate a readable and consistent channel ID from a channel name.
+        
+        Args:
+            channel_name (str): The name of the notification channel.
+        
+        Returns:
+            str: A sanitized channel ID.
+        """
+        # Normalize the channel name
+        channel_id = channel_name.strip().lower()
+        # Replace spaces and special characters with underscores
+        channel_id = re.sub(r'[^a-z0-9]+', '_', channel_id)
+        # Remove leading/trailing underscores
+        channel_id = channel_id.strip('_')
+        return channel_id[:50]
 
 class NotificationHandler:
     """For Notification Operations """

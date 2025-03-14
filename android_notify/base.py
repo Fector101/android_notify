@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields, field
+from dataclasses import dataclass, fields
 import difflib
 from .styles import NotificationStyles
 
@@ -19,7 +19,7 @@ class BaseNotification:
     body: str = ''
     
     # Notification Functions
-    identifier: str = ''
+    identifer: str = ''
     callback: object = None
     
     # Advanced Options
