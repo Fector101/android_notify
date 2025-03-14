@@ -1,5 +1,4 @@
 """This Module Contain Class for creating Notification With Java"""
-import difflib
 import traceback
 import os
 import threading

@@ -1,3 +1,4 @@
+"""Assists Notification Class with Args keeps sub class cleaner"""
 from dataclasses import dataclass, fields
 import difflib
 from .styles import NotificationStyles
@@ -5,23 +6,23 @@ from .styles import NotificationStyles
 @dataclass
 class BaseNotification:
     """Encapsulator"""
-    
+
     # Basic options
     title: str = ''
     message: str = ''
     style: str = 'simple'
-    
+
     # Style-specific attributes
     big_picture_path: str = ''
     large_icon_path: str = ''
     progress_max_value: int = 100
     progress_current_value: int = 0
     body: str = ''
-    
+
     # Notification Functions
     identifer: str = ''
     callback: object = None
-    
+
     # Advanced Options
     app_icon: str = 'Defaults to package app icon'
     channel_name: str = 'Default Channel'
@@ -43,7 +44,7 @@ class BaseNotification:
         """Check for unexpected arguments and suggest corrections before Python validation"""
         default_fields =  {field.name : field.type for field in fields(self)} #{'title': <class 'str'>, 'message': <class 'str'>,...
         allowed_fields_keys = set(default_fields.keys())
-        
+
         # Identify invalid arguments
         invalid_args = set(inputted_kwargs) - allowed_fields_keys
         if invalid_args:
