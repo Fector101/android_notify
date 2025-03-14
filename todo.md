@@ -3,12 +3,13 @@
 In Version 1.57 make it this way
 
 Instance
+- .setIcon()
 - . add_progress_bar(value,max)
 - . set_progress_bar(value)
 - .add_big_pcture()
-- .add_large_icon()
+- .setLargeIcon()
 - .add_line()
-- .big_text_style()
+- .bigText()
 Wayy Better
 
 From Version 2.0 Maybe Remove style attribute
