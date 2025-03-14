@@ -428,6 +428,10 @@ args
 
 - new_message : String to be set as New notification Message
 
+### Instance.showInfiniteProgressBar
+
+Displays an Infinite Progress Bar in Notification, Can be Removed using `removeProgressBar` and updated using `updateProgressBar` method
+
 ### Instance.updateProgressBar
 
 if updating title,msg with progressbar frequenlty pass them in too to avoid update issues.
