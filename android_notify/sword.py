@@ -110,7 +110,7 @@ class Notification(BaseNotification):
         Can be Removed By `removeProgressBar` Method
         """
         self.__builder.setProgress(0,0, True)
-        self.notification_manager.notify(self.__id, self.__builder.build())
+        self.__dispatchNotification()
         
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -123,7 +123,7 @@ class Notification(BaseNotification):
             print(f'new notification title: {self.title}')
         if ON_ANDROID:
             self.__builder.setContentTitle(String(self.title))
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -136,7 +136,7 @@ class Notification(BaseNotification):
             print(f'new notification message: {self.message}')
         if ON_ANDROID:
             self.__builder.setContentText(String(self.message))
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
 
     def updateProgressBar(self,current_value:int,message:str='',title:str=''):
         """Updates progress bar current value
@@ -170,7 +170,7 @@ class Notification(BaseNotification):
                 self.updateMessage(message)
             if title:
                 self.updateTitle(title)
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
             self.__update_timer = None
 
 
@@ -204,7 +204,7 @@ class Notification(BaseNotification):
         if title:
             self.updateTitle(title)
         self.__builder.setProgress(0, 0, False)
-        self.notification_manager.notify(self.__id, self.__builder.build())
+        self.__dispatchNotification()
         return True
 
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
@@ -218,7 +218,7 @@ class Notification(BaseNotification):
         self.silent=self.silent or silent
         if ON_ANDROID:
             self.__startNotificationBuild(persistent,close_on_click)
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
         if self.logs:
             string_to_display=''
             print("\n Sent Notification!!!")
@@ -290,7 +290,7 @@ class Notification(BaseNotification):
         """
         if ON_ANDROID:
             self.__builder.mActions.clear()
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
         if self.logs:
             print('Removed Notication Buttons')
 
@@ -332,13 +332,14 @@ class Notification(BaseNotification):
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
 
         if already_sent:
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
 
         return True
         # elif style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
-
+    def __dispatchNotification(self):
+        self.notification_manager.notify(self.__id, self.__builder.build())
     def __startNotificationBuild(self,persistent,close_on_click):
         self.__createBasicNotification(persistent,close_on_click)
         if self.style not in ['simple','']:
@@ -462,7 +463,7 @@ class Notification(BaseNotification):
                 self.__builder.setStyle(big_picture_style)
             elif img_style == NotificationStyles.LARGE_ICON:
                 self.__builder.setLargeIcon(bitmap)
-            self.notification_manager.notify(self.__id, self.__builder.build())
+            self.__dispatchNotification()
             if self.logs:
                 print('Done adding image to notification-------')
         except Exception as e:
