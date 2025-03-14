@@ -16,7 +16,7 @@ class BaseNotification:
     big_picture_path: str = ''
     large_icon_path: str = ''
     progress_max_value: int = 100
-    progress_current_value: float = 0.0 # Also
+    progress_current_value: float = 0.0 # Also Takes in Ints
     body: str = ''
 
     # Notification Functions
