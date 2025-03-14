@@ -16,7 +16,7 @@ class BaseNotification:
     big_picture_path: str = ''
     large_icon_path: str = ''
     progress_max_value: int = 100
-    progress_current_value: int = 0
+    progress_current_value: float = 0.0 # Also
     body: str = ''
 
     # Notification Functions
@@ -63,8 +63,14 @@ class BaseNotification:
         for each_arg in inputted_kwargs.keys():
             expected_type = default_fields[each_arg]
             actual_value = inputted_kwargs[each_arg]
-            if not isinstance(actual_value, expected_type):
-                raise TypeError(f"Expected {each_arg} to be {expected_type}, got {type(actual_value)} instead.")
+
+            # Allow both int and float for progress_current_value
+            if each_arg == "progress_current_value":
+                if not isinstance(actual_value, (int, float)):
+                    raise TypeError(f"Expected '{each_arg}' to be int or float, got {type(actual_value)} instead.")
+            else:
+                if not isinstance(actual_value, expected_type):
+                    raise TypeError(f"Expected '{each_arg}' to be {expected_type}, got {type(actual_value)} instead.")
 
         # Validate `style` values
         style_values = [value for key, value in vars(NotificationStyles).items() if not key.startswith("__")]
