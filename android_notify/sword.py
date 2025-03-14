@@ -1,4 +1,5 @@
 """This Module Contain Class for creating Notification With Java"""
+import difflib
 import traceback
 import os
 import threading
@@ -104,7 +105,13 @@ class Notification(BaseNotification):
         self.__asks_permission_if_needed()
         self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.__builder=NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
-
+    def showInfiniteProgressBar(self):
+        """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
+        Can be Removed By `removeProgressBar` Method
+        """
+        self.__builder.setProgress(0,0, True)
+        self.notification_manager.notify(self.__id, self.__builder.build())
+        
     def updateTitle(self,new_title):
         """Changes Old Title
 
