@@ -511,7 +511,6 @@ class Notification(BaseNotification):
         if 'channel_name' in inputted_kwargs:
             cleaned_name = inputted_kwargs['channel_name'].strip()
             self.channel_name = cleaned_name[:40] if cleaned_name else 'Default Channel'
-            print('Set channel name:', self.channel_name)
 
         if 'channel_id' in inputted_kwargs:
             cleaned_id = inputted_kwargs['channel_id'].strip()
