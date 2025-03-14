@@ -4,11 +4,10 @@ In Version 1.57 make it this way
 
 Instance
 - .setIcon()
-- . add_progress_bar(value,max)
-- . set_progress_bar(value)
-- .add_big_pcture()
+- . setProgressBarValue(value,max)
+- .bigPicture()
 - .setLargeIcon()
-- .add_line()
+- .addLine()
 - .bigText()
 Wayy Better
 
