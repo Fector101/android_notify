@@ -5,7 +5,7 @@ import os
 import threading
 import re
 from .styles import NotificationStyles
-from .facade import BaseNotification
+from .base import BaseNotification
 DEV=0
 ON_ANDROID = False
 
@@ -31,7 +31,7 @@ try:
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
-    print(MESSAGE)
+    # print(MESSAGE) Already Printing in core.py
 
     # This is so no crashes when developing on PC
     def run_on_ui_thread(func):
@@ -90,37 +90,13 @@ class Notification(BaseNotification):
     button_ids=[0]
     btns_box={}
     main_functions={}
-    style_values=[
-                  '','simple',
-                  'progress','big_text',
-                  'inbox', 'big_picture',
-                  'large_icon','both_imgs',
-                  'custom'
-                ] # TODO make pattern for non-android Notifications
-    defaults={
-        'title':'Default Title',
-        'message':'Default Message',
-        'style':'simple',
-        'big_picture_path':'',
-        'large_icon_path':'',
-        'progress_max_value': 0.5,
-        'progress_current_value': 0.5,
-        'body':'',
-        'channel_name':'Default Channel',
-        'channel_id':'default_channel',
-        'logs':True,
-        "identifer": '',
-        'callback': None,
-        'app_icon': 'Defaults to package app icon'
-    }
-
+    
     # During Development (When running on PC)
-    logs=not ON_ANDROID
+    BaseNotification.logs=not ON_ANDROID
     def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
-        self.__validateArgs(kwargs)
-        # Private (Don't Touch)
+        super().__init__(**kwargs)
+
         self.__id = self.__getUniqueID()
-        self.__setArgs(kwargs)
         self.__update_timer = None  # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
 
         if not ON_ANDROID:
@@ -129,6 +105,9 @@ class Notification(BaseNotification):
         self.__asks_permission_if_needed()
         self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.__builder=NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
+    # def __post__init__(self):
+    #     print('child post init')
+    #     super().__post__init__()
 
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -195,7 +174,7 @@ class Notification(BaseNotification):
         # Start a new timer that runs after 0.5 seconds
         self.__update_timer = threading.Timer(0.5, delayed_update)
         self.__update_timer.start()
-        
+
     def removeProgressBar(self,message='',show_on_update=True, title:str='') -> None:
         """Removes Progress Bar from Notification
 
@@ -351,33 +330,6 @@ class Notification(BaseNotification):
         # elif style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
-    def __validateArgs(self,inputted_kwargs):
-
-        def checkInReference(inputted_keywords,accepteable_inputs,input_type):
-            def singularForm(plural_form):
-                return plural_form[:-1]
-            invalid_args= set(inputted_keywords) - set(accepteable_inputs)
-            if invalid_args:
-                suggestions=[]
-                for arg in invalid_args:
-                    closest_match = difflib.get_close_matches(arg,accepteable_inputs,n=2,cutoff=0.6)
-                    if closest_match:
-                        suggestions.append(f"* '{arg}' Invalid -> Did you mean '{closest_match[0]}'? ") # pylint: disable=C0301
-                    else:
-                        suggestions.append(f"* {arg} is not a valid {singularForm(input_type)}.")
-                suggestion_text='\n'.join(suggestions)
-                hint_msg=singularForm(input_type) if len(invalid_args) < 2 else input_type
-
-                raise ValueError(f"Invalid {hint_msg} provided: \n\t{suggestion_text}\n\t* list of valid {input_type}: [{', '.join(accepteable_inputs)}]")
-
-        allowed_keywords=self.defaults.keys()
-        inputted_keywords_=inputted_kwargs.keys()
-        checkInReference(inputted_keywords_,allowed_keywords,'arguments')
-
-        # Validate style values
-        if 'style' in inputted_keywords_ and inputted_kwargs['style'] not in self.style_values:
-            checkInReference([inputted_kwargs['style']],self.style_values,'values')
-
     def __setArgs(self,options_dict:dict):
         non_string_keys=['progress_max_value','progress_current_value','callback','logs']
 
@@ -424,7 +376,7 @@ class Notification(BaseNotification):
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
         self.__addIntentToOpenApp()
-    
+
     # def __doCustomStyle(self):
     #     # TODO Will implement when needed
     #     return self.__builder
@@ -433,7 +385,7 @@ class Notification(BaseNotification):
             self.__setIconFromBitmap(self.app_icon)
         else:
             self.__builder.setSmallIcon(context.getApplicationInfo().icon)
-        
+
     def __buildImg(self, user_img,img_style):
         if user_img.startswith('http://') or user_img.startswith('https://'):
             def callback(bitmap):
@@ -447,7 +399,7 @@ class Notification(BaseNotification):
             bitmap = self.__getImgFromPath(user_img)
             if bitmap:
                 self.__applyNotificationImage(bitmap,img_style)
-    
+
     def __setIconFromBitmap(self,img_path):
         """Path can be link or relative path"""
         if img_path.startswith('http://') or img_path.startswith('https://'):
@@ -467,8 +419,7 @@ class Notification(BaseNotification):
                 if self.logs:
                     print('Failed getting img for custom notification icon defaulting to app icon')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
-                
-        
+
     def __getImgFromPath(self, relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
         output_path = os.path.join(app_folder, relative_path)
@@ -507,25 +458,6 @@ class Notification(BaseNotification):
             # TODO get all types of JAVA Error
             print('Error Type ',e)
             print('Failed to get Bitmap from URL ',traceback.format_exc())
-
-    # def __getImgFromURL(self,url,img_style):
-    #     if self.logs:
-    #         print("getting image from URL---")
-    #     try:
-    #         URL = autoclass('java.net.URL')
-    #         url = URL(url)
-    #         connection = url.openConnection()
-    #         connection.connect()
-    #         input_stream = connection.getInputStream()
-    #         bitmap = BitmapFactory.decodeStream(input_stream)
-    #         input_stream.close()
-    #         if bitmap:
-    #             self.__applyNotificationImage(bitmap,img_style)
-                
-    #     except Exception as e:
-    #         # TODO get type of JAVA Error
-    #         print('Error Type ',e)
-    #         print('Failed to get Img from URL ',traceback.format_exc())
 
     @run_on_ui_thread
     def __applyNotificationImage(self,bitmap,img_style):

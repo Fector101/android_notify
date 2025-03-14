@@ -1,6 +1,6 @@
 """Contains Safe way to call Styles"""
 
-class NotificationStyles():
+class NotificationStyles:
     """ Safely Adding Styles"""
     DEFAULT = "simple"
 
@@ -12,5 +12,5 @@ class NotificationStyles():
     BIG_PICTURE = "big_picture"
     BOTH_IMGS = "both_imgs"
 
-    MESSAGING = "messaging" # TODO
-    CUSTOM = "custom" # TODO
+    # MESSAGING = "messaging" # TODO
+    # CUSTOM = "custom" # TODO
