@@ -1,5 +1,4 @@
 """This Module Contain Class for creating Notification With Java"""
-import difflib
 import traceback
 import os
 import threading
@@ -242,6 +241,7 @@ class Notification(BaseNotification):
 
         Args:
             text (str): Text For Button
+            on_release: function to be called when button is clicked
         """
         if self.logs:
             print('Added Button: ', text)
@@ -416,7 +416,8 @@ class Notification(BaseNotification):
                     print('Failed getting img for custom notification icon defaulting to app icon')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
-    def __getImgFromPath(self, relative_path):
+    @staticmethod
+    def __getImgFromPath(relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
         output_path = os.path.join(app_folder, relative_path)
         if not os.path.exists(output_path):
@@ -482,7 +483,7 @@ class Notification(BaseNotification):
         """
         Ask for permission to send notifications if needed.
         """
-        def on_permissions_result(permissions, grant): # pylint: disable=unused-argument
+        def on_permissions_result(permissions_, grant): # pylint: disable=unused-argument
             if self.logs:
                 print("Permission Grant State: ",grant)
 
@@ -529,7 +530,8 @@ class Notification(BaseNotification):
             generated_id = self.__generate_channel_id(inputted_kwargs['channel_name'])
             self.channel_id = generated_id
 
-    def __generate_channel_id(self,channel_name: str) -> str:
+    @staticmethod
+    def __generate_channel_id(channel_name: str) -> str:
         """
         Generate a readable and consistent channel ID from a channel name.
         
