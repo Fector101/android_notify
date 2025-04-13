@@ -176,7 +176,7 @@ class Notification(BaseNotification):
 
 
         # Start a new timer that runs after 0.5 seconds
-        self.__update_timer = threading.Timer(0.5, delayed_update)
+        self.__update_timer = threading.Timer(buffer, delayed_update)
         self.__update_timer.start()
 
     def removeProgressBar(self,message='',show_on_update=True, title:str='') -> bool:
