@@ -31,6 +31,7 @@ try:
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
+    # from .types_idea import *
     # print(MESSAGE) Already Printing in core.py
 
     # This is so no crashes when developing on PC
@@ -138,34 +139,34 @@ class Notification(BaseNotification):
             self.__builder.setContentText(String(self.message))
             self.__dispatchNotification()
 
-    def updateProgressBar(self,current_value:int,message:str='',title:str=''):
+    def updateProgressBar(self,current_value:int,message:str='',title:str='',buffer=0.5):
         """Updates progress bar current value
         
         Args:
             current_value (int): the value from progressbar current progress
             message (str): defaults to last message
             title (str): defaults to last title
-        
-        NOTE: There is a 0.5sec delay, if updating title,msg with progressbar frequenlty pass them in too to avoid update issues
+            buffer (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
+        NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequenlty pass them in too to avoid update issues
         """
+        # replacing new value for when timer is called
+        self.progress_current_value = current_value
 
-        # Cancel any existing timer before setting a new one
         if self.__update_timer:
-            self.__update_timer.cancel()
-            self.__update_timer = None
-            
+            if self.logs:
+                print('Progressbar update too soon Doing bounce 0.5sec')
+            return
+
         def delayed_update():
             if self.__update_timer is None:
             # Ensure we are not executing an old timer
                 return
             if self.logs:
-                print(f'Progress Bar Update value: {current_value}')
+                print(f'Progress Bar Update value: {self.progress_current_value}')
 
-            self.progress_current_value = current_value
-        
             if not ON_ANDROID:
                 return
-            self.__builder.setProgress(self.progress_max_value, current_value, False)
+            self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
             if message:
                 self.updateMessage(message)
             if title:
@@ -178,7 +179,7 @@ class Notification(BaseNotification):
         self.__update_timer = threading.Timer(0.5, delayed_update)
         self.__update_timer.start()
 
-    def removeProgressBar(self,message='',show_on_update=True, title:str='') -> None:
+    def removeProgressBar(self,message='',show_on_update=True, title:str='') -> bool:
         """Removes Progress Bar from Notification
 
         Args:
@@ -301,6 +302,7 @@ class Notification(BaseNotification):
 
         Args:
             style (str): required style
+            already_sent (bool,False): If notification was already sent
         """
 
         if not ON_ANDROID:
