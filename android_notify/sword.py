@@ -1,7 +1,8 @@
 """This Module Contain Class for creating Notification With Java"""
 import traceback
 import os,re
-import threading,time
+import threading
+# ,time
 from .styles import NotificationStyles
 from .base import BaseNotification
 DEV=0
@@ -99,11 +100,9 @@ class Notification(BaseNotification):
 
         # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
         self.__update_timer = None
-        self.__progress_active = True
         self.__progress_bar_msg = ''
         self.__progress_bar_title = ''
         self.__cooldown = 0
-        self.__timer_start_time = 0
 
         self.__formatChannel(kwargs)
         if not ON_ANDROID:
@@ -118,7 +117,7 @@ class Notification(BaseNotification):
         """
         self.__builder.setProgress(0,0, True)
         self.__dispatchNotification()
-        
+
     def updateTitle(self,new_title):
         """Changes Old Title
 
@@ -147,7 +146,7 @@ class Notification(BaseNotification):
 
     def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
         """Updates progress bar current value
-        
+
         Args:
             current_value (int): the value from progressbar current progress
             message (str): defaults to last message
@@ -156,22 +155,21 @@ class Notification(BaseNotification):
 
         NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequently pass them in too to avoid update issues
         """
-        # replacing new value for when timer is called
+
+        # replacing new values for when timer is called
         self.progress_current_value = current_value
         self.__progress_bar_msg = message
         self.__progress_bar_title = title
-        self.__progress_active = True
 
         if self.__update_timer and self.__update_timer.is_alive():
-            print(self.__update_timer,self.__update_timer.is_alive())
-            if self.logs:
-                remaining = self.__cooldown - (time.time() - self.__timer_start_time)
-                print(f'Progressbar update too soon, waiting for cooldown ({max(0, remaining):.2f}s)')
+            # Make Logs too Dirty
+            # if self.logs:
+                # remaining = self.__cooldown - (time.time() - self.__timer_start_time)
+                # print(f'Progressbar update too soon, waiting for cooldown ({max(0, remaining):.2f}s)')
             return
 
         def delayed_update():
-            print('delay update called',self.__progress_active)
-            if not self.__progress_active or self.__update_timer is None: # Ensure we are not executing an old timer
+            if self.__update_timer is None: # Ensure we are not executing an old timer
                 if self.logs:
                     print('ProgressBar update skipped: bar has been removed.')
                 return
@@ -194,8 +192,8 @@ class Notification(BaseNotification):
 
 
         # Start a new timer that runs after 0.5 seconds
+        # self.__timer_start_time = time.time() # for logs
         self.__cooldown = cooldown
-        self.__timer_start_time = time.time()
         self.__update_timer = threading.Timer(cooldown, delayed_update)
         self.__update_timer.start()
 
@@ -210,25 +208,28 @@ class Notification(BaseNotification):
 
         In-Built Delay of 0.5sec According to Android Docs Don't Update Progressbar too Frequently
         """
-        # To Cancel any queued timer from `updateProgressBar` method
-        # `self.__progress_active` to avoid race effect, incase updateProgressBar.delayed_update somehow gets called
-        # while in this method
-        # Avoiding Calling `updateProgressBar.delayed_update` at all so didn't just set `self.__progress_bar_title` and `self.progress_current_value` to 0
-        self.__progress_active = False
+
+        # To Cancel any queued timer from `updateProgressBar` method and to avoid race effect incase it somehow gets called while in this method
+        # Avoiding Running `updateProgressBar.delayed_update` at all
+        # so didn't just set `self.__progress_bar_title` and `self.progress_current_value` to 0
         if self.__update_timer:
-            print('cancelled progressbar stream update',self.progress_current_value)
+            # Make Logs too Dirty
+            # if self.logs:
+            #     print('cancelled progressbar stream update because about to remove',self.progress_current_value)
             self.__update_timer.cancel()
             self.__update_timer = None
 
-        if self.logs:
-            msg = message or self.message
-            title_=title or self.title
-            print(f'removed progress bar with message: {msg} and title: {title_}')
 
-        if not ON_ANDROID:
-            return False
 
         def delayed_update():
+            if self.logs:
+                msg = message or self.message
+                title_=title or self.title
+                print(f'removed progress bar with message: {msg} and title: {title_}')
+
+            if not ON_ANDROID:
+                return
+
             if message:
                 self.updateMessage(message)
             if title:
@@ -242,7 +243,7 @@ class Notification(BaseNotification):
 
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
-        
+
         Args:
             silent (bool): True if you don't want to show briefly on screen
             persistent (bool): True To not remove Notification When User hits clears All notifications button
