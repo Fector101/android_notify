@@ -1,8 +1,7 @@
 """This Module Contain Class for creating Notification With Java"""
 import traceback
-import os
-import threading
-import re
+import os,re
+import threading,time
 from .styles import NotificationStyles
 from .base import BaseNotification
 DEV=0
@@ -97,7 +96,15 @@ class Notification(BaseNotification):
         super().__init__(**kwargs)
 
         self.__id = self.__getUniqueID()
-        self.__update_timer = None  # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
+
+        # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
+        self.__update_timer = None
+        self.__progress_active = True
+        self.__progress_bar_msg = ''
+        self.__progress_bar_title = ''
+        self.__cooldown = 0
+        self.__timer_start_time = 0
+
         self.__formatChannel(kwargs)
         if not ON_ANDROID:
             return
@@ -138,58 +145,81 @@ class Notification(BaseNotification):
             self.__builder.setContentText(String(self.message))
             self.__dispatchNotification()
 
-    def updateProgressBar(self,current_value:int,message:str='',title:str='',buffer=0.5):
+    def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
         """Updates progress bar current value
         
         Args:
             current_value (int): the value from progressbar current progress
             message (str): defaults to last message
             title (str): defaults to last title
-            buffer (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
-        NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequenlty pass them in too to avoid update issues
+            cooldown (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
+
+        NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequently pass them in too to avoid update issues
         """
         # replacing new value for when timer is called
         self.progress_current_value = current_value
+        self.__progress_bar_msg = message
+        self.__progress_bar_title = title
+        self.__progress_active = True
 
-        if self.__update_timer:
+        if self.__update_timer and self.__update_timer.is_alive():
+            print(self.__update_timer,self.__update_timer.is_alive())
             if self.logs:
-                print('Progressbar update too soon Doing bounce 0.5sec')
+                remaining = self.__cooldown - (time.time() - self.__timer_start_time)
+                print(f'Progressbar update too soon, waiting for cooldown ({max(0, remaining):.2f}s)')
             return
 
         def delayed_update():
-            if self.__update_timer is None:
-            # Ensure we are not executing an old timer
+            print('delay update called',self.__progress_active)
+            if not self.__progress_active or self.__update_timer is None: # Ensure we are not executing an old timer
+                if self.logs:
+                    print('ProgressBar update skipped: bar has been removed.')
                 return
             if self.logs:
                 print(f'Progress Bar Update value: {self.progress_current_value}')
 
             if not ON_ANDROID:
+                self.__update_timer = None
                 return
+
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
-            if message:
-                self.updateMessage(message)
-            if title:
-                self.updateTitle(title)
+
+            if self.__progress_bar_msg:
+                self.updateMessage(self.__progress_bar_msg)
+            if self.__progress_bar_title:
+                self.updateTitle(self.__progress_bar_title)
+
             self.__dispatchNotification()
             self.__update_timer = None
 
 
         # Start a new timer that runs after 0.5 seconds
-        self.__update_timer = threading.Timer(buffer, delayed_update)
+        self.__cooldown = cooldown
+        self.__timer_start_time = time.time()
+        self.__update_timer = threading.Timer(cooldown, delayed_update)
         self.__update_timer.start()
 
-    def removeProgressBar(self,message='',show_on_update=True, title:str='') -> bool:
+    def removeProgressBar(self,message='',show_on_update=True, title:str='',cooldown=0.5):
         """Removes Progress Bar from Notification
 
         Args:
             message (str, optional): notification message. Defaults to 'last message'.
-            show_on_update (bool, optional): To show notification brifely when progressbar removed. Defaults to True.
+            show_on_update (bool, optional): To show notification briefly when progressbar removed. Defaults to True.
             title (str, optional): notification title. Defaults to 'last title'.
+            cooldown (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
+
+        In-Built Delay of 0.5sec According to Android Docs Don't Update Progressbar too Frequently
         """
+        # To Cancel any queued timer from `updateProgressBar` method
+        # `self.__progress_active` to avoid race effect, incase updateProgressBar.delayed_update somehow gets called
+        # while in this method
+        # Avoiding Calling `updateProgressBar.delayed_update` at all so didn't just set `self.__progress_bar_title` and `self.progress_current_value` to 0
+        self.__progress_active = False
         if self.__update_timer:
+            print('cancelled progressbar stream update',self.progress_current_value)
             self.__update_timer.cancel()
             self.__update_timer = None
-        
+
         if self.logs:
             msg = message or self.message
             title_=title or self.title
@@ -198,14 +228,17 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return False
 
-        self.__builder.setOnlyAlertOnce(not show_on_update)
-        if message:
-            self.updateMessage(message)
-        if title:
-            self.updateTitle(title)
-        self.__builder.setProgress(0, 0, False)
-        self.__dispatchNotification()
-        return True
+        def delayed_update():
+            if message:
+                self.updateMessage(message)
+            if title:
+                self.updateTitle(title)
+            self.__builder.setOnlyAlertOnce(not show_on_update)
+            self.__builder.setProgress(0, 0, False)
+            self.__dispatchNotification()
+
+        # Incase `self.updateProgressBar delayed_update` is called right before this method, so android doesn't bounce update
+        threading.Timer(cooldown, delayed_update).start()
 
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
@@ -416,8 +449,7 @@ class Notification(BaseNotification):
                     print('Failed getting img for custom notification icon defaulting to app icon')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
-    @staticmethod
-    def __getImgFromPath(relative_path):
+    def __getImgFromPath(self, relative_path):
         app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
         output_path = os.path.join(app_folder, relative_path)
         if not os.path.exists(output_path):
@@ -483,7 +515,7 @@ class Notification(BaseNotification):
         """
         Ask for permission to send notifications if needed.
         """
-        def on_permissions_result(permissions_, grant): # pylint: disable=unused-argument
+        def on_permissions_result(permissions, grant): # pylint: disable=unused-argument
             if self.logs:
                 print("Permission Grant State: ",grant)
 
@@ -530,8 +562,7 @@ class Notification(BaseNotification):
             generated_id = self.__generate_channel_id(inputted_kwargs['channel_name'])
             self.channel_id = generated_id
 
-    @staticmethod
-    def __generate_channel_id(channel_name: str) -> str:
+    def __generate_channel_id(self,channel_name: str) -> str:
         """
         Generate a readable and consistent channel ID from a channel name.
         
