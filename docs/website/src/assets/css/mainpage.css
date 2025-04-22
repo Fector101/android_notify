@@ -1,0 +1,54 @@
+.main-page {
+    padding: 20px;
+    /* flex: 1; */
+    /* border: 1px solid rgb(9, 234, 1); */
+}
+.main-page li{
+    line-height: 25px;
+}
+.main-page h2 {
+    margin-top: 20px;
+    font-size: 26px;
+}
+
+.main-page .sub-header {
+    margin-block: 15px;
+
+}
+
+.main-page section .inner-section-1 {
+    margin-left: 10px;
+}
+
+.main-page section#features .inner-section-1 {
+    margin-left: 25px;
+}
+
+.main-page section#introduction p {
+    color: rgb(234, 234, 234);
+}
+
+.main-page p {
+    color: rgb(222, 222, 222);
+}
+
+.main-page hr,
+.main-page>section p {
+    width: 95%;
+}
+
+.main-page .paragraph {
+    margin-top: 15px;
+}
+
+.main-page hr {
+    border: None;
+    border-top: 1px solid white;
+    margin-block: 20px;
+}
+
+@media screen and (max-width:500px) {
+    .main-page section#features p {
+        font-size: 13px;
+    }
+}

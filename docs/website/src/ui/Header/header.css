@@ -1,0 +1,88 @@
+header {
+    /* background-color: var(--body-bg); */
+    background-color: #171716;
+    position: sticky;
+    top: 0;
+    padding: 0 30px;
+    height: var(--header-height);
+    box-shadow: 1px 1px 0 1px rgba(75, 74, 74, 0.096);
+    gap: 20px;
+    z-index: 1;
+}
+
+header .brand {
+    --size: 40px;
+    width: var(--size);
+    height: var(--size);
+}
+
+header .version-no {
+    font-size: 18px;
+}
+
+header .page-title {
+    font-size: 19px;
+    font-weight: 600;
+    margin-left: 10px;
+    /* background-color: red; */
+}
+
+header .icon-nav {
+    gap: 15px;
+}
+
+header .icon-nav .btn-link {
+    border-radius: 5px;
+    padding: 5px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header .icon-nav .btn-link:hover {
+    background: rgb(50, 50, 50);
+    cursor: pointer;
+}
+
+header .icon-nav svg {
+    --size: 25px;
+    width: var(--size);
+    height: var(--size);
+}
+
+@media screen and (max-width:500px) {
+    header {
+        gap: 10px;
+    }
+
+    header .page-title {
+        font-size: 14px;
+        margin-left: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    header .version-no {
+        font-size: 15px;
+    }
+
+    header .icon-nav .btn-link {
+        border-radius: 5px;
+        /* padding: 2px 3px; */
+    }
+
+    header .icon-nav svg {
+        --size: 20px;
+        width: var(--size);
+        height: var(--size);
+    }
+
+    header .brand {
+        --size: 25px;
+        width: var(--size);
+        min-width: var(--size);
+        height: var(--size);
+    }
+
+}
