@@ -117,40 +117,6 @@ body>#root {
     color: var(--link-color);
 }
 
-.code-block {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.code-block>button {
-    --size: 36px;
-    width: var(--size);
-    height: var(--size);
-    background: #000;
-    border-radius: 10px;
-    opacity: 0;
-    align-items: center;
-    justify-content: center;
-
-    position: absolute;
-    top: 15px;
-    right: 10px;
-    background-color: rgba(255, 255, 255, 0.209);
-    display: flex;
-
-}
-
-.code-block button:focus {
-    opacity: 1;
-}
-
-.code-block:hover>button {
-    opacity: 1;
-    cursor: pointer;
-}
-
 .modal {
     position: fixed;
     top: 0;

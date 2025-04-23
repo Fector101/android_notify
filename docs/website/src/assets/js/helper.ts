@@ -137,11 +137,14 @@ function range(start: number, end: number) {
 }
 
 function copyText(text:string) {
+    // alert(navigator.clipboard)
     navigator.clipboard.writeText(text)
         .then(() => {
-            console.log('Text copied to clipboard!');
+            // console.log('Text copied to clipboard!');
+            // alert('Text copied to clipboard!');
         })
         .catch(err => {
+            // alert('Failed to copy: err');
             console.error('Failed to copy: ', err);
         });
 }

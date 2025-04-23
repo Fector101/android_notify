@@ -1,0 +1,158 @@
+/* Layout */
+.page {
+    /* max-width: 960px; */
+    /* margin: 0 auto; */
+}
+
+.main-page {
+    padding: 2rem;
+}
+
+/* Spacing utilities */
+.p-6 {
+    padding: 1.5rem;
+    /* 24px */
+}
+
+.p-4 {
+    padding: 1rem;
+    /* 16px */
+}
+
+.space-y-8>*+* {
+    margin-top: 2rem;
+    /* 32px */
+}
+
+.space-y-6>*+* {
+    margin-top: 1.5rem;
+    /* 24px */
+}
+
+.space-y-1>*+* {
+    margin-top: 0.25rem;
+    /* 4px */
+}
+
+/* Typography */
+.text-2xl {
+    font-size: 1.5rem;
+    /* 24px */
+    line-height: 2rem;
+    /* 32px */
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    /* 20px */
+    line-height: 1.75rem;
+    /* 28px */
+}
+
+.text-lg {
+    font-size: 1.125rem;
+    /* 18px */
+    line-height: 1.75rem;
+    /* 28px */
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    /* 14px */
+    line-height: 1.25rem;
+    /* 20px */
+}
+
+.text-left {
+    text-align: left;
+}
+
+.font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.leading-relaxed {
+    line-height: 1.625;
+    /* ~26px if base 16px */
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+    /* 4px */
+}
+
+/* Colors */
+.text-blue-600 {
+    color: #2563EB;
+}
+
+.text-gray-700 {
+    color: #374151;
+}
+
+.bg-gray-50 {
+    background-color: #F9FAFB;
+    background-color: #232323;
+}
+
+/* Borders & Padding */
+.border-l-4 {
+    border-left-width: 4px;
+}
+
+.border-blue-600 {
+    border-color: #2563EB;
+}
+
+.pl-4 {
+    padding-left: 1rem;
+    /* 16px */
+}
+
+.pl-6 {
+    padding-left: 1.5rem;
+    /* 24px */
+}
+
+/* Shadows & Transitions */
+.shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.hover\:shadow-md:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.transition {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Links & Code */
+.hover\:underline:hover {
+    text-decoration: underline;
+}
+
+code {
+    background-color: rgba(27, 31, 35, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.875em;
+}
+
+/* Description lists */
+dt {
+    font-weight: 500;
+}
+
+dd {
+    margin-left: 1rem;
+}

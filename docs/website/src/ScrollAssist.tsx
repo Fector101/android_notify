@@ -14,7 +14,7 @@ const ScrollToSection = () => {
     useEffect(() => {
         if (hash) {
             const section = document.querySelector(hash) as HTMLElement;
-            console.log(hash,section)
+            // console.log(hash,section)
             if (section) {
                 const headerHeight = 70
                 window.scrollTo({

@@ -153,20 +153,21 @@ export default function SiteOverview() {
                     sections={[
                         'Updating Notification', // 'Adding More Components',
                         // 'Notification Clicks',
-                        'Getting Identifer', //TODO version typo
                         'Channel Management',
+                        'Getting Identifer', //TODO version typo
 
                     ]}
                 />
                 <DropDown
                     hash={hash}
                     title="Reference"
-                    route='/components'
+                    route='/reference'
                     sections={[
                         'Notification Class',
                         'NotificationHandler Class',
-                        'Available Methods',
-                        'Advanced Parameters'
+                        'NotificationStyles Class',
+                        // 'Available Methods',
+                        // 'Advanced Parameters'
                     ]}
                 />
                 <DropDown
@@ -175,9 +176,9 @@ export default function SiteOverview() {
                     route='/components'
                     sections={[
                         'FAQ',
-                        'Common Errors',
+                        // 'Common Errors',
                         'Contributing',
-                        'Changelog'
+                        // 'Changelog'
                     ]}
                 />
             </div>

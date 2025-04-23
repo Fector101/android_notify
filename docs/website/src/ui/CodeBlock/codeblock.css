@@ -1,4 +1,4 @@
- .component-preview {
+.code-block {
     /* height: 300px; */
     /* width: max-content; */
     margin-top: 20px;
@@ -6,10 +6,46 @@
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid #e2e2e234;
-    width: 100%;
+    position: relative;
+
+    /* width: 100%; */
 }
 
- .component-preview .header {
+.code-block > button {
+    --size: 35px;
+    width: var(--size);
+    height: var(--size);
+    padding: 6px;
+    background: #000;
+    border-radius: 10px;
+    opacity: 0;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background-color: rgba(165, 165, 165, 0.5);
+    display: flex;
+}
+
+.code-block button:hover {
+    cursor: pointer;
+}
+
+.code-block button:focus {
+    opacity: 1;
+}
+
+.code-block:hover > button {
+    opacity: 1;
+}
+
+.code-block:focus > button {
+    opacity: 1;
+}
+
+.code-block .header {
     background: #e2e2e21a;
     padding: 15px;
     display: block;
@@ -17,21 +53,19 @@
     border-bottom: 1px solid #e2e2e21a;
 }
 
- .component-preview .content {
+.code-block .content {
     flex-direction: column;
-
 }
 
- .component-preview .content pre {
-
+/* .code-block .content pre { */
     /* width: 500px; */
     /* margin: 0; */
     /* width: 50%;
     */
-    /* height: 280px;  */
-}
+    /* height: 280px;  
+}*/
 
- .component-preview .content img {
+.code-block .content img {
     max-width: 450px;
     width: 100%;
     margin: 0 auto;
@@ -46,24 +80,22 @@
     height: 250px; */
 }
 
-@media screen and (max-width:770px) {
-     .component-preview .content img {
-        /* --size: 250px;
+@media screen and (max-width: 770px) {
+    /* .code-block .content img {
+        --size: 250px;
         min-width: 500px;
-        width: 500px; */
-    }
-
+        width: 500px; 
+    } */
 }
 
-@media screen and (max-width:500px) {
-
-     .component-preview .content pre {
-        /* overflow-x: auto;
+@media screen and (max-width: 500px) {
+    /*.code-block .content pre {
+        overflow-x: auto;
         width: 100%;
-        box-shadow: 1px 1px 5px #0000000f; */
-    }
+        box-shadow: 1px 1px 5px #0000000f;
+    }*/
 
-     .component-preview .header {
+    .code-block .header {
         font-size: 13px;
     }
 }

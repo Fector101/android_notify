@@ -26,7 +26,7 @@ export default function ComponentsPage() {
         <div className="page main-page components-page">
             <ScrollToSection />
 
-            <section className="page-section" id="images">
+            <section tabIndex={0} className="page-section" id="images">
                 <h2>Images</h2>
                 <hr />
                 <div className="inner-section-1">
@@ -73,7 +73,7 @@ export default function ComponentsPage() {
                 </div>
             </section>
 
-            <section className="page-section" id="buttons">
+            <section tabIndex={0} className="page-section" id="buttons">
                 <h2>Buttons</h2>
                 <hr />
                 <div className="inner-section-1">
@@ -93,17 +93,17 @@ export default function ComponentsPage() {
                 <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced#functions'>Advanced</Link> section</p>
             </section>
 
-            <section className="page-section" id="progress-bars">
+            <section tabIndex={0} className="page-section" id="progress-bars">
                 <h2>Progress Bars</h2>
                 <hr />
                 <div className="inner-section-1">
                     <p>
-                        Also supports notifications with progress indicators — useful for showing download status, task completion.
+                        Notifications with progress indicators are useful for showing download status, pending actions,task completion.
                     </p>
                     <ul>
-                        <li>Update progress in real-time with <code>updateProgressBar()</code></li>
-                        <li>Show an infinite progress animation with <code>showInfiniteProgressBar()</code></li>
-                        <li>Cleanly remove the progress bar with <code>removeProgressBar()</code></li>
+                        <li>Update progress in real-time with <span className='code'>updateProgressBar()</span></li>
+                        <li>Show an infinite progress animation with <span className='code'>showInfiniteProgressBar()</span></li>
+                        <li>Cleanly remove the progress bar with <span className='code'>removeProgressBar()</span></li>
                     </ul>
                     <p>
                         You can customize the displayed message and title while the progress bar updates.
@@ -113,7 +113,7 @@ export default function ComponentsPage() {
             </section>
 
 
-            <section className="page-section" id="texts">
+            <section tabIndex={0} className="page-section" id="texts">
                 <h2>Texts</h2>
                 <hr />
                 <h3>Multi-Line Text </h3>
