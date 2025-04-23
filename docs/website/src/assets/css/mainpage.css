@@ -3,6 +3,7 @@
     /* flex: 1; */
     /* border: 1px solid rgb(9, 234, 1); */
 }
+
 .main-page li{
     line-height: 25px;
 }
@@ -13,13 +14,19 @@
 
 .main-page .sub-header {
     margin-block: 15px;
-
+    /* color: red; */
 }
 
-.main-page section .inner-section-1 {
+.main-page .inner-section-1 {
     margin-left: 10px;
 }
+.main-page .inner-section-2 {
+    margin-left: 20px;
+}
 
+.main-page section{
+    /* min-height: 40vh; */
+}
 .main-page section#features .inner-section-1 {
     margin-left: 25px;
 }
@@ -28,7 +35,7 @@
     color: rgb(234, 234, 234);
 }
 
-.main-page p {
+.main-page p,.main-page li {
     color: rgb(222, 222, 222);
 }
 
@@ -50,5 +57,8 @@
 @media screen and (max-width:500px) {
     .main-page section#features p {
         font-size: 13px;
+    }
+    .main-page h2.long-title{
+        font-size: 20px;
     }
 }

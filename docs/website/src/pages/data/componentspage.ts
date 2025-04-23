@@ -72,5 +72,10 @@ notification.addButton(text="Play",on_release=playVideo)
 notification.addButton(text="Turn Off",on_release=turnOffNoti)
 notification.addButton(text="Watch Later",on_release=watchLater)
 notification.send()`
+const appiconcode=`Notification(
+    app_icon="assets/icons/download.png",
+    title="Custom Icon",
+    message="Also persist notification test"
+).send(persistent=True)`
 
-export {bigimgcode,buttons_code,progressbarcode,largeiconcode,inboxcode,bigtextcode}
+export {bigimgcode,buttons_code,progressbarcode,largeiconcode,inboxcode,bigtextcode,appiconcode}

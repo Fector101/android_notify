@@ -65,8 +65,11 @@ body>#root {
 }
 
 .next-page-btns-box {
-    margin: 0 20px;
-    margin-top: 10px;
+    padding: 0 20px;
+    margin-top: 20px;
+    width: 100%;
+    /* background: #000; */
+    align-self: center;
 }
 
 .next-page-btns-box .next-page-btn {
@@ -201,11 +204,23 @@ body>#root {
 @media screen and (max-width:500px) {
 
     .main-page>section p,
-    section li {
+    .main-page li {
         width: 100%;
         font-size: 14px;
     }
-    section li {
-        /* height: ; */
+    .next-page-btns-box{
+        overflow: hidden;
+        /* background: #000; */
+        padding: 0;
+        gap: 5px;
     }
+    .next-page-btn {
+        padding: 8px;
+        gap: 5px;
+    }
+    .next-page-btn p{
+        font-size: 13px;
+        /* white-space: nowrap; */
+    }
+    
 }

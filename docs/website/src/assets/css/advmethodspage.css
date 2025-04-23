@@ -1,0 +1,16 @@
+.adv-methods-page {
+    padding: 20px;
+    /* flex: 1; */
+    /* border: 1px solid rgb(9, 234, 1); */
+}
+
+.adv-methods-page .progressbar-warning {
+    max-width: max-content;
+    font-size: 15px;
+}
+
+@media screen and (max-width:500px) {
+    .adv-methods-page .progressbar-warning {
+        font-size: 14px;
+    }
+}

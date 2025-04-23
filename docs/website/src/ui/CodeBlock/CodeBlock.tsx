@@ -1,3 +1,41 @@
+import { useState,useEffect } from "react";
+import { Prism } from 'react-syntax-highlighter'
+import {dracula} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import './codeblock.css'
+export function CodeBlock({ title, img='', code }: { title: string, img?: string, code: string }) {
+
+    const [fontSize, setFontSize] = useState<string>(getFontSize());
+
+    function getFontSize(): string {
+        return window.innerWidth < 500 ? '12px' : '16px';
+    }
+
+    useEffect(() => {
+        const handleResize = () => setFontSize(getFontSize());
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+
+    return (
+        <div className='component-preview flex fd-column'>
+            <div className="header">
+                <h3>{title}</h3>
+            </div>
+            <div className='flex content'>
+
+                <Prism language="python" style={dracula} customStyle={{ margin: 0, padding: '20px', borderRadius: 0, fontSize: fontSize, overflowX: 'auto' }}>
+                    {code}
+                </Prism>
+                <img src={img} />
+            </div>
+        </div>
+
+    )
+}
+
+
 // // import React from 'react';
 // import Highlight, { defaultProps } from 'prism-react-renderer';
 // import useMeasure from 'react-use-measure';

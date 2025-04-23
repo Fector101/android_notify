@@ -17,7 +17,6 @@ const ScrollToSection = () => {
             console.log(hash,section)
             if (section) {
                 const headerHeight = 70
-
                 window.scrollTo({
                     top: section.offsetTop - headerHeight,
                     behavior: "smooth",

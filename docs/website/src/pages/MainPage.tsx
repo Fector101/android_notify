@@ -65,7 +65,7 @@ export default function MainPage() {
     return (
         <div className="page main-page flex fd-column">
             <ScrollToSection/>
-            <section id='introduction'>
+            <section className="page-section" id='introduction'>
                 <h2>Introduction</h2>
                 <hr />
                 <p className='reader'>Android-Notify simplifies the process of creating and managing android notifications with <span className='code green'>Python</span>.</p>
@@ -77,7 +77,7 @@ export default function MainPage() {
                 <p className='paragraph'>Android-Notify has two dependencies: Kivy, Pyjnius</p>
             </section>
 
-            <section id='features'>
+            <section className="page-section" id='features'>
                 <h2>Features</h2>
                 <hr />
                 <ul className='inner-section-1'>
@@ -92,7 +92,7 @@ export default function MainPage() {
                 <p className='paragraph inner-section-1'>And Many More...</p>
             </section>
 
-            <section id='installation'>
+            <section className="page-section" id='installation'>
 
                 <h2>Installation</h2>
                 <hr />
@@ -124,7 +124,7 @@ export default function MainPage() {
             </section>
 
 
-            <section id='basic-usage'>
+            <section className="page-section" id='basic-usage'>
 
                 <h2>Basic Usage</h2>
                 <hr />
