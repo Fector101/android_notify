@@ -1,4 +1,5 @@
 #site-overview {
+    z-index: 1;
     min-width: var(--overview-width);
     width: var(--overview-width);
     /* border: 1px solid grey; */

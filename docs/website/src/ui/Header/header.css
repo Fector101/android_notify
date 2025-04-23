@@ -24,6 +24,10 @@ header .page-title {
     font-size: 19px;
     font-weight: 600;
     margin-left: 10px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     /* background-color: red; */
 }
 
@@ -50,7 +54,9 @@ header .icon-nav svg {
     height: var(--size);
 }
 
-
+.page-toggler{
+    margin:  0 auto !important;
+}
 @media screen and (max-width:500px) {
     header {
         gap: 10px;
@@ -59,9 +65,6 @@ header .icon-nav svg {
     header .page-title {
         font-size: 14px;
         margin-left: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     header .version-no {

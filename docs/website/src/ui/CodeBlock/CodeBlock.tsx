@@ -38,7 +38,7 @@ export function CodeBlock({ title, img = '', code, lang = 'python' }: { title?: 
     }
     return (
         <div className='code-block flex fd-column width100per' tabIndex={0}>
-            <button onClick={(e) => copyAction(code, e)}>site-overview
+            <button onClick={(e) => copyAction(code, e)}>
                 <Copy className='copy-icon' />
                 <Check className='check-icon display-none' />
             </button>
