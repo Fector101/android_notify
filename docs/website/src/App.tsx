@@ -12,6 +12,7 @@ import SiteOverview from "./ui/SiteOverview/SiteOverview.tsx";
 import ComponentsPage from "./pages/ComponentsPage.tsx";
 import AdvancedMethodsPage from "./pages/AdvancedMethodsPage.tsx";
 import ReferencePage from "./pages/ReferencePage.tsx";
+import ExtrasPage from "./pages/ExtrasPage.tsx";
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
                     <Route path="/components" element={<ComponentsPage />} />
                     <Route path="/advanced-methods" element={<AdvancedMethodsPage />} />
                     <Route path="/reference" element={<ReferencePage />} />
+                    <Route path="/extras" element={<ExtrasPage />} />
                     <Route path="*" element={<p className="page">Page Not Found</p>} />
                 </Routes>
             </main>

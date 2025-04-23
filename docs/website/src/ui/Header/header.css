@@ -50,6 +50,7 @@ header .icon-nav svg {
     height: var(--size);
 }
 
+
 @media screen and (max-width:500px) {
     header {
         gap: 10px;
@@ -84,5 +85,4 @@ header .icon-nav svg {
         min-width: var(--size);
         height: var(--size);
     }
-
 }

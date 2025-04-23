@@ -1,66 +1,39 @@
-/* Layout */
-.page {
-    /* max-width: 960px; */
-    /* margin: 0 auto; */
-}
-
-.main-page {
-    padding: 2rem;
-}
-
 /* Spacing utilities */
 .p-6 {
     padding: 1.5rem;
-    /* 24px */
 }
 
 .p-4 {
     padding: 1rem;
-    /* 16px */
 }
 
 .space-y-8>*+* {
     margin-top: 2rem;
-    /* 32px */
 }
 
 .space-y-6>*+* {
     margin-top: 1.5rem;
-    /* 24px */
 }
 
 .space-y-1>*+* {
     margin-top: 0.25rem;
-    /* 4px */
 }
 
 /* Typography */
 .text-2xl {
     font-size: 1.5rem;
-    /* 24px */
     line-height: 2rem;
-    /* 32px */
 }
 
 .text-xl {
     font-size: 1.25rem;
-    /* 20px */
     line-height: 1.75rem;
-    /* 28px */
 }
 
-.text-lg {
-    font-size: 1.125rem;
-    /* 18px */
-    line-height: 1.75rem;
-    /* 28px */
-}
 
 .text-sm {
     font-size: 0.875rem;
-    /* 14px */
     line-height: 1.25rem;
-    /* 20px */
 }
 
 .text-left {
@@ -81,12 +54,12 @@
 
 .leading-relaxed {
     line-height: 1.625;
-    /* ~26px if base 16px */
 }
 
 .mb-1 {
-    margin-bottom: 0.25rem;
-    /* 4px */
+    /* margin-bottom: 0.25rem;
+    background-color: green; */
+    /* max-width: 100px; */
 }
 
 /* Colors */
@@ -114,21 +87,15 @@
 
 .pl-4 {
     padding-left: 1rem;
-    /* 16px */
 }
 
 .pl-6 {
     padding-left: 1.5rem;
-    /* 24px */
 }
 
 /* Shadows & Transitions */
 .shadow-sm {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.hover\:shadow-md:hover {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .transition {
@@ -150,9 +117,89 @@ code {
 
 /* Description lists */
 dt {
+    margin-block: 5px;
     font-weight: 500;
+    color: rgb(141, 222, 222);
+    width: max-content;
+    padding: 0 5px;
+    border-radius: 3px;
+    background-color: #393939;
 }
 
 dd {
+    margin-block: 10px;
     margin-left: 1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
+
+
+.ref-code {
+
+    background-color: #333333;
+    /* background-color: red; */
+    white-space: pre-line;
+    padding: 10px;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.styles-container {
+    gap: 20px;
+}
+
+.styles-container>div {
+    min-height: 100px;
+    min-width: 300px;
+    padding: 10px;
+}
+
+.reference-page p {
+    width: 100% !important;
+    /* width: 100%; */
+}
+
+.reference-page .handler-method {
+    /* max-width: max-content; */
+    /* background-color: green; */
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.75rem;
+    margin-bottom: 0.25rem;
+
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.reference-page .style-attr {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    /* background-color: green; */
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+@media screen and (max-width:500px) {
+    .reference-page .handler-method {
+        font-size: 13px;
+    }
+
+    .ref-code.init {
+        font-size: 12px;
+        padding: 10px;
+
+    }
+
+    dt {
+        font-size: 14px;
+
+    }
+
+    dd {
+        font-size: 13px;
+    }
+}
+
+/* .reference-page  */

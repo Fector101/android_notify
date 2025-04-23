@@ -1,5 +1,7 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router'
 import { CodeBlock } from "../ui/CodeBlock/CodeBlock";
-import { ScrollToSection } from "../ScrollAssist";
+import { ScrollToSection } from "../ui/ScrollAssist";
 import '../assets/css/advmethodspage.css'
 import { adding_image_code, channel_management_code, getting_identifer, progress_bar_update, title_and_message_update } from "./data/advmethodspage";
 import channelimg from '../assets/imgs/channelname.jpg'
@@ -50,6 +52,25 @@ export default function AdvancedMethodsPage() {
                 </p>
                 <CodeBlock title="Identifer" code={getting_identifer} />
             </section>
+
+
+            <span className='flex next-page-btns-box space-between'>
+                <Link className='next-page-btn' to='/components'>
+                    <ChevronLeft />
+                    <span>
+                        <p className='next-txt'>Previous</p>
+                        <p className='page-name'>Components</p>
+                    </span>
+                </Link>
+                <Link className='next-page-btn' to='/reference'>
+                    <span>
+                        <p className='next-txt'>Next</p>
+                        <p className='page-name'>Reference</p>
+                    </span>
+                    <ChevronRight />
+                </Link>
+
+            </span>
             {/* <Compo */}
             {/* <h3 className="page-subtitle">Updating Notification</h3>
             <p className="page-text"> You can update a notification after it has been created by using the <code>update</code> method. This method takes an object with the same properties as the original notification, and updates the notification with the new values.</p> */}

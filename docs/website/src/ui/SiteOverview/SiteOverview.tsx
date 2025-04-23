@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react"
 import './siteoverview.css'
 import { useEffect, useState } from "react";
 // import { toast } from "sonner";
-import { ScrollToSection } from "../../ScrollAssist";
+import { ScrollToSection } from "../ScrollAssist";
 
 function DropDown({ title, sections, hash,route}: { route:string;title: string; sections: string[], hash: string }) {
     const [opened, setOpened] = useState(false)
@@ -14,7 +14,7 @@ function DropDown({ title, sections, hash,route}: { route:string;title: string; 
 
     useEffect(()=>{
         sections.forEach(each_section=>{
-            const hash_ = '#' + each_section.toLocaleLowerCase().replace(/ /g, '-')
+            const hash_ = '#' + each_section.trim().toLocaleLowerCase().replace(/ /g, '-')
             if(hash===hash_)setOpened(true)
         })
     },[hash,sections])
@@ -119,7 +119,7 @@ export default function SiteOverview() {
     return (
         // <>
 
-            <div className="site-overview">
+            <div id="site-overview">
                 <ScrollToSection/>
 
                 <DropDown
@@ -173,12 +173,17 @@ export default function SiteOverview() {
                 <DropDown
                     hash={hash}
                     title="Extras"
-                    route='/components'
+                    route='/extras'
                     sections={[
-                        'FAQ',
-                        // 'Common Errors',
-                        'Contributing',
+                        'Debugging Tips',
+                        // 'Error Handling',
+                        'Contributing-Issues',
                         // 'Changelog'
+                        // 'Author',
+                        'Credits',
+                        'Support Project',
+                        // 'FAQ',
+                        // 'Error Handling',
                     ]}
                 />
             </div>

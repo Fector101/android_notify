@@ -153,12 +153,13 @@ body>#root {
 
 @media screen and (max-width:770px) {
     body>#root {
-        --overview-width: 0;
+        /* --overview-width: 0; */
     }
-
-    div.site-overview {
-        width: 0;
-        overflow: hidden;
+    
+    div#site-overview {
+        transform: translateX(-100%);
+        /* width: 0;
+        overflow: hidden; */
         border-style: none;
     }
 

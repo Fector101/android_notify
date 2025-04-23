@@ -5,7 +5,7 @@
 // } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 // import { code } from "./data/mainpage";
 // import { Prism } from 'react-syntax-highlighter'
-import { ScrollToSection } from '../ScrollAssist';
+import { ScrollToSection } from '../ui/ScrollAssist';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
 import './../assets/css/componentspage.css'
@@ -64,7 +64,7 @@ export default function ComponentsPage() {
                     </p> */}
                     <CodeBlock title='Big Picture Style' img={bigPicImg} code={bigimgcode} />
                     <CodeBlock title='Large Icon Style' img={largeIconImg} code={largeiconcode} />
-                    <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p> 
+                    <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p>
                     <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon</h3>
                     <p className='paragraph'>When you initailze Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
                     <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box</p>

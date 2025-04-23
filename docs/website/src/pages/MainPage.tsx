@@ -7,7 +7,7 @@
 import {  ChevronRight } from 'lucide-react';
 // import { useEffect } from 'react';
 import { Link } from 'react-router'
-import { ScrollToSection } from '../ScrollAssist';
+import { ScrollToSection } from '../ui/ScrollAssist';
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import '../assets/css/mainpage.css'
 import { code, installation_code_buildozer, installation_code_pip } from './data/mainpage';
