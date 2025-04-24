@@ -38,7 +38,6 @@ export default function AdvancedMethodsPage() {
                     <li>If not specified <span className="code">channel_id</span> will be auto generated from <span className="code">channel_name</span></li>
                     <li className="inner-section-2">Using this format <span className="code">.lower().replace(' ', '_')</span> </li>
                     <li>Custom Channel Name's Gives User ability to turn on/off specific notifications</li>
-                    <li>In later versions </li>
                 </ul>
                 <CodeBlock title='Channel Management' code={channel_management_code} img={channelimg} />
             </section>
