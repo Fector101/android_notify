@@ -1,15 +1,13 @@
 <div align="center">
     <br>
     <h1> Android-Notifiy </h1>
-    <p> A Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
+    <p><a href='https://android-notify.vercel.app/getting-started'>Android Notify</a> is a Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
     <p>Supports various styles and ensures seamless integration and customization.</p>
     <!-- <br> -->
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
-
-## Overview
-
-The Android Notify package provides a simple yet comprehensive way to create and manage rich notifications on Android devices directly from your Python code. This library bridges the gap between Python and Android's notification system, giving you full control over notifications with a clean, Pythonic API.
+<!-- 
+The Android Notify package provides a simple yet comprehensive way to create and manage rich notifications on Android devices directly from your Python code. This library bridges the gap between Python and Android's notification system, giving you full control over notifications with a clean, Pythonic API. -->
 
 ## Features
 
@@ -31,16 +29,10 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Persistent notifications
   - Click handlers and callbacks
 
-- **Developer Friendly**:
-  - Intuitive API with helpful error messages
-  - Graceful fallbacks when developing on non-Android platforms
-  - Automatic permission handling
-  - Comprehensive logging options
-
 ## Quick Start
 
 ```python
-from android_notify import Notification, NotificationStyles
+from android_notify import Notification
 
 # Simple notification
 Notification(
@@ -48,22 +40,6 @@ Notification(
     message="This is a basic notification."
 ).send()
 
-# Progress bar notification
-notification = Notification(
-    title="Downloading",
-    message="Starting download...",
-    style=NotificationStyles.PROGRESS
-)
-notification.send()
-
-# Update progress
-notification.updateProgressBar(50, message="Download in progress")
-
-# Add action button
-def on_button_click():
-    print("Button clicked!")
-    
-notification.addButton("Cancel", on_button_click)
 ```
 
 **Sample Image:**  
@@ -85,8 +61,7 @@ android.enable_androidx = True
 android.api = 35
 ```
 
-This package is available on PyPI and can be installed via pip:  
-For testing purposes
+Can be installed via `pip` For testing purposes:
 
 ```bash
 pip install android_notify
@@ -96,8 +71,6 @@ pip install android_notify
 
 For full documentation, examples, and advanced usage, API reference visit the
 [documentation](https://android-notify.vercel.app/getting-started)
-
----
 
 ## ☕ Support the Project
 
