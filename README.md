@@ -94,12 +94,8 @@ pip install android_notify
 
 ## Documentation
 
-For full documentation, examples, and advanced usage,API reference visit the
+For full documentation, examples, and advanced usage, API reference visit the
 [documentation](https://android-notify.vercel.app/getting-started)
-
-## Contributing
-
-Contributions are welcome! Feel free to submit a Pull Request.
 
 ---
 
