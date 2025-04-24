@@ -28,11 +28,11 @@ function App() {
                     <Route path="/advanced-methods" element={<AdvancedMethodsPage />} />
                     <Route path="/reference" element={<ReferencePage />} />
                     <Route path="/extras" element={<ExtrasPage />} />
+                    <Route path="/versions" element={<p className="main-page page">Will contain list of versions from 1.58+</p>} />
                     <Route path="*" element={<p className="page">Page Not Found</p>} />
                 </Routes>
             </main>
             <Analytics/>
-
         </>
     )
 }

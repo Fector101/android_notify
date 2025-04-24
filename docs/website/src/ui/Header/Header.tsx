@@ -23,34 +23,33 @@ export default function Header() {
     let description = pages_dict[location.pathname.slice(1)]?.description || '';
     description = description ? ' - ' + description : '';
     const isMobileView = useRef(window.innerWidth < 770)
-    const [isOpen,setIsOpen] =useState(()=>!isMobileView.current)
+    const [isOpen, setIsOpen] = useState(() => !isMobileView.current)
 
     function toggleSideBar() {
         const side_bar_ele = document.getElementById('site-overview')
         const main_page = document.getElementsByClassName('main-page')?.[0] as HTMLElement
-        
-        if (side_bar_ele && main_page) {
+        if (side_bar_ele) {
             side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
-            // main_page.style.margin='0 auto'
-            main_page.classList.toggle('page-toggler')
-            isMobileView.current = !isMobileView.current
-            setIsOpen(state=>!state)
-        }
-    }
 
+        } if (main_page) {
+            main_page.classList.toggle('page-toggler')
+        }
+        isMobileView.current = !isMobileView.current
+        setIsOpen(state => !state)
+    }
 
     return (
         <header className='flex align-items-cen width100per'>
-            <Link to='/'>
+            <Link to='/getting-started'>
                 <Bell className='brand' />
             </Link>
             <Link to='/versions' className='version-no'>v1.58</Link>
             <p className='page-title'>{location.pathname.slice(1).split('-').map(toTitleCase).join(' ')}{description || ''}</p>
             {/* <input value={search} onChange={(e)=>setSearch(e.target.value)}/> */}
             <nav className="flex margin-left-auto icon-nav">
-                <Link className='btn-link' to="https://github.com/Fector101/android_notify"> <Github /> </Link>
+                <Link target='_blank' rel='noopener noreferrer' className='btn-link' to="https://github.com/Fector101/android_notify"> <Github /> </Link>
                 <button onClick={toggleSideBar} className='btn-link menu-btn'>
-                    {isOpen?<X/>:<Menu />}
+                    {isOpen ? <X /> : <Menu />}
                 </button>
                 {/* <button> <MoonIcon /> </button> */}
             </nav>

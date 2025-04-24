@@ -1,11 +1,37 @@
 import { Link } from 'react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollToSection } from '../ui/ScrollAssist'
+import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 
 export default function ExtrasPage() {
     return (
         <div className="page main-page">
             <ScrollToSection />
+            <section className="page-section" id='how-to-update'>
+                <h2>How to Update</h2>
+                <hr />
+                <p className="paragraph">When using buildozer and you want to use a new version, buildozer doesn't automatically remove old versions,</p>
+                <p>You'll have to delete the old version in the .buildozer folder these are some commands to help automate the process for linux, windows and mac</p>
+
+                <p className="paragraph">Linux</p>
+                <CodeBlock code={`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`} lang='bash' />
+
+                <p className="paragraph">Windows</p>
+                <div className='paragraph inner-section-2'>
+                    <p>On PowerShell</p>
+                    <p className='paragraph'>If command prints folder paths containing `android-notify` replace <span className='code'>Write-Output</span> with <span className='code'>Remove-Item</span></p>
+                    <span className='code paragraph block'></span>
+                    <CodeBlock code={`cd .buildozer\nGet-ChildItem -Path . -Directory -Filter "android_notify*" | ForEach-Object { Write-Output $_.FullName }\ncd ..`} lang='powershell' />
+
+                    <p className='paragraph'>Git Bash (if installed)</p>
+                    <CodeBlock code={`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`} lang='bash' />
+                </div>
+
+                <p className='paragraph'>MacOS</p>
+                <CodeBlock code={`cd .buildozer && find . -type d -name "android_notify*" -exec rm -r {} + && cd ..`} lang='bash' />
+
+
+            </section>
             <section className="page-section" id="debugging-tips">
                 <h2>Debugging Tips</h2>
                 <hr />
@@ -20,7 +46,7 @@ export default function ExtrasPage() {
                 <h2>Contribution || Reporting Issues</h2>
                 <hr />
                 <p>Feel free to submit pull requests for improvements! on <Link to='https://github.com/Fector101/android_notify'>Github</Link></p>
-                <p>Or Found a bug? Please open an issue on our GitHub Issues page.</p>
+                <p>Or Found a bug? Please open an issue on our GitHub <Link to="https://github.com/Fector101/android_notify/issues">Issues page</Link></p>
             </section>
 
             <section id='credits' className='page-section screen-height200px flex fd-column justify-content-cen'>
@@ -52,7 +78,7 @@ export default function ExtrasPage() {
                         <p className='page-name'>Reference</p>
                     </span>
                 </Link>
-                <Link className='next-page-btn' to='/getting-Zstarted'>
+                <Link className='next-page-btn' to='/getting-started'>
                     {/* <Link className='next-page-btn' to='/event-handling'> */}
                     <span>
                         <p className='next-txt'>Next</p>

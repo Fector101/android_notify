@@ -175,6 +175,7 @@ export default function SiteOverview() {
                     title="Extras"
                     route='/extras'
                     sections={[
+                        'How to update',
                         'Debugging Tips',
                         // 'Error Handling',
                         'Contributing-Issues',
