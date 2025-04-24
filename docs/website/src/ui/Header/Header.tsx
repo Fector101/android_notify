@@ -24,15 +24,25 @@ export default function Header() {
     description = description ? ' - ' + description : '';
     const isMobileView = useRef(window.innerWidth < 770)
     const [isOpen, setIsOpen] = useState(() => !isMobileView.current)
+    const [oldSideWidth, setOldSideBarWidth] = useState(300)
 
     function toggleSideBar() {
         const side_bar_ele = document.getElementById('site-overview')
         const main_page = document.getElementsByClassName('main-page')?.[0] as HTMLElement
         if (side_bar_ele) {
-            side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
+            // side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
+            if(isOpen){
+                setOldSideBarWidth(side_bar_ele.getBoundingClientRect().width)
+                side_bar_ele.style.width = '0'
+                side_bar_ele.style.minWidth = '0'
+            }else{
+                side_bar_ele.style.width =  oldSideWidth+'px'
+                side_bar_ele.style.minWidth = oldSideWidth+'px'
+            }
+            // side_bar_ele.style.width = 0
 
         } if (main_page) {
-            main_page.classList.toggle('page-toggler')
+            // main_page.classList.toggle('page-toggler')
         }
         isMobileView.current = !isMobileView.current
         setIsOpen(state => !state)

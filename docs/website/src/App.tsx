@@ -23,6 +23,7 @@ function App() {
             <main className="flex">
                 <SiteOverview />
                 <Routes>
+                    <Route path="/" element={<MainPage />} />
                     <Route path="/getting-started" element={<MainPage />} />
                     <Route path="/components" element={<ComponentsPage />} />
                     <Route path="/advanced-methods" element={<AdvancedMethodsPage />} />

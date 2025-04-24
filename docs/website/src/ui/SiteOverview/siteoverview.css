@@ -3,7 +3,8 @@
     min-width: var(--overview-width);
     width: var(--overview-width);
     /* border: 1px solid grey; */
-    position: fixed;
+    /* position: fixed; */
+    position: sticky;
     top: calc(var(--header-height));
     height: calc(100vh - calc(var(--header-height) + 2px));
     overflow-y: auto;
@@ -51,7 +52,7 @@
     color: var(--link-color);
 }
 
-#site-overview .dropdown .content li:has(a.active){
+#site-overview .dropdown .content li:has(a.active) {
     background: #2b2a2a;
 
 }
@@ -72,8 +73,22 @@
     width: 95%;
 } */
 
+
+
+
+@media screen and (max-width:1000px) {
+    div#site-overview {
+        position: fixed;
+        width: 0;
+        min-width: 0;
+        /* background: #000; */
+        /* border: 1px solid grey; */
+    }
+}
+
 @media screen and (max-width:500px) {
-    #site-overview p,#site-overview li{
+    #site-overview p,
+    #site-overview li {
         font-size: 14px;
     }
 }

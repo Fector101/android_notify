@@ -60,6 +60,7 @@ body>#root {
     padding-block: 20px;
     width: calc(100% - var(--overview-width));
     margin-left: auto;
+    margin:auto;
     /* margin-right: 2px; */
     /* flex: 1; */
 }
@@ -154,13 +155,6 @@ body>#root {
 @media screen and (max-width:770px) {
     body>#root {
         /* --overview-width: 0; */
-    }
-    
-    div#site-overview {
-        transform: translateX(-100%);
-        /* width: 0;
-        overflow: hidden; */
-        border-style: none;
     }
 
     .page {

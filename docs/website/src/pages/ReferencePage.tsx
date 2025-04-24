@@ -209,7 +209,7 @@ export default function ReferencePage() {
 				<ul className="inner-section-2 space-y-1 text-sm">
 					<li>
 						<a href="#notification-class" className="text-blue-600 hover:underline">
-							Instance Methods
+							Notification Attributes and Methods
 						</a>
 					</li>
 					<li>
@@ -227,7 +227,7 @@ export default function ReferencePage() {
 
 			{/* Instance Methods Section */}
 			<section id="notification-class" className="space-y-6 page-section" tabIndex={0}>
-				<h2 className="text-xl font-bold">Instance Methods</h2>
+				<h2 className="text-xl font-bold">Notification Attributes and Methods</h2>
 				{INSTANCE_METHODS.map((m) => (
 					<div
 						key={m.id}
