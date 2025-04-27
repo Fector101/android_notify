@@ -7,7 +7,7 @@ import './header.css'
 import { Link, useLocation } from 'react-router'
 // import { useState } from 'react'
 import { toTitleCase } from '../../assets/js/helper';
-import pages_dict from '../../pages/data/general';
+import pages_dict from '../../pages/versions-data/general';
 import { useRef, useState } from 'react';
 
 // type PagesDict = {

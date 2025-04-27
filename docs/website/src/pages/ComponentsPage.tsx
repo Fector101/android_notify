@@ -14,13 +14,35 @@ import btnsImg from './../assets/imgs/btns.jpg'
 import progressbarImg from './../assets/imgs/progress.jpg'
 import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
-import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './data/componentspage';
+// import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
+
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
+import { useEffect, useState } from 'react';
 
 
+interface IComponentPage {
+    big_picture_code: string;
+    large_icon_code: string;
+    how_to_add_both_imgs: JSX.Element;
+    small_icon_code: string;
+    buttons_code: string;
+    progressbar_code: string;
+    inbox_style_code: string;
+    big_text_style_code: string
+}
 
+export default function ComponentsPage({ version }: { version: string }) {
+    const [data, setData] = useState<IComponentPage>()
 
-export default function ComponentsPage() {
+    async function changeVersionData(version: string) {
+
+        const data = await import(`./versions-data/${version}.tsx`);
+        setData(data.component_page)
+        // data.default; // if exported as default
+    }
+    useEffect(() => {
+        changeVersionData(version)
+    }, [version])
     // const style = dracula
     return (
         <div className="page main-page components-page">
@@ -62,13 +84,15 @@ export default function ComponentsPage() {
                         <br /><br />
                         The <code>setStyle()</code> method takes a <code>style</code> parameter, which can be one of the following:
                     </p> */}
-                    <CodeBlock title='Big Picture Style' img={bigPicImg} code={bigimgcode} />
-                    <CodeBlock title='Large Icon Style' img={largeIconImg} code={largeiconcode} />
-                    <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p>
+                    <CodeBlock title='Big Picture Style' img={bigPicImg} code={data?.big_picture_code || ''} />
+                    <CodeBlock title='Large Icon Style' img={largeIconImg} code={data?.large_icon_code || ''} />
+                    {data?.how_to_add_both_imgs || <></>}
+                    {/* {data?.how_to_add_both_imgs} */}
+                    {/* <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p> */}
                     <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon</h3>
-                    <p className='paragraph'>When you initailze Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
+                    <p className='paragraph'>When you initialize Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
                     <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box</p>
-                    <CodeBlock title='Custom Icon' img='' code={appiconcode} />
+                    <CodeBlock title='Custom Icon' img='' code={data?.small_icon_code || ''} />
                     <p className='paragraph inner-section-1'>For about Images see <Link to='/advanced-methods#updating-notification'>advanced methods</Link> section</p>
                 </div>
             </section>
@@ -89,7 +113,7 @@ export default function ComponentsPage() {
                         This makes your notifications more dynamic and interactive.
                     </p>
                 </div>
-                <CodeBlock title='Button Example' img={btnsImg} code={buttons_code} />
+                <CodeBlock title='Button Example' img={btnsImg} code={data?.buttons_code || ''} />
                 <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced#functions'>Advanced</Link> section</p>
             </section>
 
@@ -109,7 +133,7 @@ export default function ComponentsPage() {
                         You can customize the displayed message and title while the progress bar updates.
                     </p>
                 </div>
-                <CodeBlock title='Progress Bar Style' img={progressbarImg} code={progressbarcode} />
+                <CodeBlock title='Progress Bar Style' img={progressbarImg} code={data?.progressbar_code || ''} />
             </section>
 
 
@@ -126,10 +150,10 @@ export default function ComponentsPage() {
                         <li>Use <code>\\r</code> to add carriage returns in the message</li>
                         </ul> */}
                 </div>
-                <CodeBlock title='Inbox Style' img={inboxImg} code={inboxcode} />
+                <CodeBlock title='Inbox Style' img={inboxImg} code={data?.inbox_style_code || ''} />
                 <h3 className='paragraph'>Big Text Style</h3>
                 <p className='paragraph'>When using big_text style <span className="code">message</span> acts as sub-title, Then when notification drop down button is pressed <span className="code">body</span> is revealed</p>
-                <CodeBlock title='Big Text Style' code={bigtextcode} img='' />
+                <CodeBlock title='Big Text Style' code={data?.big_text_style_code || ''} img='' />
             </section>
 
             <span className='flex next-page-btns-box space-between'>

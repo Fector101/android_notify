@@ -10,7 +10,7 @@ import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import '../assets/css/mainpage.css'
-import { code, installation_code_buildozer, installation_code_pip } from './data/mainpage';
+import { code, installation_code_buildozer, installation_code_pip } from './versions-data/mainpage';
 
 export default function MainPage() {
 
