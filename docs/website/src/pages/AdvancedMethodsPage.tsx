@@ -65,7 +65,7 @@ export default function AdvancedMethodsPage({ version }: { version: string }) {
                 <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler.getIdentifer</span></p>
 
                 <p>
-                    <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to id, it'll also be used to reference instance</span>
+                    <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>
                 </p>
                 <CodeBlock title="Identifer" code={data?.getting_identifier_code||''} />
             </section>

@@ -188,7 +188,7 @@ const NOTIFICATION_METHODS = [
             { name: 'body', desc: "Detailed text (for `BIG_TEXT` style)." },
             { name: 'callback', desc: "Function executed on notification tap." },
             { name: 'channel_name', desc: "Human-readable channel name." },
-            { name: 'channel_id', desc: "Channel identifier (sanitized from name if not provided)." },
+            { name: 'channel_id', desc: "Channel id (sanitized from name if not provided)." },
             { name: 'app_icon', desc: 'If not specified, defaults to the app icon. To change it, use a PNG—otherwise it will render as a black box.' },
             { name: 'logs', desc: 'Enable debug logs when not on Android.' },
 

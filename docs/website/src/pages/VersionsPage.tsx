@@ -11,6 +11,7 @@ import './../assets/css/versionspage.css'
 
 // import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import {
+    useEffect,
     //  useEffect,
       useState } from 'react';
 
@@ -70,6 +71,10 @@ function DropDown({ title, sections }: { title: string; sections: { msg: React.R
 
 }
 export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<string>> }) {
+    
+    useEffect(() => {
+        setVersion('1.58')
+    }, [setVersion])
 
     return (
         <div className="page main-page versions-page flex fd-column">
