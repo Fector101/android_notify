@@ -9,12 +9,12 @@ ON_ANDROID = False
 
 try:
     # Android Imports
-    from jnius import autoclass,cast  # Needs Java to be installed pylint: disable=W0611, C0114
-    from android import activity # pylint: disable=import-error
-    from android.config import ACTIVITY_CLASS_NAME # pylint: disable=import-error
-    from android.runnable import run_on_ui_thread # pylint: disable=import-error
+    from jnius import autoclass,cast
+    from android import activity
+    from android.config import ACTIVITY_CLASS_NAME
+    from android.runnable import run_on_ui_thread
 
-    # Get the required Java classes
+    # Get the required Java classes needs to on android to import
     Bundle = autoclass('android.os.Bundle')
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     String = autoclass('java.lang.String')
@@ -28,10 +28,10 @@ try:
     NotificationChannel = autoclass('android.app.NotificationChannel')
     IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
     ON_ANDROID = True
-except Exception as e:# pylint: disable=W0718
+except Exception as e:
     print("Exception Couldn't get Class: ",e)
     print('TraceBack: ',traceback.format_exc())
-    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
+    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.'
     # from .types_idea import *
     # print(MESSAGE) Already Printing in core.py
 
@@ -45,18 +45,18 @@ except Exception as e:# pylint: disable=W0718
 
 if ON_ANDROID:
     try:
-        from android.permissions import request_permissions, Permission,check_permission # pylint: disable=E0401
-        from android.storage import app_storage_path  # pylint: disable=E0401
+        from android.permissions import request_permissions, Permission,check_permission
+        from android.storage import app_storage_path
 
         NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
         NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
 
         # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder') # pylint: disable=C0301
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle') # pylint: disable=C0301
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle') # pylint: disable=C0301
+        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
+        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
+        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-    except Exception as e:# pylint: disable=W0718
+    except Exception as e:
         print(e)
         print("""
         Dependency Error: Add the following in buildozer.spec:
@@ -96,7 +96,7 @@ class Notification(BaseNotification):
 
     # During Development (When running on PC)
     BaseNotification.logs=not ON_ANDROID
-    def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
+    def __init__(self,**kwargs): # @dataclass already does work
         super().__init__(**kwargs)
 
         self.__id = self.id or self.__get_unique_id() # Different use from self.name all notifications require `integers` id's not `strings`
@@ -128,6 +128,7 @@ class Notification(BaseNotification):
             self.notification_manager.cancel(id or self.__id)
         if self.logs:
             print('Removed Notification.')
+
     def cancelAll(self):
         """
         Removes all app Notifications from tray
@@ -136,6 +137,13 @@ class Notification(BaseNotification):
             self.notification_manager.cancelAll()
         if self.logs:
             print('Removed All Notifications.')
+
+    def refresh(self):
+        """TO apply new components on notification"""
+        if self.__built_parameter_filled:
+            # Don't dispatch before filling required values `self.__create_basic_notification`
+            # We generally shouldn't dispatch till user call .send()
+            self.__dispatch_notification()
 
     def setBigPicture(self,path):
         """
@@ -423,7 +431,7 @@ class Notification(BaseNotification):
             self.setBigText(self.body)
 
         elif style == NotificationStyles.INBOX:
-            inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
+            inbox_style = NotificationCompatInboxStyle()
             for line in self.message.split("\n"):
                 inbox_style.addLine(str(line))
             self.__builder.setStyle(inbox_style)
@@ -459,7 +467,7 @@ class Notification(BaseNotification):
     def __create_basic_notification(self, persistent, close_on_click):
         # Notification Channel (Required for Android 8.0+)
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
-            importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=possibly-used-before-assignment
+            importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
             # importance = 3 or 4
             channel = NotificationChannel(
                 self.channel_id,
@@ -470,11 +478,11 @@ class Notification(BaseNotification):
 
         # Build the notification
         # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
-        # TODO fix this by creating a on_Title method in other versions
+        # TODO fix this by creating a on_title method in other versions
         self.__builder.setContentTitle(str(self.title))
         self.__builder.setContentText(str(self.message))
         self.__insert_app_icon()
-        self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
+        self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL)
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
         self.__builder.setOngoing(persistent)
@@ -580,9 +588,9 @@ class Notification(BaseNotification):
                 self.__builder.setStyle(big_picture_style)
             elif img_style == NotificationStyles.LARGE_ICON and bitmap:
                 self.__builder.setLargeIcon(bitmap)
-            if not self.__built_parameter_filled: # LargeIcon requires smallIcon to be already set
-                self.__create_basic_notification(False,True)
-            self.__dispatch_notification()
+            # LargeIcon requires smallIcon to be already set
+            # 'setLarge, setBigPic' tries to dispatch before filling required values `self.__create_basic_notification`
+            self.refresh()
             if self.logs:
                 print('Done adding image to notification-------')
         except Exception as notification_image_error:
@@ -594,13 +602,13 @@ class Notification(BaseNotification):
         """
         Ask for permission to send notifications if needed.
         """
-        def on_permissions_result(permissions, grant): # pylint: disable=unused-argument
+        def on_permissions_result(permissions, grant):
             if self.logs:
                 print("Permission Grant State: ",grant)
 
-        permissions_=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
+        permissions_=[Permission.POST_NOTIFICATIONS]
         if not all(check_permission(p) for p in permissions_):
-            request_permissions(permissions_,on_permissions_result) # pylint: disable=E0606
+            request_permissions(permissions_,on_permissions_result)
 
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
@@ -699,7 +707,7 @@ class NotificationHandler:
             Don't Call this function manual, it's Already Attach to Notification.
         
         Returns:
-            str: The Identifier of Notification that was clicked.
+            str: The name #action of Notification that was clicked.
         """
         if not cls.is_on_android():
             return "Not on Android"
