@@ -2,10 +2,9 @@
 import traceback
 import os,re
 import threading
-# ,time
 from .styles import NotificationStyles
 from .base import BaseNotification
-DEV=0
+DEV=1
 ON_ANDROID = False
 
 try:
@@ -74,9 +73,9 @@ class Notification(BaseNotification):
     both_imgs == using lager icon and big picture
     :param big_picture_path: Relative Path to the image resource.
     :param large_icon_path: Relative Path to the image resource.
-    :param progress_current_value: interger To set progress bar current value.
-    :param progress_max_value: interger To set Max range for progress bar.
-    :param body: large text For `big_Text` style, while `message` acts as sub-title.
+    :param progress_current_value: integer To set progress bar current value.
+    :param progress_max_value: integer To set Max range for progress bar.
+    :param body: large text For `big_Text` style, while `message` acts as subtitle.
     ---
     (Advance Options)
     :param callback: Function for notification Click.
@@ -86,7 +85,8 @@ class Notification(BaseNotification):
     (Options during Dev On PC)
     :param logs: - Bool Defaults to True
     """
-    notification_ids=[0]
+
+    notification_ids = [0]
     button_ids=[0]
     btns_box={}
     main_functions={}
@@ -96,7 +96,8 @@ class Notification(BaseNotification):
     def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
         super().__init__(**kwargs)
 
-        self.__id = self.__getUniqueID()
+        self.__id = self.id or self.__get_unique_id() # Different use from self.name all notifications require `integers` id's not `strings`
+        self.id = self.__id # To use same Notification in different instances
 
         # To Track progressbar last update (According to Android Docs Don't update bar to often, I also faced so issues when doing that)
         self.__update_timer = None
@@ -104,19 +105,26 @@ class Notification(BaseNotification):
         self.__progress_bar_title = ''
         self.__cooldown = 0
 
-        self.__formatChannel(kwargs)
+        self.__built_parameter_filled=False
+
+        self.__format_channel(kwargs)
         if not ON_ANDROID:
             return
         # TODO make send method wait for __asks_permission_if_needed method
         self.__asks_permission_if_needed()
-        self.notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
-        self.__builder=NotificationCompatBuilder(context, self.channel_id)# pylint: disable=E0606
+        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
+        self.notification_manager = cast(NotificationManager, notification_service)
+        self.__builder=NotificationCompatBuilder(context, self.channel_id)
+
     def showInfiniteProgressBar(self):
         """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
         Can be Removed By `removeProgressBar` Method
         """
-        self.__builder.setProgress(0,0, True)
-        self.__dispatchNotification()
+        if self.logs:
+            print('Showing infinite progressbar')
+        if ON_ANDROID:
+            self.__builder.setProgress(0,0, True)
+            self.__dispatch_notification()
 
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -129,7 +137,7 @@ class Notification(BaseNotification):
             print(f'new notification title: {self.title}')
         if ON_ANDROID:
             self.__builder.setContentTitle(String(self.title))
-            self.__dispatchNotification()
+            self.__dispatch_notification()
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -142,7 +150,7 @@ class Notification(BaseNotification):
             print(f'new notification message: {self.message}')
         if ON_ANDROID:
             self.__builder.setContentText(String(self.message))
-            self.__dispatchNotification()
+            self.__dispatch_notification()
 
     def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
         """Updates progress bar current value
@@ -151,7 +159,7 @@ class Notification(BaseNotification):
             current_value (int): the value from progressbar current progress
             message (str): defaults to last message
             title (str): defaults to last title
-            cooldown (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
+            cooldown (float, optional): Little Time to Wait before change actually reflects, to avoid android Ignoring Change, Defaults to 0.5secs
 
         NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequently pass them in too to avoid update issues
         """
@@ -187,7 +195,7 @@ class Notification(BaseNotification):
             if self.__progress_bar_title:
                 self.updateTitle(self.__progress_bar_title)
 
-            self.__dispatchNotification()
+            self.__dispatch_notification()
             self.__update_timer = None
 
 
@@ -236,7 +244,7 @@ class Notification(BaseNotification):
                 self.updateTitle(title)
             self.__builder.setOnlyAlertOnce(not show_on_update)
             self.__builder.setProgress(0, 0, False)
-            self.__dispatchNotification()
+            self.__dispatch_notification()
 
         # Incase `self.updateProgressBar delayed_update` is called right before this method, so android doesn't bounce update
         threading.Timer(cooldown, delayed_update).start()
@@ -251,8 +259,8 @@ class Notification(BaseNotification):
         """
         self.silent=self.silent or silent
         if ON_ANDROID:
-            self.__startNotificationBuild(persistent,close_on_click)
-            self.__dispatchNotification()
+            self.__start_notification_build(persistent, close_on_click)
+            self.__dispatch_notification()
         if self.logs:
             string_to_display=''
             print("\n Sent Notification!!!")
@@ -267,7 +275,7 @@ class Notification(BaseNotification):
             string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
             print(string_to_display)
             if DEV:
-                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.__id}')
+                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.id}')
             print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
 
     def addButton(self, text:str,on_release):
@@ -283,7 +291,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        btn_id= self.__getIDForButton()
+        btn_id= self.__get_id_for_button()
         action = f"BTN_ACTION_{btn_id}"
 
         action_intent = Intent(context, PythonActivity)
@@ -325,9 +333,9 @@ class Notification(BaseNotification):
         """
         if ON_ANDROID:
             self.__builder.mActions.clear()
-            self.__dispatchNotification()
+            self.__dispatch_notification()
         if self.logs:
-            print('Removed Notication Buttons')
+            print('Removed Notification Buttons')
 
     @run_on_ui_thread
     def addNotificationStyle(self,style:str,already_sent=False):
@@ -340,7 +348,7 @@ class Notification(BaseNotification):
         """
 
         if not ON_ANDROID:
-            # TODO for logs when not on android and style related to imgs etraxct app path from buildozer.spec and print
+            # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and print
             return False
 
         if style == NotificationStyles.BIG_TEXT:
@@ -356,34 +364,34 @@ class Notification(BaseNotification):
 
         elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
             img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
-            self.__buildImg(img, style)
+            self.__build_img(img, style)
 
         elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
             if self.big_picture_path:
-                self.__buildImg(self.big_picture_path, NotificationStyles.BIG_PICTURE)
+                self.__build_img(self.big_picture_path, NotificationStyles.BIG_PICTURE)
             if self.large_icon_path:
-                self.__buildImg(self.large_icon_path, NotificationStyles.LARGE_ICON)
+                self.__build_img(self.large_icon_path, NotificationStyles.LARGE_ICON)
 
         elif style == NotificationStyles.PROGRESS:
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
 
         if already_sent:
-            self.__dispatchNotification()
+            self.__dispatch_notification()
 
         return True
         # elif style == 'custom':
         #     self.__builder = self.__doCustomStyle()
 
-    def __dispatchNotification(self):
+    def __dispatch_notification(self):
         self.notification_manager.notify(self.__id, self.__builder.build())
-    def __startNotificationBuild(self,persistent,close_on_click):
-        self.__createBasicNotification(persistent,close_on_click)
+
+    def __start_notification_build(self, persistent, close_on_click):
+        self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
             self.addNotificationStyle(self.style)
 
-    def __createBasicNotification(self,persistent,close_on_click):
+    def __create_basic_notification(self, persistent, close_on_click):
         # Notification Channel (Required for Android 8.0+)
-        # print("THis is cchannel is ",self.channel_id) #"
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
             importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH # pylint: disable=possibly-used-before-assignment
             # importance = 3 or 4
@@ -399,49 +407,56 @@ class Notification(BaseNotification):
         # TODO fix this by creating a on_Title method in other versions
         self.__builder.setContentTitle(str(self.title))
         self.__builder.setContentText(str(self.message))
-        self.__insertAppIcon()
+        self.__insert_app_icon()
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL) # pylint: disable=E0606
         self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
-        self.__addIntentToOpenApp()
-
+        self.__add_intent_to_open_app()
+        self.__built_parameter_filled = True
     # def __doCustomStyle(self):
     #     # TODO Will implement when needed
     #     return self.__builder
-    def __insertAppIcon(self):
-        if self.app_icon not in ['','Defaults to package app icon']:
-            self.__setIconFromBitmap(self.app_icon)
+    def __insert_app_icon(self,path=''):
+        if path or self.app_icon not in ['','Defaults to package app icon']:
+            if self.logs:
+                print('getting custom icon...')
+            self.__set_icon_from_bitmap(path or self.app_icon)
         else:
             self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
-    def __buildImg(self, user_img,img_style):
+    def __build_img(self, user_img, img_style):
         if user_img.startswith('http://') or user_img.startswith('https://'):
-            def callback(bitmap):
-                self.__applyNotificationImage(bitmap,img_style)
+            def callback(bitmap_):
+                self.__apply_notification_image(bitmap_,img_style)
             thread = threading.Thread(
-                                        target=self.__getBitmapFromURL,
+                                        target=self.__get_bitmap_from_url,
                                         args=[user_img,callback]
                                     )
             thread.start()
         else:
-            bitmap = self.__getImgFromPath(user_img)
+            bitmap = self.__get_img_from_path(user_img)
             if bitmap:
-                self.__applyNotificationImage(bitmap,img_style)
+                self.__apply_notification_image(bitmap, img_style)
 
-    def __setIconFromBitmap(self,img_path):
-        """Path can be link or relative path"""
+    def __set_icon_from_bitmap(self, img_path):
+        """Path can be a link or relative path"""
         if img_path.startswith('http://') or img_path.startswith('https://'):
-            def callback(bitmap):
-                icon = IconCompat.createWithBitmap(bitmap)
-                self.__builder.setSmallIcon(icon)
+            def callback(bitmap_):
+                if bitmap_:
+                    icon_ = IconCompat.createWithBitmap(bitmap_)
+                    self.__builder.setSmallIcon(icon_)
+                else:
+                    if self.logs:
+                        print('Using Default Icon as fallback......')
+                    self.__builder.setSmallIcon(context.getApplicationInfo().icon)
             threading.Thread(
-                                        target=self.__getBitmapFromURL,
-                                        args=[img_path,callback]
-                                    ).start()
+                target=self.__get_bitmap_from_url,
+                args=[img_path,callback]
+                ).start()
         else:
-            bitmap = self.__getImgFromPath(img_path)
+            bitmap = self.__get_img_from_path(img_path)
             if bitmap:
                 icon = IconCompat.createWithBitmap(bitmap)
                 self.__builder.setSmallIcon(icon)
@@ -450,8 +465,9 @@ class Notification(BaseNotification):
                     print('Failed getting img for custom notification icon defaulting to app icon')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
-    def __getImgFromPath(self, relative_path):
-        app_folder=os.path.join(app_storage_path(),'app') # pylint: disable=possibly-used-before-assignment
+    @staticmethod
+    def __get_img_from_path(relative_path):
+        app_folder=os.path.join(app_storage_path(),'app')
         output_path = os.path.join(app_folder, relative_path)
         if not os.path.exists(output_path):
             print(f"\nImage not found at path: {output_path}, (Local images gotten from App Path)")
@@ -463,7 +479,7 @@ class Notification(BaseNotification):
         uri = Uri.parse(f"file://{output_path}")
         return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
-    def __getBitmapFromURL(self,url,callback):
+    def __get_bitmap_from_url(self, url, callback):
         """Gets Bitmap from url
 
         Args:
@@ -483,34 +499,30 @@ class Notification(BaseNotification):
             if bitmap:
                 callback(bitmap)
             else:
-                print('Error No Bitmap ------------')
-        except Exception as e:
-            # TODO get all types of JAVA Error
-            print('Error Type ',e)
+                print('Error No Bitmap for small icon ------------')
+        except Exception as extracting_bitmap_frm_URL_error:
+            callback(None)
+            # TODO get all types of JAVA Error that can fail here
+            print('Error Type ',extracting_bitmap_frm_URL_error)
             print('Failed to get Bitmap from URL ',traceback.format_exc())
 
     @run_on_ui_thread
-    def __applyNotificationImage(self,bitmap,img_style):
-        if self.logs:
-            print('appying notification image-------')
+    def __apply_notification_image(self, bitmap, img_style):
         try:
-            if img_style == NotificationStyles.BIG_PICTURE:
-                big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap) # pylint: disable=E0606
+            if img_style == NotificationStyles.BIG_PICTURE and bitmap:
+                big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
                 self.__builder.setStyle(big_picture_style)
-            elif img_style == NotificationStyles.LARGE_ICON:
+            elif img_style == NotificationStyles.LARGE_ICON and bitmap:
                 self.__builder.setLargeIcon(bitmap)
-            self.__dispatchNotification()
+            if not self.__built_parameter_filled: # LargeIcon requires smallIcon to be already set
+                self.__create_basic_notification(False,True)
+            self.__dispatch_notification()
             if self.logs:
                 print('Done adding image to notification-------')
-        except Exception as e:
+        except Exception as notification_image_error:
             img = self.large_icon_path if img_style == NotificationStyles.LARGE_ICON else self.big_picture_path
-            print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {e}')
-            print('could stop get Img from URL ',traceback.format_exc())
-
-    def __getUniqueID(self):
-        notification_id = self.notification_ids[-1] + 1
-        self.notification_ids.append(notification_id)
-        return notification_id
+            print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {notification_image_error}')
+            print('could not get Img traceback: ',traceback.format_exc())
 
     def __asks_permission_if_needed(self):
         """
@@ -520,15 +532,15 @@ class Notification(BaseNotification):
             if self.logs:
                 print("Permission Grant State: ",grant)
 
-        permissions=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
-        if not all(check_permission(p) for p in permissions):
-            request_permissions(permissions,on_permissions_result) # pylint: disable=E0606
+        permissions_=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
+        if not all(check_permission(p) for p in permissions_):
+            request_permissions(permissions_,on_permissions_result) # pylint: disable=E0606
 
-    def __addIntentToOpenApp(self):
+    def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
-        action = str(self.identifer) or f"ACTION_{self.__id}"
+        action = str(self.name)
         intent.setAction(action)
-        self.__addDataToIntent(intent)
+        self.__add_data_to_intent(intent)
         self.main_functions[action]=self.callback
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
@@ -538,19 +550,20 @@ class Notification(BaseNotification):
                         )
         self.__builder.setContentIntent(pending_intent)
         
-    def __addDataToIntent(self,intent):
-        """Persit Some data to notification object for later use"""
+    def __add_data_to_intent(self, intent):
+        """Persist Some data to notification object for later use"""
         bundle = Bundle()
         bundle.putString("title",  self.title or 'Title Placeholder')
-        bundle.putInt("notify_id", self.__id)
+        # bundle.putInt("notify_id", self.__id)
+        bundle.putInt("notify_id", 101)
         intent.putExtras(bundle)
 
-    def __getIDForButton(self):
+    def __get_id_for_button(self):
         btn_id = self.button_ids[-1] + 1
         self.button_ids.append(btn_id)
         return btn_id
 
-    def __formatChannel(self, inputted_kwargs):
+    def __format_channel(self, inputted_kwargs):
         if 'channel_name' in inputted_kwargs:
             cleaned_name = inputted_kwargs['channel_name'].strip()
             self.channel_name = cleaned_name[:40] if cleaned_name else 'Default Channel'
@@ -563,7 +576,8 @@ class Notification(BaseNotification):
             generated_id = self.__generate_channel_id(inputted_kwargs['channel_name'])
             self.channel_id = generated_id
 
-    def __generate_channel_id(self,channel_name: str) -> str:
+    @staticmethod
+    def __generate_channel_id(channel_name: str) -> str:
         """
         Generate a readable and consistent channel ID from a channel name.
         
@@ -581,18 +595,23 @@ class Notification(BaseNotification):
         channel_id = channel_id.strip('_')
         return channel_id[:50]
 
+    def __get_unique_id(self):
+        notification_id = self.notification_ids[-1] + 1
+        self.notification_ids.append(notification_id)
+        return notification_id
+
 class NotificationHandler:
     """For Notification Operations """
-    __identifer = None
+    __name = None
     __bound = False
 
     @classmethod
-    def getIdentifer(cls):
-        """Returns identifer for Clicked Notification."""
+    def get_name(cls):
+        """Returns id for Clicked Notification."""
         if not cls.is_on_android():
             return "Not on Android"
 
-        saved_intent = cls.__identifer
+        saved_intent = cls.__name
         if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
             # All other notifications are not None after First notification opens app
             # NOTE these notifications are also from Last time app was opened and they Still Give Value after first one opens App
@@ -609,12 +628,12 @@ class NotificationHandler:
         return saved_intent
 
     @classmethod
-    def __notificationHandler(cls,intent):
+    def __notification_handler(cls, intent):
         """Calls Function Attached to notification on click.
             Don't Call this function manual, it's Already Attach to Notification.
         
         Returns:
-            str: The Identiter of Nofication that was clicked.
+            str: The Identifier of Notification that was clicked.
         """
         if not cls.is_on_android():
             return "Not on Android"
@@ -626,7 +645,7 @@ class NotificationHandler:
         action = None
         try:
             action = intent.getAction()
-            cls.__identifer = action
+            cls.__name = action
 
             print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
@@ -638,11 +657,11 @@ class NotificationHandler:
                     notifty_functions[action]()
                 elif action in buttons_object:
                     buttons_object[action]()
-            except Exception as e: # pylint: disable=broad-exception-caught
+            except Exception as notification_handler_function_error:
                 print('Failed to run function: ', traceback.format_exc())
-                print("Error Type ",e)
-        except Exception as e: # pylint: disable=broad-exception-caught
-            print('Notify Hanlder Failed ',e)
+                print("Error Type ",notification_handler_function_error)
+        except Exception as extracting_notification_props_error:
+            print('Notify Handler Failed ',extracting_notification_props_error)
         return action
 
     @classmethod
@@ -652,15 +671,16 @@ class NotificationHandler:
             return "Not on Android"
         #TODO keep trying BroadcastReceiver
         if cls.__bound:
-            print("bounding done already ")
+            print("binding done already ")
             return True
         try:
-            activity.bind(on_new_intent=cls.__notificationHandler)
+            activity.bind(on_new_intent=cls.__notification_handler)
             cls.__bound = True
             return True
-        except Exception as e: # pylint: disable=broad-exception-caught
-            print('Failed to bin notitfications listener',e)
+        except Exception as binding_listener_error:
+            print('Failed to bin notifications listener',binding_listener_error)
             return False
+
     @classmethod
     def unbindNotifyListener(cls):
         """Removes Listener for Notifications Click"""
@@ -669,10 +689,10 @@ class NotificationHandler:
 
         #Beta TODO use BroadcastReceiver
         try:
-            activity.unbind(on_new_intent=cls.__notificationHandler)
+            activity.unbind(on_new_intent=cls.__notification_handler)
             return True
-        except Exception as e: # pylint: disable=broad-exception-caught
-            print("Failed to unbind notifications listener: ",e)
+        except Exception as unbinding_listener_error:
+            print("Failed to unbind notifications listener: ",unbinding_listener_error)
             return False
 
     @staticmethod
