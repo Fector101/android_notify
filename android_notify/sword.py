@@ -2,9 +2,10 @@
 import traceback
 import os,re
 import threading
+from .an_types import Importance
 from .styles import NotificationStyles
 from .base import BaseNotification
-DEV=1
+DEV=0
 ON_ANDROID = False
 
 try:
@@ -112,14 +113,14 @@ class Notification(BaseNotification):
 
         self.__built_parameter_filled=False
 
-        self.__format_channel(kwargs)
+        self.__format_channel(self.channel_name, self.channel_id)
         if not ON_ANDROID:
             return
 
         self.asks_permission_if_needed()
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
-        self.__builder=NotificationCompatBuilder(context, self.channel_id)
+        self.__builder = NotificationCompatBuilder(context, self.channel_id)
 
     def cancel(self,id:int=0):
         """
@@ -139,6 +140,35 @@ class Notification(BaseNotification):
             self.notification_manager.cancelAll()
         if self.logs:
             print('Removed All Notifications.')
+
+    def createChannel(self, name, id, description='',importance:Importance='urgent'):
+        """
+        Creates a user visible toggle button for specific notifications, Required For Android 8.0+
+        :param name: user-visible channel name.
+        :param id: Used to send other notifications later through same channel.
+        :param description: user-visible detail about channel (Not required defaults to empty str).
+        :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
+        :return: boolean if channel created
+        """
+        self.__format_channel(name,id) # sets self.channel_name and self.channel_id
+        if not ON_ANDROID:
+            return True
+
+        android_importance_value=self.__get_android_importance(importance)
+
+        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
+            channel = NotificationChannel(
+                self.channel_id,
+                self.channel_name,
+                android_importance_value
+            )
+            if description:
+                channel.setDescription(description)
+            self.notification_manager.createNotificationChannel(channel)
+            return True
+        else:
+            if not isinstance(android_importance_value, str): # Can be an empty str if importance='none'
+                self.__builder.setPriority(android_importance_value)
 
     def refresh(self):
         """TO apply new components on notification"""
@@ -455,11 +485,31 @@ class Notification(BaseNotification):
             self.__dispatch_notification()
 
         return True
-        # elif style == 'custom':
-        #     self.__builder = self.__doCustomStyle()
 
     def __dispatch_notification(self):
         self.notification_manager.notify(self.__id, self.__builder.build())
+
+    @staticmethod
+    def __get_android_importance(importance:Importance):
+        """
+        Returns Android Importance Values
+        :param importance: ['urgent','high','medium','low','none']
+        :return: Android equivalent int or empty str
+        """
+        value=''
+        if importance == 'urgent':
+            value = NotificationCompat.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else  NotificationManagerCompat.IMPORTANCE_HIGH
+        elif importance == 'high':
+            value = NotificationCompat.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
+        elif importance == 'medium':
+            value = NotificationCompat.PRIORITY_LOW  if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
+        elif importance == 'low':
+            value = NotificationCompat.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
+        elif importance == 'none':
+            value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
+
+        return value
+        # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
 
     def __start_notification_build(self, persistent, close_on_click):
         self.__create_basic_notification(persistent, close_on_click)
@@ -467,17 +517,7 @@ class Notification(BaseNotification):
             self.addNotificationStyle(self.style)
 
     def __create_basic_notification(self, persistent, close_on_click):
-        # Notification Channel (Required for Android 8.0+)
-        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
-            importance=NotificationManagerCompat.IMPORTANCE_DEFAULT if self.silent else NotificationManagerCompat.IMPORTANCE_HIGH
-            # importance = 3 or 4
-            channel = NotificationChannel(
-                self.channel_id,
-                self.channel_name,
-                importance
-            )
-            self.notification_manager.createNotificationChannel(channel)
-
+        self.createChannel(name=self.channel_name,id=self.channel_id,importance='medium' if self.silent else 'urgent')
         # Build the notification
         # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
         # TODO fix this by creating a on_title method in other versions
@@ -485,7 +525,6 @@ class Notification(BaseNotification):
         self.__builder.setContentText(str(self.message))
         self.__insert_app_icon()
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL)
-        self.__builder.setPriority(NotificationCompat.PRIORITY_DEFAULT if self.silent else NotificationCompat.PRIORITY_HIGH)
         self.__builder.setOnlyAlertOnce(True)
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
@@ -639,18 +678,22 @@ class Notification(BaseNotification):
         self.button_ids.append(btn_id)
         return btn_id
 
-    def __format_channel(self, inputted_kwargs):
-        if 'channel_name' in inputted_kwargs:
-            cleaned_name = inputted_kwargs['channel_name'].strip()
+    def __format_channel(self, channel_name:str='Default Channel',channel_id:str='default_channel'):
+        """
+        Formats and sets self.channel_name and self.channel_id to formatted version
+        :param channel_name:
+        :param channel_id:
+        :return:
+        """
+        # Shorten channel name # android docs as at most 40 chars
+        if channel_name != 'Default Channel':
+            cleaned_name = channel_name.strip()
             self.channel_name = cleaned_name[:40] if cleaned_name else 'Default Channel'
 
-        if 'channel_id' in inputted_kwargs:
-            cleaned_id = inputted_kwargs['channel_id'].strip()
-            self.channel_id = self.__generate_channel_id(cleaned_id) if cleaned_id else 'default_channel'
-        elif 'channel_name' in inputted_kwargs:  
-            # Generate channel_id from channel_name if only channel_name is provided
-            generated_id = self.__generate_channel_id(inputted_kwargs['channel_name'])
-            self.channel_id = generated_id
+            # If no channel_id then generating channel_id from passed in channel_name
+            if channel_id == 'default_channel':
+                generated_id = self.__generate_channel_id(channel_name)
+                self.channel_id = generated_id
 
     @staticmethod
     def __generate_channel_id(channel_name: str) -> str:
