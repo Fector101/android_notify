@@ -23,11 +23,14 @@ try:
     context = PythonActivity.mActivity # Get the app's context
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     BuildVersion = autoclass('android.os.Build$VERSION')
+    VersionCodes = autoclass('android.os.Build$VERSION_CODES')
     NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
     IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
     ON_ANDROID = True
 except Exception as e:# pylint: disable=W0718
+    print("Exception Couldn't get Class: ",e)
+    print('TraceBack: ',traceback.format_exc())
     MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
     # from .types_idea import *
     # print(MESSAGE) Already Printing in core.py
@@ -115,6 +118,69 @@ class Notification(BaseNotification):
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder=NotificationCompatBuilder(context, self.channel_id)
+
+    def cancel(self,id:int=0):
+        """
+        Removes a Notification from tray
+        :param id: not required uses class instance as default
+        """
+        if ON_ANDROID:
+            self.notification_manager.cancel(id or self.__id)
+        if self.logs:
+            print('Removed Notification.')
+    def cancelAll(self):
+        """
+        Removes all app Notifications from tray
+        """
+        if ON_ANDROID:
+            self.notification_manager.cancelAll()
+        if self.logs:
+            print('Removed All Notifications.')
+
+    def setBigPicture(self,path):
+        """
+        set a Big Picture at the bottom
+        :param path: can be `Relative Path` or `URL`
+        :return:
+        """
+        if ON_ANDROID:
+            self.__build_img(path, NotificationStyles.BIG_PICTURE)
+        elif self.logs:
+            # When on android there are other logs
+            print('Done setting big picture')
+
+    def setSmallIcon(self,path):
+        """
+        sets small icon to the top right
+        :param path: can be `Relative Path` or `URL`
+        :return:
+        """
+        if ON_ANDROID:
+            self.__insert_app_icon(path)
+        elif self.logs:
+            # When on android there are other logs
+            print('Done setting small icon')
+
+    def setLargeIcon(self,path):
+        """
+        sets Large icon to the right
+        :param path: can be `Relative Path` or `URL`
+        :return:
+        """
+        if ON_ANDROID:
+            self.__build_img(path, NotificationStyles.LARGE_ICON)
+        elif self.logs:
+            #When on android there are other logs
+            print('Done setting large icon')
+
+    def setBigText(self,body):
+        if ON_ANDROID:
+            big_text_style = NotificationCompatBigTextStyle()
+            big_text_style.bigText(str(body))
+            self.__builder.setStyle(big_text_style)
+        elif self.logs:
+            # When on android there are other logs
+            print('Done setting big text')
 
     def showInfiniteProgressBar(self):
         """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
@@ -228,7 +294,6 @@ class Notification(BaseNotification):
             self.__update_timer = None
 
 
-
         def delayed_update():
             if self.logs:
                 msg = message or self.message
@@ -258,6 +323,7 @@ class Notification(BaseNotification):
             close_on_click (bool): True if you want Notification to be removed when clicked
         """
         self.silent=self.silent or silent
+
         if ON_ANDROID:
             self.__start_notification_build(persistent, close_on_click)
             self.__dispatch_notification()
@@ -265,9 +331,12 @@ class Notification(BaseNotification):
             string_to_display=''
             print("\n Sent Notification!!!")
             for name,value in vars(self).items():
-                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name"]:
+                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name",'body','name']:
                     if name == "progress_max_value":
                         if self.style == NotificationStyles.PROGRESS:
+                            string_to_display += f'\n {name}: {value}'
+                    elif name == "body":
+                        if self.style == NotificationStyles.BIG_TEXT:
                             string_to_display += f'\n {name}: {value}'
                     else:
                         string_to_display += f'\n {name}: {value}'
@@ -275,8 +344,7 @@ class Notification(BaseNotification):
             string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
             print(string_to_display)
             if DEV:
-                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, id: {self.id}')
-            print('Can\'t Send Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.\n' if DEV else '\n') # pylint: disable=C0301
+                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, __id: {self.__id}')
 
     def addButton(self, text:str,on_release):
         """For adding action buttons
@@ -352,9 +420,7 @@ class Notification(BaseNotification):
             return False
 
         if style == NotificationStyles.BIG_TEXT:
-            big_text_style = NotificationCompatBigTextStyle() # pylint: disable=E0606
-            big_text_style.bigText(str(self.body))
-            self.__builder.setStyle(big_text_style)
+            self.setBigText(self.body)
 
         elif style == NotificationStyles.INBOX:
             inbox_style = NotificationCompatInboxStyle() # pylint: disable=E0606
@@ -368,9 +434,9 @@ class Notification(BaseNotification):
 
         elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
             if self.big_picture_path:
-                self.__build_img(self.big_picture_path, NotificationStyles.BIG_PICTURE)
+                self.setBigPicture(self.big_picture_path)
             if self.large_icon_path:
-                self.__build_img(self.large_icon_path, NotificationStyles.LARGE_ICON)
+                self.setLargeIcon(self.large_icon_path)
 
         elif style == NotificationStyles.PROGRESS:
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
