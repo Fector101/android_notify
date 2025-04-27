@@ -8,6 +8,7 @@ from .base import BaseNotification
 DEV=0
 ON_ANDROID = False
 
+# noinspection PyBroadException
 try:
     # Android Imports
     from jnius import autoclass,cast
@@ -34,7 +35,7 @@ except Exception as e:
         print('Exception: ',e)
         print(traceback.format_exc())
 
-    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
+    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.'
     # from .types_idea import *
     # print(MESSAGE) Already Printing in core.py
 
@@ -99,7 +100,7 @@ class Notification(BaseNotification):
 
     # During Development (When running on PC)
     BaseNotification.logs=not ON_ANDROID
-    def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
+    def __init__(self,**kwargs): #@dataclass already does work
         super().__init__(**kwargs)
 
         self.__id = self.id or self.__get_unique_id() # Different use from self.name all notifications require `integers` id's not `strings`
@@ -318,7 +319,7 @@ class Notification(BaseNotification):
             message (str, optional): notification message. Defaults to 'last message'.
             show_on_update (bool, optional): To show notification briefly when progressbar removed. Defaults to True.
             title (str, optional): notification title. Defaults to 'last title'.
-            cooldown (float, optional): Avoid Updating progressbar value too frequently Defaults to 0.5secs
+            cooldown (float, optional): Little Time to Wait before change actually reflects, to avoid android Ignoring Change, Defaults to 0.5secs
 
         In-Built Delay of 0.5sec According to Android Docs Don't Update Progressbar too Frequently
         """
@@ -643,13 +644,15 @@ class Notification(BaseNotification):
         """
         Ask for permission to send notifications if needed.
         """
-        def on_permissions_result(permissions, grant): # pylint: disable=unused-argument
+        if not ON_ANDROID:
+            return True
+        def on_permissions_result(permissions, grant):
             if self.logs:
                 print("Permission Grant State: ",grant)
 
-        permissions_=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
+        permissions_=[Permission.POST_NOTIFICATIONS]
         if not all(check_permission(p) for p in permissions_):
-            request_permissions(permissions_,on_permissions_result) # pylint: disable=E0606
+            request_permissions(permissions_,on_permissions_result)
 
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
