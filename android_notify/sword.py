@@ -840,7 +840,7 @@ class NotificationHandler:
     @staticmethod
     def __return_notification_manger():
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-        cast(NotificationManager, notification_service)
+        return cast(NotificationManager, notification_service)
 
     @classmethod
     def cancel(cls,id,logs=False):
