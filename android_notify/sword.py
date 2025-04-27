@@ -29,9 +29,11 @@ try:
     IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
     ON_ANDROID = True
 except Exception as e:
-    print("Exception Couldn't get Class: ",e)
-    print('TraceBack: ',traceback.format_exc())
-    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.'
+    if e.name != 'android':
+        print('Exception: ',e)
+        print(traceback.format_exc())
+
+    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.' # pylint: disable=C0301
     # from .types_idea import *
     # print(MESSAGE) Already Printing in core.py
 
@@ -96,7 +98,7 @@ class Notification(BaseNotification):
 
     # During Development (When running on PC)
     BaseNotification.logs=not ON_ANDROID
-    def __init__(self,**kwargs): # @dataclass already does work
+    def __init__(self,**kwargs): #pylint: disable=W0231 #@dataclass already does work
         super().__init__(**kwargs)
 
         self.__id = self.id or self.__get_unique_id() # Different use from self.name all notifications require `integers` id's not `strings`
@@ -113,8 +115,8 @@ class Notification(BaseNotification):
         self.__format_channel(kwargs)
         if not ON_ANDROID:
             return
-        # TODO make send method wait for __asks_permission_if_needed method
-        self.__asks_permission_if_needed()
+
+        self.asks_permission_if_needed()
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder=NotificationCompatBuilder(context, self.channel_id)
@@ -598,17 +600,17 @@ class Notification(BaseNotification):
             print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {notification_image_error}')
             print('could not get Img traceback: ',traceback.format_exc())
 
-    def __asks_permission_if_needed(self):
+    def asks_permission_if_needed(self):
         """
         Ask for permission to send notifications if needed.
         """
-        def on_permissions_result(permissions, grant):
+        def on_permissions_result(permissions, grant): # pylint: disable=unused-argument
             if self.logs:
                 print("Permission Grant State: ",grant)
 
-        permissions_=[Permission.POST_NOTIFICATIONS]
+        permissions_=[Permission.POST_NOTIFICATIONS] # pylint: disable=E0606
         if not all(check_permission(p) for p in permissions_):
-            request_permissions(permissions_,on_permissions_result)
+            request_permissions(permissions_,on_permissions_result) # pylint: disable=E0606
 
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
