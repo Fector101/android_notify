@@ -119,29 +119,19 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        self.asksPermission()
+        NotificationHandler.asks_permission()
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder = NotificationCompatBuilder(context, self.channel_id)
 
-    def cancel(self,id:int=0):
+    def cancel(self):
         """
-        Removes a Notification from tray
-        :param id: not required uses class instance as default
+        Removes a Notification instance from tray
         """
         if ON_ANDROID:
-            self.notification_manager.cancel(id or self.__id)
+            NotificationHandler.cancel(self.__id,self.logs)
         if self.logs:
             print('Removed Notification.')
-
-    def cancelAll(self):
-        """
-        Removes all app Notifications from tray
-        """
-        if ON_ANDROID:
-            self.notification_manager.cancelAll()
-        if self.logs:
-            print('Removed All Notifications.')
 
     def createChannel(self, name, id, description='',importance:Importance='urgent'):
         """
@@ -641,33 +631,6 @@ class Notification(BaseNotification):
             print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {notification_image_error}')
             print('could not get Img traceback: ',traceback.format_exc())
 
-    def hasPermission(self):
-        """
-        Checks if device has permission to send notifications
-        returns True if device has permission
-        """
-        if not ON_ANDROID:
-            return True
-        return check_permission(Permission.POST_NOTIFICATIONS)
-    def asksPermission(self,callback=None):
-        """
-        Ask for permission to send notifications if needed.
-        """
-        if not ON_ANDROID:
-            return True
-        def on_permissions_result(permissions, grant):
-            if self.logs:
-                print("Permission Grant State: ",grant)
-            try:
-                if callback:
-                    callback()
-            except Exception as e:
-                print('Exception: ',e)
-                print('Permission request callback error: ',traceback.format_exc())
-
-        if not self.hasPermission():
-            request_permissions(permissions_,on_permissions_result)
-
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
         action = str(self.name)
@@ -835,5 +798,60 @@ class NotificationHandler:
     def is_on_android():
         """Utility to check if the app is running on Android."""
         return ON_ANDROID
+
+    @staticmethod
+    def has_permission():
+        """
+        Checks if device has permission to send notifications
+        returns True if device has permission
+        """
+        if not ON_ANDROID:
+            return True
+        return check_permission(Permission.POST_NOTIFICATIONS)
+
+    @classmethod
+    def asks_permission(cls,callback=None):
+        """
+        Ask for permission to send notifications if needed.
+        """
+        if not ON_ANDROID:
+            return
+        def on_permissions_result(permissions, grant):
+            print("Permission Grant State: ",grant)
+            try:
+                if callback:
+                    callback()
+            except Exception as request_permission_error:
+                print('Exception: ',request_permission_error)
+                print('Permission request callback error: ',traceback.format_exc())
+        if not cls.has_permission():
+            request_permissions([Permission.POST_NOTIFICATIONS],on_permissions_result)
+
+    @classmethod
+    def cancelAll(cls):
+        """
+        Removes all app Notifications from tray
+        """
+        if ON_ANDROID:
+            cls.__return_notification_manger().cancelAll()
+        else:
+            print('Removed All Notifications.')
+
+    @staticmethod
+    def __return_notification_manger():
+        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
+        cast(NotificationManager, notification_service)
+
+    @classmethod
+    def cancel(cls,id,logs=False):
+        """
+        Removes a Notification from tray
+        :param id: notification id
+        :param logs: if method should print log
+        """
+        if ON_ANDROID:
+            cls.__return_notification_manger().cancel(id)
+        if logs:
+            print('Removed Notification.')
 
 NotificationHandler.bindNotifyListener()

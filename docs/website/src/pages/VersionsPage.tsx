@@ -88,11 +88,11 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
             <section className="versions">
                 <DropDown title='version-1.59' sections={[
                     { msg: 'Add new features', type: '' },
-                    { msg: <>methods to cancel certain and all Notifications<span className="code">Notification.cancel()</span>, <span className="code">Notification.cancelAll</span></>, type: 'good' },
+                    { msg: <>methods to cancel a certain or all Notifications<span className="code">Notification.cancel()</span>, <span className="code">NotificationHandler.cancelAll</span>, For if old instance not available and need to cancel one use id with <span className="code">NotificationHandler.cancel(id)</span></>, type: 'good' },
                     { msg: <>Added a way to access Old Notification instance with <span className="code">Notification.id</span> </>, type: 'good' },
                     { msg: <>For creating channels <span className="code">Notification.createChannel(name, id, desc</span> </>, type: 'good' },
                     { msg: <>Setting a new component after <span className="code">Notification.send</span>  use <span className="code">Notification.refresh</span> </>, type: 'good' },
-                    { msg: <>Instead of only requesting in init created <span className="code">Notification.hasPermission</span> and <span className="code">Notification.asksPermission</span> </>, type: 'good' },
+                    { msg: <>Instead of only requesting in init created <span className="code">NotificationHandler.hasPermission</span> and <span className="code">NotificationHandler.asksPermission</span> </>, type: 'good' },
                     { msg: 'Add methods working to free up __init__ kwargs [parsing out `style` attribute]', type: '' },
                     { msg: <><span className="code">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></>, type: 'good' },
                     { msg: <><span className="code">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></>, type: 'good' },
