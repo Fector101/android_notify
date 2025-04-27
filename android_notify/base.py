@@ -1,11 +1,11 @@
-"""Assists Notification Class with Args keeps sub class cleaner"""
+"""Assists Notification Class with Args keeps subclass cleaner"""
 from dataclasses import dataclass, fields
 import difflib
 from .styles import NotificationStyles
 
 @dataclass
 class BaseNotification:
-    """Encapsulator"""
+    """Encapsulation"""
 
     # Basic options
     title: str = ''
@@ -20,10 +20,11 @@ class BaseNotification:
     body: str = ''
 
     # Notification Functions
-    identifer: str = ''
+    name: str = ''
     callback: object = None
 
     # Advanced Options
+    id: int = 0
     app_icon: str = 'Defaults to package app icon'
     channel_name: str = 'Default Channel'
     channel_id: str = 'default_channel'
@@ -32,6 +33,7 @@ class BaseNotification:
 
     def __init__(self, **kwargs):
         """Custom init to handle validation before dataclass assigns values"""
+
         # Validate provided arguments
         self.validate_args(kwargs)
 
@@ -80,3 +82,4 @@ class BaseNotification:
             raise ValueError(
                 f"Invalid style '{inputted_style}'. Allowed styles: {allowed_styles}"
             )
+
