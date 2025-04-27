@@ -85,6 +85,7 @@ class Notification(BaseNotification):
     :param body: large text For `big_Text` style, while `message` acts as subtitle.
     ---
     (Advance Options)
+    :param id: Pass in Old 'id' to use old instance
     :param callback: Function for notification Click.
     :param channel_name: - str Defaults to "Default Channel"
     :param channel_id: - str Defaults to "default_channel"
@@ -118,7 +119,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        self.asks_permission_if_needed()
+        self.asksPermission()
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder = NotificationCompatBuilder(context, self.channel_id)
@@ -640,7 +641,15 @@ class Notification(BaseNotification):
             print(f'Failed adding Image of style: {img_style} || From path: {img}, Exception {notification_image_error}')
             print('could not get Img traceback: ',traceback.format_exc())
 
-    def asks_permission_if_needed(self):
+    def hasPermission(self):
+        """
+        Checks if device has permission to send notifications
+        returns True if device has permission
+        """
+        if not ON_ANDROID:
+            return True
+        return check_permission(Permission.POST_NOTIFICATIONS)
+    def asksPermission(self,callback=None):
         """
         Ask for permission to send notifications if needed.
         """
@@ -649,9 +658,14 @@ class Notification(BaseNotification):
         def on_permissions_result(permissions, grant):
             if self.logs:
                 print("Permission Grant State: ",grant)
+            try:
+                if callback:
+                    callback()
+            except Exception as e:
+                print('Exception: ',e)
+                print('Permission request callback error: ',traceback.format_exc())
 
-        permissions_=[Permission.POST_NOTIFICATIONS]
-        if not all(check_permission(p) for p in permissions_):
+        if not self.hasPermission():
             request_permissions(permissions_,on_permissions_result)
 
     def __add_intent_to_open_app(self):
