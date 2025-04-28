@@ -22,7 +22,7 @@ try:
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
-    context = PythonActivity.mActivity # Get the app's context
+    context = PythonActivity.mActivity
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     BuildVersion = autoclass('android.os.Build$VERSION')
     VersionCodes = autoclass('android.os.Build$VERSION_CODES')
@@ -114,6 +114,7 @@ class Notification(BaseNotification):
         self.__cooldown = 0
 
         self.__built_parameter_filled=False
+        self.__using_set_priority_method=False
 
         self.__format_channel(self.channel_name, self.channel_id)
         if not ON_ANDROID:
@@ -124,43 +125,77 @@ class Notification(BaseNotification):
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder = NotificationCompatBuilder(context, self.channel_id)
 
-    def cancel(self):
+    def cancel(self,_id=0):
         """
         Removes a Notification instance from tray
+        :param _id: not required uses Notification instance id as default
         """
         if ON_ANDROID:
-            NotificationHandler.cancel(self.__id,self.logs)
+            self.notification_manager.cancel(_id or self.__id)
         if self.logs:
             print('Removed Notification.')
 
-    def createChannel(self, name, id, description='',importance:Importance='urgent'):
+    @classmethod
+    def cancelAll(cls):
+        """
+        Removes all app Notifications from tray
+        """
+        if ON_ANDROID:
+            cls.__return_notification_manger().cancelAll()
+        if cls.logs:
+            print('Removed All Notifications.')
+
+    @classmethod
+    def createChannel(cls, id, name:str, description='',importance:Importance='urgent'):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
-        :param name: user-visible channel name.
         :param id: Used to send other notifications later through same channel.
+        :param name: user-visible channel name.
         :param description: user-visible detail about channel (Not required defaults to empty str).
         :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
         :return: boolean if channel created
         """
-        self.__format_channel(name,id) # sets self.channel_name and self.channel_id
+
         if not ON_ANDROID:
-            return True
+            return False
 
-        android_importance_value=self.__get_android_importance(importance)
+        notification_manager=cls.__return_notification_manger()
+        android_importance_value = cls.__get_android_importance(importance)
 
-        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
-            channel = NotificationChannel(
-                self.channel_id,
-                self.channel_name,
-                android_importance_value
-            )
+        if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(id) is None:
+            channel = NotificationChannel(id, name, android_importance_value)
             if description:
                 channel.setDescription(description)
-            self.notification_manager.createNotificationChannel(channel)
+            notification_manager.createNotificationChannel(channel)
             return True
-        else:
-            if not isinstance(android_importance_value, str): # Can be an empty str if importance='none'
-                self.__builder.setPriority(android_importance_value)
+        return False
+
+    @classmethod
+    def deleteChannel(cls, channel_id):
+        """Delete a Channel Matching channel_id"""
+        if not ON_ANDROID:
+            return None
+
+        cls.__return_notification_manger().deleteNotificationChannel(channel_id)
+
+    @classmethod
+    def deleteAllChannel(cls):
+        """Deletes all notification channel
+        :returns amount deleted
+        """
+
+        amount = 0
+        if not ON_ANDROID:
+            return amount
+
+        notification_manager = cls.__return_notification_manger()
+        channels = cls.getChannels()
+        for index in range(channels.size()):
+            amount += 1
+            channel = channels.get(index)
+            channel_id = channel.getId()
+            notification_manager.deleteNotificationChannel(channel_id)
+        return amount
 
     def refresh(self):
         """TO apply new components on notification"""
@@ -222,7 +257,7 @@ class Notification(BaseNotification):
             print('Showing infinite progressbar')
         if ON_ANDROID:
             self.__builder.setProgress(0,0, True)
-            self.__dispatch_notification()
+            self.refresh()
 
     def updateTitle(self,new_title):
         """Changes Old Title
@@ -235,7 +270,7 @@ class Notification(BaseNotification):
             print(f'new notification title: {self.title}')
         if ON_ANDROID:
             self.__builder.setContentTitle(String(self.title))
-            self.__dispatch_notification()
+            self.refresh()
 
     def updateMessage(self,new_message):
         """Changes Old Message
@@ -248,7 +283,7 @@ class Notification(BaseNotification):
             print(f'new notification message: {self.message}')
         if ON_ANDROID:
             self.__builder.setContentText(String(self.message))
-            self.__dispatch_notification()
+            self.refresh()
 
     def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
         """Updates progress bar current value
@@ -293,7 +328,7 @@ class Notification(BaseNotification):
             if self.__progress_bar_title:
                 self.updateTitle(self.__progress_bar_title)
 
-            self.__dispatch_notification()
+            self.refresh()
             self.__update_timer = None
 
 
@@ -341,10 +376,22 @@ class Notification(BaseNotification):
                 self.updateTitle(title)
             self.__builder.setOnlyAlertOnce(not show_on_update)
             self.__builder.setProgress(0, 0, False)
-            self.__dispatch_notification()
+            self.refresh()
 
         # Incase `self.updateProgressBar delayed_update` is called right before this method, so android doesn't bounce update
         threading.Timer(cooldown, delayed_update).start()
+
+    def setPriority(self,importance:Importance):
+        """
+        For devices less than android 8
+        :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
+        :return:
+        """
+        self.__using_set_priority_method=True
+        if ON_ANDROID:
+            android_importance_value = self.__get_android_importance(importance)
+            if not isinstance(android_importance_value, str):  # Can be an empty str if importance='none'
+                self.__builder.setPriority(android_importance_value)
 
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
@@ -354,11 +401,11 @@ class Notification(BaseNotification):
             persistent (bool): True To not remove Notification When User hits clears All notifications button
             close_on_click (bool): True if you want Notification to be removed when clicked
         """
-        self.silent=self.silent or silent
-
+        self.silent= silent or self.silent
         if ON_ANDROID:
             self.__start_notification_build(persistent, close_on_click)
             self.__dispatch_notification()
+
         if self.logs:
             string_to_display=''
             print("\n Sent Notification!!!")
@@ -433,7 +480,7 @@ class Notification(BaseNotification):
         """
         if ON_ANDROID:
             self.__builder.mActions.clear()
-            self.__dispatch_notification()
+            self.refresh()
         if self.logs:
             print('Removed Notification Buttons')
 
@@ -474,34 +521,12 @@ class Notification(BaseNotification):
             self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
 
         if already_sent:
-            self.__dispatch_notification()
+            self.refresh()
 
         return True
 
     def __dispatch_notification(self):
         self.notification_manager.notify(self.__id, self.__builder.build())
-
-    @staticmethod
-    def __get_android_importance(importance:Importance):
-        """
-        Returns Android Importance Values
-        :param importance: ['urgent','high','medium','low','none']
-        :return: Android equivalent int or empty str
-        """
-        value=''
-        if importance == 'urgent':
-            value = NotificationCompat.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else  NotificationManagerCompat.IMPORTANCE_HIGH
-        elif importance == 'high':
-            value = NotificationCompat.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
-        elif importance == 'medium':
-            value = NotificationCompat.PRIORITY_LOW  if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
-        elif importance == 'low':
-            value = NotificationCompat.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
-        elif importance == 'none':
-            value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
-
-        return value
-        # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
 
     def __start_notification_build(self, persistent, close_on_click):
         self.__create_basic_notification(persistent, close_on_click)
@@ -509,7 +534,10 @@ class Notification(BaseNotification):
             self.addNotificationStyle(self.style)
 
     def __create_basic_notification(self, persistent, close_on_click):
-        self.createChannel(name=self.channel_name,id=self.channel_id,importance='medium' if self.silent else 'urgent')
+        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
+            self.createChannel(self.channel_id, self.channel_name)
+        elif not self.__using_set_priority_method:
+            self.setPriority('medium' if self.silent else 'urgent')
         # Build the notification
         # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
         # TODO fix this by creating a on_title method in other versions
@@ -522,15 +550,15 @@ class Notification(BaseNotification):
         self.__builder.setAutoCancel(close_on_click)
         self.__add_intent_to_open_app()
         self.__built_parameter_filled = True
-    # def __doCustomStyle(self):
-    #     # TODO Will implement when needed
-    #     return self.__builder
+
     def __insert_app_icon(self,path=''):
         if path or self.app_icon not in ['','Defaults to package app icon']:
             if self.logs:
                 print('getting custom icon...')
             self.__set_icon_from_bitmap(path or self.app_icon)
         else:
+            if self.logs:
+                print('using default icon...')
             self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
     def __build_img(self, user_img, img_style):
@@ -633,7 +661,7 @@ class Notification(BaseNotification):
 
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
-        action = str(self.name)
+        action = str(self.name or self.__id)
         intent.setAction(action)
         self.__add_data_to_intent(intent)
         self.main_functions[action]=self.callback
@@ -699,6 +727,43 @@ class Notification(BaseNotification):
         self.notification_ids.append(notification_id)
         return notification_id
 
+    @staticmethod
+    def __return_notification_manger():
+        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
+        return cast(NotificationManager, notification_service)
+
+    @classmethod
+    def getChannels(cls):
+        """Return all existing channels"""
+        if not ON_ANDROID:
+            return []
+
+        return cls.__return_notification_manger().getNotificationChannels()
+
+    @staticmethod
+    def __get_android_importance(importance:Importance):
+        """
+        Returns Android Importance Values
+        :param importance: ['urgent','high','medium','low','none']
+        :return: Android equivalent int or empty str
+        """
+        value=''
+        if importance == 'urgent':
+            value = NotificationCompat.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else  NotificationManagerCompat.IMPORTANCE_HIGH
+        elif importance == 'high':
+            value = NotificationCompat.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
+        elif importance == 'medium':
+            value = NotificationCompat.PRIORITY_LOW  if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
+        elif importance == 'low':
+            value = NotificationCompat.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
+        elif importance == 'none':
+            value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
+
+        return value
+        # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
+    # TODO method to create channel groups
+
+
 class NotificationHandler:
     """For Notification Operations """
     __name = None
@@ -706,23 +771,26 @@ class NotificationHandler:
 
     @classmethod
     def get_name(cls):
-        """Returns id for Clicked Notification."""
+        """Returns name or id str for Clicked Notification."""
         if not cls.is_on_android():
             return "Not on Android"
 
         saved_intent = cls.__name
-        if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
+        cls.__name = None # so value won't be set when opening app not from notification
+        # print('saved_intent ',saved_intent)
+        # if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
             # All other notifications are not None after First notification opens app
             # NOTE these notifications are also from Last time app was opened and they Still Give Value after first one opens App
             # TODO Find a way to get intent when App if Swiped From recents
-            __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
-            __mactivity = __PythonActivity.mActivity
-            __context = cast('android.content.Context', __mactivity)
-            __Intent = autoclass('android.content.Intent')
-            __intent = __Intent(__context, __PythonActivity)
-            action = __intent.getAction()
-            print('Start up Intent ----', action)
-            print('start Up Title --->',__intent.getStringExtra("title"))
+            # Below action is always None
+            # __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
+            # __mactivity = __PythonActivity.mActivity
+            # __context = cast('android.content.Context', __mactivity)
+            # __Intent = autoclass('android.content.Intent')
+            # __intent = __Intent(__context, __PythonActivity)
+            # action = __intent.getAction()
+            # print('Start up Intent ----', action)
+            # print('start Up Title --->',__intent.getStringExtra("title"))
 
         return saved_intent
 
@@ -731,8 +799,7 @@ class NotificationHandler:
         """Calls Function Attached to notification on click.
             Don't Call this function manual, it's Already Attach to Notification.
         
-        Returns:
-            str: The name #action of Notification that was clicked.
+        Sets self.__name #action of Notification that was clicked from Notification.name or Notification.id
         """
         if not cls.is_on_android():
             return "Not on Android"
@@ -741,13 +808,13 @@ class NotificationHandler:
         if DEV:
             print("notifty_functions ",notifty_functions)
             print("buttons_object", buttons_object)
-        action = None
         try:
             action = intent.getAction()
             cls.__name = action
 
-            print("The Action --> ",action)
+            # print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
+                cls.__name = None
                 return 'Not notification'
 
             print(intent.getStringExtra("title"))
@@ -757,11 +824,10 @@ class NotificationHandler:
                 elif action in buttons_object:
                     buttons_object[action]()
             except Exception as notification_handler_function_error:
-                print('Failed to run function: ', traceback.format_exc())
                 print("Error Type ",notification_handler_function_error)
+                print('Failed to run function: ', traceback.format_exc())
         except Exception as extracting_notification_props_error:
             print('Notify Handler Failed ',extracting_notification_props_error)
-        return action
 
     @classmethod
     def bindNotifyListener(cls):
@@ -827,31 +893,5 @@ class NotificationHandler:
         if not cls.has_permission():
             request_permissions([Permission.POST_NOTIFICATIONS],on_permissions_result)
 
-    @classmethod
-    def cancelAll(cls):
-        """
-        Removes all app Notifications from tray
-        """
-        if ON_ANDROID:
-            cls.__return_notification_manger().cancelAll()
-        else:
-            print('Removed All Notifications.')
-
-    @staticmethod
-    def __return_notification_manger():
-        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-        return cast(NotificationManager, notification_service)
-
-    @classmethod
-    def cancel(cls,id,logs=False):
-        """
-        Removes a Notification from tray
-        :param id: notification id
-        :param logs: if method should print log
-        """
-        if ON_ANDROID:
-            cls.__return_notification_manger().cancel(id)
-        if logs:
-            print('Removed Notification.')
 
 NotificationHandler.bindNotifyListener()
