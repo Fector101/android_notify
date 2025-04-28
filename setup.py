@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as readme_data:
 
 setup(
     name="android-notify",
-    version="1.58",
+    version="1.59",
     author="Fabian",
     author_email='fector101@yahoo.com',
-    description="A Python package that simpilfies creating Android notifications in Kivy apps.",
+    description="A Python package that simplifies creating Android notifications in Kivy apps.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/fector101/android-notify",
@@ -43,8 +43,8 @@ setup(
         'kivy-application'
     ],
     project_urls={
-        "Documentation": "https://github.com/fector101/android-notify/",
         # "Documentation": "https://github.com/fector101/android-notify/wiki",
+        "Documentation": "https://android-notify.vercel.app/getting-started",
         "Source": "https://github.com/fector101/android-notify",
         "Tracker": "https://github.com/fector101/android-notify/issues",
         "Funding": "https://www.buymeacoffee.com/fector101"
