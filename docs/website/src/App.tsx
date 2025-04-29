@@ -15,7 +15,7 @@ import ReferencePage from "./pages/ReferencePage.tsx";
 import ExtrasPage from "./pages/ExtrasPage.tsx";
 import VersionsPage from "./pages/VersionsPage.tsx";
 import { useState } from "react";
-// import HomePage from "./pages/HomePage.tsx";
+import HomePage from "./pages/HomePage.tsx";
 
 function App() {
     const [version,setVersion]=useState(1.59)
@@ -26,7 +26,7 @@ function App() {
             <main className="flex">
                 <SiteOverview />
                 <Routes>
-                    <Route path="/" element={<MainPage />} />
+                    <Route path="/" element={<HomePage />} />
                     <Route path="/getting-started" element={<MainPage />} />
                     <Route path="/components" element={<ComponentsPage version={version} />} />
                     <Route path="/advanced-methods" element={<AdvancedMethodsPage version={version} />} />

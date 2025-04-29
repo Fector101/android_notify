@@ -10,7 +10,7 @@ interface IDropDown {
     setVersion: React.Dispatch<React.SetStateAction<number>>
 }
 
-function DropDown({ version, sections, setVersion }:IDropDown) {
+function DropDown({ version, sections, setVersion }: IDropDown) {
     const [opened, setOpened] = useState(false)
     const warnings = sections.filter(each => each.type === 'warning')
     const critical_list = sections.filter(each => each.type === 'bad')
@@ -30,17 +30,22 @@ function DropDown({ version, sections, setVersion }:IDropDown) {
     // }, [hash, sections])
     return (
         <div className="dropdown flex fd-column align-items-cen justify-content-cen">
-            <div className="header flex align-items-cen width100per space-between">
+            <div className="header flex align-items-cen width100per flex-wrap">
                 <p>
                     {'version-' + version}
                 </p>
-                {warnings.length > 0 && <span className="warning ver-badge flex align-items-cen justify-content-cen">{warnings.length}</span>}
-                {critical_list.length > 0 && <span className="bad ver-badge flex align-items-cen justify-content-cen" >{critical_list.length}</span>}
-                {features_list.length > 0 && <span className="good ver-badge flex align-items-cen justify-content-cen" >{features_list.length}</span>}
-                <button onClick={switchToDocs} className='switch-to-docs-btn'>Switch to Docs</button>
-                <button onClick={togglePreview} className="flex align-items-cen justify-content-cen">
-                    {opened ? <ChevronUp /> : <ChevronDown />}
-                </button>
+                <div className='flex margin-left-auto'>
+                    {warnings.length > 0 && <span className="warning ver-badge flex align-items-cen justify-content-cen">{warnings.length}</span>}
+                    {critical_list.length > 0 && <span className="bad ver-badge flex align-items-cen justify-content-cen" >{critical_list.length}</span>}
+                    {features_list.length > 0 && <span className="good ver-badge flex align-items-cen justify-content-cen" >{features_list.length}</span>}
+                </div>
+                <div className='flex'>
+
+                    <button onClick={switchToDocs} className='switch-to-docs-btn'>Switch to Docs</button>
+                    <button onClick={togglePreview} className="flex align-items-cen justify-content-cen">
+                        {opened ? <ChevronUp /> : <ChevronDown />}
+                    </button>
+                </div>
             </div>
             <ol className="content width100per flex fd-column" style={{ height: opened ? 'auto' : '0px' }}>
                 {

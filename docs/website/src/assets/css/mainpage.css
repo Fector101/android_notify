@@ -40,12 +40,16 @@
 }
 
 .main-page hr,
-.main-page>section p {
+.main-page>section p:not(.auto-width) {
     width: 95%;
 }
 
 .main-page .paragraph {
     margin-top: 15px;
+}
+
+.main-page .paragraph-05 {
+    margin-top: 7.5px;
 }
 
 .main-page hr {

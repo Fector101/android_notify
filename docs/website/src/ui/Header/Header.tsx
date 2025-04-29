@@ -28,7 +28,7 @@ export default function Header({ version,setVersion }:IHeader) {
 
     function toggleSideBar() {
         const side_bar_ele = document.getElementById('site-overview')
-        const main_page = document.getElementsByClassName('main-page')?.[0] as HTMLElement
+        // const main_page = document.getElementsByClassName('main-page')?.[0] as HTMLElement
         if (side_bar_ele) {
             // side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
             if (isOpen) {
@@ -41,16 +41,17 @@ export default function Header({ version,setVersion }:IHeader) {
             }
             // side_bar_ele.style.width = 0
 
-        } if (main_page) {
+        } 
+        // if (main_page) {
             // main_page.classList.toggle('page-toggler')
-        }
+        // }
         isMobileView.current = !isMobileView.current
         setIsOpen(state => !state)
     }
 
     return (
         <header className='flex align-items-cen width100per'>
-            <Link to='/getting-started'>
+            <Link to='/'>
                 <Bell className='brand' />
             </Link>
             <div className='css-dropdown flex fd-column'>
