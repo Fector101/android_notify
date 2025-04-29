@@ -123,7 +123,8 @@ export const channel_management_code = `Notification.createChannel(
 )
 Notification(
     title="Download finished",
-    message="How to Catch a Fish.mp4"
+    message="How to Catch a Fish.mp4",
+    channel_id="downloads_notifications"
 )
 `
 export const getting_identifer = `
