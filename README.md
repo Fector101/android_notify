@@ -1,6 +1,6 @@
 <div align="center">
     <br>
-    <h1> Android-Notifiy </h1>
+    <h1> Android-Notify </h1>
     <p><a href='https://android-notify.vercel.app'>Android Notify</a> is a Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
     <p>Supports various styles and ensures seamless integration, customization and Pythonic APIs.</p>
     <!-- <br> -->
