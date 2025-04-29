@@ -26,8 +26,12 @@ class BaseNotification:
     # Advanced Options
     id: int = 0
     app_icon: str = 'Defaults to package app icon'
+
     channel_name: str = 'Default Channel'
+    """User visible channel name"""
     channel_id: str = 'default_channel'
+    """Used to reference notification channel"""
+
     silent: bool = False
     logs: bool = False
 
