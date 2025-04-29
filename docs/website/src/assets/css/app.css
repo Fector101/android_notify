@@ -152,7 +152,7 @@ body>#root {
 }
 
 
-@media screen and (max-width:770px) {
+@media screen and (max-width:1000px) {
     body>#root {
         /* --overview-width: 0; */
     }

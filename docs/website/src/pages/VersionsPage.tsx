@@ -1,23 +1,16 @@
-// import { Link } from "react-router";
+import { useState } from 'react';
+import { nanoid } from 'nanoid'
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import {nanoid }from 'nanoid'
-
 import { ScrollToSection } from '../ui/ScrollAssist';
-// import { ChevronLeft, ChevronRight } from 'lucide-react';
-// import { Link } from 'react-router'
 import './../assets/css/versionspage.css'
-// import btnsImg from './../assets/imgs/btns.jpg'
-// import progressbarImg from './../assets/imgs/progress.jpg'
 
-// import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
-import {
-    useEffect,
-    //  useEffect,
-      useState } from 'react';
+interface IDropDown {
+    version: number;
+    sections: { msg: React.ReactNode; type: 'good' | 'warning' | 'bad' | '' }[];
+    setVersion: React.Dispatch<React.SetStateAction<number>>
+}
 
-// const [sudoku_puzzle, setSudokuPuzzle] = useState<(number | '')[][]>()
-{/* <React.SetStateAction<string>></React.SetStateAction> */ }
-function DropDown({ title, sections }: { title: string; sections: { msg: React.ReactNode; type: 'good' | 'warning' | 'bad' | '' }[] }) {
+function DropDown({ version, sections, setVersion }:IDropDown) {
     const [opened, setOpened] = useState(false)
     const warnings = sections.filter(each => each.type === 'warning')
     const critical_list = sections.filter(each => each.type === 'bad')
@@ -25,7 +18,10 @@ function DropDown({ title, sections }: { title: string; sections: { msg: React.R
     function togglePreview() {
         setOpened(old => !old)
     }
-
+    function switchToDocs() {
+        // console.log(''+version)
+        setVersion(version)
+    }
     // useEffect(() => {
     //     sections.forEach(each_section => {
     //         const hash_ = '#' + each_section.trim().toLocaleLowerCase().replace(/ /g, '-')
@@ -36,11 +32,12 @@ function DropDown({ title, sections }: { title: string; sections: { msg: React.R
         <div className="dropdown flex fd-column align-items-cen justify-content-cen">
             <div className="header flex align-items-cen width100per space-between">
                 <p>
-                    {title}
+                    {'version-' + version}
                 </p>
                 {warnings.length > 0 && <span className="warning ver-badge flex align-items-cen justify-content-cen">{warnings.length}</span>}
                 {critical_list.length > 0 && <span className="bad ver-badge flex align-items-cen justify-content-cen" >{critical_list.length}</span>}
                 {features_list.length > 0 && <span className="good ver-badge flex align-items-cen justify-content-cen" >{features_list.length}</span>}
+                <button onClick={switchToDocs} className='switch-to-docs-btn'>Switch to Docs</button>
                 <button onClick={togglePreview} className="flex align-items-cen justify-content-cen">
                     {opened ? <ChevronUp /> : <ChevronDown />}
                 </button>
@@ -51,7 +48,7 @@ function DropDown({ title, sections }: { title: string; sections: { msg: React.R
                         sections.map(({ msg, type }) => {
                             // const hash_ = '#' + each_section.toLocaleLowerCase().replace(/ /g, '-')
                             // const state = hash == hash_
-                            return <li key={nanoid()} className={type} style={{listStyleType: ['good', 'warning', 'bad'].includes(type) ? 'initial' : 'none' }}>
+                            return <li key={nanoid()} className={type} style={{ listStyleType: ['good', 'warning', 'bad'].includes(type) ? 'initial' : 'none' }}>
                                 <p>
                                     {msg}
                                 </p>
@@ -70,11 +67,8 @@ function DropDown({ title, sections }: { title: string; sections: { msg: React.R
     )
 
 }
-export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<string>> }) {
-    
-    useEffect(() => {
-        setVersion('1.58')
-    }, [setVersion])
+export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<number>> }) {
+
 
     return (
         <div className="page main-page versions-page flex fd-column">
@@ -91,7 +85,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                 <hr />
             </section>
             <section className="versions">
-                <DropDown title='version-1.59' sections={[
+                <DropDown setVersion={setVersion} version={1.59} sections={[
                     { msg: 'Add new features', type: '' },
                     { msg: <>Added a way to access Old Notification instance with <span className="code">Notification().id</span> </>, type: 'good' },
                     { msg: <>methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span>, For if old instance not available and need to cancel one use id with <span className="code">Notification.cancel(_id)</span></>, type: 'good' },
@@ -108,7 +102,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                     { msg: '`Notification.identifer` to `Notification.name`', type: 'warning' },
                     { msg: '`NotificationHandler.get_id` to `NotificationHandler.get_name`', type: 'warning' },
                 ]} />
-                <DropDown title='version-1.58' sections={[
+                <DropDown setVersion={setVersion} version={1.58} sections={[
                     { msg: '`showInfiniteProgressBar` Had no guard block when not on android', type: 'warning' },
                     { msg: '`NotificationHandler.get_id` always returned value even when app not opened from notification', type: 'bad' },
                 ]} />

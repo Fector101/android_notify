@@ -16,6 +16,49 @@ header .brand {
     height: var(--size);
 }
 
+header .css-dropdown {
+    gap: 5px;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    /* background-color: yellowgreen; */
+    height: 50px;
+}
+header .css-dropdown .active .up-svg{
+    display: none;
+}
+header .css-dropdown .active{
+    gap: 5px;
+}
+header .css-dropdown .opts{
+    position: absolute;
+    border: 1px solid grey;
+    top: 40px;
+    background: #262626;
+    height: auto;
+    width: 100px;
+    display: none;
+}
+header .css-dropdown:hover .opts{
+    display: block;
+}
+header .css-dropdown:hover .active .up-svg{
+    display: block;
+}
+header .css-dropdown:hover .active .down-svg{
+    display: none;
+}
+header .css-dropdown .opts button{
+    padding: 10px;
+    display: block;
+    width: 100%;
+    color: white;
+    font-size: unset;
+}
+header .css-dropdown .opts button:hover{
+    background: #555454;
+    cursor: pointer;
+}
 header .version-no {
     font-size: 18px;
 }

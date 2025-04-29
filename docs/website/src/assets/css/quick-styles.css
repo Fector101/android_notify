@@ -156,3 +156,7 @@ span.code.yellow{
 .screen-height200px{
     height: 300px;
 }
+
+.new-line-active{
+    white-space: pre-line;
+}

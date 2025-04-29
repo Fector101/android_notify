@@ -17,11 +17,11 @@ import VersionsPage from "./pages/VersionsPage.tsx";
 import { useState } from "react";
 
 function App() {
-    const [version,setVersion]=useState("1.58")
+    const [version,setVersion]=useState(1.58)
     return (
         <>
             <Toaster position="top-right" />
-            <Header />
+            <Header version={version} setVersion={setVersion}/>
             <main className="flex">
                 <SiteOverview />
                 <Routes>

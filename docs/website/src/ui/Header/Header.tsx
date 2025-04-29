@@ -1,23 +1,23 @@
 import {
-    Bell, Github, Menu,
-    X
+    Bell, ChevronDown, ChevronUp, Github, Menu, X
     // Sun
 } from 'lucide-react'
 import './header.css'
 import { Link, useLocation } from 'react-router'
-// import { useState } from 'react'
 import { toTitleCase } from '../../assets/js/helper';
 import pages_dict from '../../pages/versions-data/general';
 import { useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
+import { Iversion } from '../../assets/js/mytypes';
 
 // type PagesDict = {
 //     [key: string]: { title: string; description: string } | undefined;
 // };
-
-// const typedPagesDict: PagesDict = pages_dict;
-
-
-export default function Header() {
+interface IHeader {
+    version: Iversion;
+    setVersion: React.Dispatch<React.SetStateAction<number>>
+}
+export default function Header({ version,setVersion }:IHeader) {
     // const [search,setSearch]=useState('')
     const location = useLocation();
     let description = pages_dict[location.pathname.slice(1)]?.description || '';
@@ -31,13 +31,13 @@ export default function Header() {
         const main_page = document.getElementsByClassName('main-page')?.[0] as HTMLElement
         if (side_bar_ele) {
             // side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
-            if(isOpen){
+            if (isOpen) {
                 setOldSideBarWidth(side_bar_ele.getBoundingClientRect().width)
                 side_bar_ele.style.width = '0'
                 side_bar_ele.style.minWidth = '0'
-            }else{
-                side_bar_ele.style.width =  oldSideWidth+'px'
-                side_bar_ele.style.minWidth = oldSideWidth+'px'
+            } else {
+                side_bar_ele.style.width = oldSideWidth + 'px'
+                side_bar_ele.style.minWidth = oldSideWidth + 'px'
             }
             // side_bar_ele.style.width = 0
 
@@ -53,7 +53,16 @@ export default function Header() {
             <Link to='/getting-started'>
                 <Bell className='brand' />
             </Link>
-            <Link to='/versions' className='version-no'>v1.58</Link>
+            <div className='css-dropdown flex fd-column'>
+                <span className='flex active'>
+                    <Link to='/versions' className='version-no'>v{version}</Link>
+                    <ChevronDown className='down-svg'/>
+                    <ChevronUp className='up-svg' />
+                </span>
+                <div className='opts'>
+                    {[1.58, 1.59].map(each => <button onClick={()=>setVersion(each)} key={nanoid()}>{each}</button>)}
+                </div>
+            </div>
             <p className='page-title'>{location.pathname.slice(1).split('-').map(toTitleCase).join(' ')}{description || ''}</p>
             {/* <input value={search} onChange={(e)=>setSearch(e.target.value)}/> */}
             <nav className="flex margin-left-auto icon-nav">

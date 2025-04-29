@@ -6,6 +6,7 @@ import '../assets/css/advmethodspage.css'
 // import { adding_image_code, channel_management_code, getting_identifer, progress_bar_update, title_and_message_update } from "./versions-data/advmethodspage";
 import channelimg from '../assets/imgs/channelname.jpg'
 import { useEffect, useState } from 'react';
+import { Iversion } from '../assets/js/mytypes';
 
 interface IAdvancedMethodsPage {
     title_and_message_update_code:string;
@@ -14,10 +15,10 @@ interface IAdvancedMethodsPage {
     channel_management_code:string;
     getting_identifier_code:string;
 }
-export default function AdvancedMethodsPage({ version }: { version: string }) {
+export default function AdvancedMethodsPage({ version }: { version: Iversion }) {
     const [data, setData] = useState<IAdvancedMethodsPage>()
 
-    async function changeVersionData(version: string) {
+    async function changeVersionData(version: Iversion) {
 
         const data = await import(`./versions-data/${version}.tsx`);
         setData(data.advanced_methods_page)

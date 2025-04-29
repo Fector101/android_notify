@@ -50,6 +50,7 @@ function DropDown({ title, sections, hash, route }: { route: string; title: stri
     )
 
 }
+
 export default function SiteOverview() {
     const location = useLocation();
     const [hash, setHash] = useState(location.hash)
@@ -96,24 +97,7 @@ export default function SiteOverview() {
 
         sections.forEach((s) => observer.observe(s));
         return () => observer.disconnect();
-        // const sections = document.querySelectorAll("section.page-section");
-        // const observer = new IntersectionObserver(
-        //     (entries) => {
-        //         entries.some((entry) => {
-        //             if (entry.isIntersecting) {
-        //                 const id = `#${entry.target.id}`;
-        //                 // found=1
-        //                 setHash(id)
-        //                 toast.warning(id)
-        //                 console.log(id,entry)
-        //                 history.replaceState(null, "", id);
-        //             }
-        //         });
-        //     },
-        //     { threshold: 0.9 }  // 50% of the section must be visible
-        // );
-        // sections.forEach((section) => observer.observe(section));
-        // return () => observer.disconnect(); // Cleanup on unmount
+        
     }, [location.pathname]);
 
     return (

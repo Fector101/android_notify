@@ -18,6 +18,7 @@ import inboxImg from '../assets/imgs/inboxnoti.jpg'
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
+import { Iversion } from '../assets/js/mytypes';
 
 
 interface IComponentPage {
@@ -31,10 +32,10 @@ interface IComponentPage {
     big_text_style_code: string
 }
 
-export default function ComponentsPage({ version }: { version: string }) {
+export default function ComponentsPage({ version }: { version: Iversion }) {
     const [data, setData] = useState<IComponentPage>()
 
-    async function changeVersionData(version: string) {
+    async function changeVersionData(version: Iversion) {
 
         const data = await import(`./versions-data/${version}.tsx`);
         setData(data.component_page)
