@@ -12,7 +12,7 @@ setup(
     description="A Python package that simplifies creating Android notifications in Kivy apps.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/fector101/android-notify",
+    url="https://android-notify.vercel.app",
     packages=find_packages(),
     install_requires=[
         "kivy>=2.0.0",
