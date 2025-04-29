@@ -100,11 +100,11 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                     { msg: <>For deleting channels <span className="code">Notification.deleteAllChannel()</span> and <span className="code">Notification.deleteChannel(channel_id)</span> </>, type: 'good' },
                     { msg: 'Changed ', type: '' },
                     { msg: '`Notification.identifer` to `Notification.name`', type: 'warning' },
-                    { msg: '`NotificationHandler.get_id` to `NotificationHandler.get_name`', type: 'warning' },
+                    { msg: '`NotificationHandler.getIdentifer` to `NotificationHandler.get_name`', type: 'warning' },
                 ]} />
                 <DropDown setVersion={setVersion} version={1.58} sections={[
                     { msg: '`showInfiniteProgressBar` Had no guard block when not on android', type: 'warning' },
-                    { msg: '`NotificationHandler.get_id` always returned value even when app not opened from notification', type: 'bad' },
+                    { msg: '`NotificationHandler.getIdentifer` always returned value even when app not opened from notification', type: 'bad' },
                 ]} />
             </section>
 

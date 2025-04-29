@@ -15,9 +15,10 @@ import ReferencePage from "./pages/ReferencePage.tsx";
 import ExtrasPage from "./pages/ExtrasPage.tsx";
 import VersionsPage from "./pages/VersionsPage.tsx";
 import { useState } from "react";
+// import HomePage from "./pages/HomePage.tsx";
 
 function App() {
-    const [version,setVersion]=useState(1.58)
+    const [version,setVersion]=useState(1.59)
     return (
         <>
             <Toaster position="top-right" />
