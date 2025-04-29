@@ -1,12 +1,12 @@
 <div align="center">
     <br>
     <h1> Android-Notifiy </h1>
-    <p><a href='https://android-notify.vercel.app/getting-started'>Android Notify</a> is a Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
+    <p><a href='https://android-notify.vercel.app'>Android Notify</a> is a Python library for effortlessly creating and managing Android notifications in Kivy android apps.</p>
     <p>Supports various styles and ensures seamless integration, customization and Pythonic APIs.</p>
     <!-- <br> -->
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
-<!-- 
+<!-- Channel [CRUD]
 The Android Notify package provides a simple yet comprehensive way to create and manage rich notifications on Android devices directly from your Python code. This library bridges the gap between Python and Android's notification system, giving you full control over notifications with a clean, Pythonic API. -->
 
 ## Features
@@ -24,10 +24,12 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Add action buttons with custom callbacks
   - Update notification content dynamically
   - Manage progress bars with fine-grained control
-  - Custom notification channels for Android 8.0+
+  - Custom notification Icon
+  - Custom notification channels for Android 8.0+ (Creating and Deleting)
   - Silent notifications
   - Persistent notifications
   - Click handlers and callbacks
+  - Cancel Notifications
 
 ## Quick Start
 
@@ -70,7 +72,7 @@ pip install android_notify
 ## Documentation
 
 For full documentation, examples, and advanced usage, API reference visit the
-[documentation](https://android-notify.vercel.app/getting-started)
+[documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
 
