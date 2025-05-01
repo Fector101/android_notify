@@ -86,3 +86,6 @@ Importance = Literal['urgent','high','medium','low','none']
 #     pass
 # class NotificationCompatInboxStyle:
 #     pass
+
+#Now writing Knowledge from errors
+# notify.(int, Builder.build()) # must be int
