@@ -3,6 +3,7 @@ import traceback
 import os,re
 import threading
 from .an_types import Importance
+from .an_utils import can_accept_arguments
 from .styles import NotificationStyles
 from .base import BaseNotification
 DEV=0
@@ -218,7 +219,7 @@ class Notification(BaseNotification):
 
     def setSmallIcon(self,path):
         """
-        sets small icon to the top right
+        sets small icon to the top left
         :param path: can be `Relative Path` or `URL`
         :return:
         """
@@ -241,6 +242,10 @@ class Notification(BaseNotification):
             print('Done setting large icon')
 
     def setBigText(self,body):
+        """Sets a big text for when drop down button is pressed
+
+        :param body: The big text that will be displayed
+        """
         if ON_ANDROID:
             big_text_style = NotificationCompatBigTextStyle()
             big_text_style.bigText(str(body))
@@ -526,8 +531,13 @@ class Notification(BaseNotification):
         return True
 
     def __dispatch_notification(self):
-        self.notification_manager.notify(self.__id, self.__builder.build())
-
+        if NotificationHandler.has_permission():
+            self.notification_manager.notify(self.__id, self.__builder.build())
+        else:
+            print('Permission not granted to send notifications')
+            # Not asking for permission too frequently, This makes dialog popup to stop showing
+            # NotificationHandler.asks_permission()
+                
     def __start_notification_build(self, persistent, close_on_click):
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
@@ -768,7 +778,7 @@ class NotificationHandler:
     """For Notification Operations """
     __name = None
     __bound = False
-
+    __requesting_permission=False
     @classmethod
     def get_name(cls):
         """Returns name or id str for Clicked Notification."""
@@ -876,22 +886,38 @@ class NotificationHandler:
         return check_permission(Permission.POST_NOTIFICATIONS)
 
     @classmethod
+    @run_on_ui_thread
     def asks_permission(cls,callback=None):
         """
         Ask for permission to send notifications if needed.
+        Passes True to callback if access granted
         """
-        if not ON_ANDROID:
-            return
-        def on_permissions_result(permissions, grant):
-            print("Permission Grant State: ",grant)
+        if cls.__requesting_permission or not ON_ANDROID:
+            return True
+
+        def on_permissions_result(permissions, grants):
             try:
                 if callback:
-                    callback()
+                    if can_accept_arguments(callback, True):
+                        callback(grants[0])
+                    else:
+                        callback()
             except Exception as request_permission_error:
                 print('Exception: ',request_permission_error)
-                print('Permission request callback error: ',traceback.format_exc())
+                print('Permission response callback error: ',traceback.format_exc())
+            finally:
+                cls.__requesting_permission = False
+
         if not cls.has_permission():
+            cls.__requesting_permission = True
             request_permissions([Permission.POST_NOTIFICATIONS],on_permissions_result)
+        else:
+            cls.__requesting_permission = False
+            if callback:
+                if can_accept_arguments(callback,True):
+                    callback(True)
+                else:
+                    callback()
 
 
 NotificationHandler.bindNotifyListener()
