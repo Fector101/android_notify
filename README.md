@@ -19,7 +19,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Large icon notifications
   - Big picture notifications
   - Combined image styles
-
+[Components Section](https://android-notify.vercel.app/components)
 - **Rich Functionality**:
   - Add action buttons with custom callbacks
   - Update notification content dynamically
