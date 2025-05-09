@@ -32,22 +32,6 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Click handlers and callbacks
   - Cancel Notifications
 
-## Quick Start
-
-```python
-from android_notify import Notification
-
-# Simple notification
-Notification(
-    title="Hello",
-    message="This is a basic notification."
-).send()
-
-```
-
-**Sample Image:**  
-![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basicnoti.jpg)
-
 ## Installation
 
 In your **`buildozer.spec`** file, ensure you include the following:
@@ -69,6 +53,22 @@ Can be installed via `pip` For testing purposes:
 ```bash
 pip install android_notify
 ```
+
+## Quick Start
+
+```python
+from android_notify import Notification
+
+# Simple notification
+Notification(
+    title="Hello",
+    message="This is a basic notification."
+).send()
+
+```
+
+**Sample Image:**  
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basicnoti.jpg)
 
 ## Documentation
 
