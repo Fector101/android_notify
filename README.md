@@ -25,7 +25,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Add action buttons with custom callbacks
   - Update notification content dynamically
   - Manage progress bars with fine-grained control
-  - Custom notification Icon[Android 5.0+]
+  - Custom notification Icon [Android 5.0+]
   - Custom notification channels [Android 8.0+] (Creating and Deleting)
   - Silent notifications
   - Persistent notifications
