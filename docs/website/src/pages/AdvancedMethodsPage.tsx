@@ -15,6 +15,11 @@ interface IAdvancedMethodsPage {
     channel_management_code: string;
     getting_identifier_code: string;
 }
+
+function isLegacyVersion(version: number) {
+    return version <= 1.58;
+}
+
 export default function AdvancedMethodsPage({ version }: { version: Iversion }) {
     const [data, setData] = useState<IAdvancedMethodsPage>()
 
@@ -48,7 +53,19 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                 <h2 className=" long-title">For Images:</h2>
                 <hr />
                 {/* <p tabIndex={0} className="paragraph">For Images:</p> */}
-                <p className="paragraph">To add image after sending set <span className="code">already_sent</span> in <span className="code">addNotificationStyle</span> method to <span className="code">true</span></p>
+                <p className="paragraph">To add image after sending
+                {isLegacyVersion(version) ?
+                    <>
+                        <span> set </span>
+                        <span className="code">already_sent</span> in <span className="code">addNotificationStyle</span> method to <span className="code">true</span>
+                    </>
+                    :
+                    <>
+                    <span> use </span>
+                    <span className="code">setLargeIcon</span> or <span className="code">setBigPicture</span> then <span className="code">.refresh</span> 
+                    </>
+                }
+                </p>
                 <CodeBlock title="Image" code={data?.adding_image_code || ''} />
             </section>
 
@@ -69,10 +86,10 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
             <section id="getting-identifer" className="page-section" tabIndex={0}>
                 <h2 className="long-title">Getting Identifer</h2>
                 <hr />
-                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler{version <= 1.58?".getIdentifer":'.get_name'}</span></p>
+                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler{isLegacyVersion(version) ? ".getIdentifer" : '.get_name'}</span></p>
 
                 <p>
-                    {Boolean(version <= 1.58) && <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>}
+                    {isLegacyVersion(version) && <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>}
                 </p>
                 <CodeBlock title="Identifer" code={data?.getting_identifier_code || ''} />
             </section>
