@@ -7,6 +7,7 @@ import '../assets/css/advmethodspage.css'
 import channelimg from '../assets/imgs/channelname.jpg'
 import { useEffect, useState } from 'react';
 import { Iversion } from '../assets/js/mytypes';
+import { isLegacyVersion } from '../assets/js/helper';
 
 interface IAdvancedMethodsPage {
     title_and_message_update_code: string;
@@ -14,10 +15,6 @@ interface IAdvancedMethodsPage {
     adding_image_code: string;
     channel_management_code: string;
     getting_identifier_code: string;
-}
-
-function isLegacyVersion(version: number) {
-    return version <= 1.58;
 }
 
 export default function AdvancedMethodsPage({ version }: { version: Iversion }) {

@@ -72,11 +72,11 @@ notification.addButton(text="Turn Off",on_release=turnOffNoti)
 notification.addButton(text="Watch Later",on_release=watchLater)
 notification.send()`
 const appiconcode = `notification = Notification(
-    title="Custom Icon",
-    message="Also persist notification test"
+    title="custom icon notification",
+    message="using .setSmallIcon to set notification icon"
 )
-notification.setSmallIcon("assets/icons/download.png")
-notification.send(persistent=True)`
+notification.setSmallIcon("icons/butterfly.png")
+notification.send(persistent=True) # how to persistent notification`
 
 
 

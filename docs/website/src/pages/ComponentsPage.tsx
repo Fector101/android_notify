@@ -14,11 +14,13 @@ import btnsImg from './../assets/imgs/btns.jpg'
 import progressbarImg from './../assets/imgs/progress.jpg'
 import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
+import customIconImg from "../assets/imgs/custom_icon.jpg"
 // import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
 import { Iversion } from '../assets/js/mytypes';
+import { isLegacyVersion } from '../assets/js/helper';
 
 
 interface IComponentPage {
@@ -91,9 +93,12 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                     {/* {data?.how_to_add_both_imgs} */}
                     {/* <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p> */}
                     <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon</h3>
-                    <p className='paragraph'>When you initialize Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
-                    <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box</p>
-                    <CodeBlock title='Custom Icon' img='' code={data?.small_icon_code || ''} />
+                    {isLegacyVersion(version)?
+                        <p className='paragraph'>When you initialize Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
+                    :<p className='paragraph'>Use <span className="code">.setSmallIcon(path)</span> to set custom notification icon</p>
+                    }
+                    <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box.</p>
+                    <CodeBlock title='Custom Icon' img={customIconImg} code={data?.small_icon_code || ''} />
                     <p className='paragraph inner-section-1'>For about Images see <Link to='/advanced-methods#updating-notification'>advanced methods</Link> section</p>
                 </div>
             </section>
