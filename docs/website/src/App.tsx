@@ -24,7 +24,7 @@ function App() {
             <Toaster position="top-right" />
             <Header version={version} setVersion={setVersion}/>
             <main className="flex">
-                <SiteOverview />
+                <SiteOverview version={version} />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/getting-started" element={<MainPage />} />

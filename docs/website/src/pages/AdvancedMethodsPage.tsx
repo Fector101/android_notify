@@ -9,11 +9,11 @@ import { useEffect, useState } from 'react';
 import { Iversion } from '../assets/js/mytypes';
 
 interface IAdvancedMethodsPage {
-    title_and_message_update_code:string;
-    progress_bar_update_code:string;
-    adding_image_code:string;
-    channel_management_code:string;
-    getting_identifier_code:string;
+    title_and_message_update_code: string;
+    progress_bar_update_code: string;
+    adding_image_code: string;
+    channel_management_code: string;
+    getting_identifier_code: string;
 }
 export default function AdvancedMethodsPage({ version }: { version: Iversion }) {
     const [data, setData] = useState<IAdvancedMethodsPage>()
@@ -29,24 +29,29 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
     return (
         <div className="main-page page adv-methods-page">
             <ScrollToSection />
-            <h2 className=" long-title">Updating Notification</h2>
             <section id='updating-notification' className="page-section">
-
+                <h2 className=" long-title">Updating Notification</h2>
                 <hr />
                 <p>There Available methods to interact with notification after sending</p>
                 <p tabIndex={0} className="paragraph">For Changing <span className="code">title</span> and <span className="code">message</span> after sending:</p>
-                <CodeBlock title="Title & Message" code={data?.title_and_message_update_code||''} />
+                <CodeBlock title="Title & Message" code={data?.title_and_message_update_code || ''} />
                 <p tabIndex={0} className="paragraph">For the Progress Bar: </p>
                 <ul className="inner-section-2 paragraph">
                     <li>Avoid changing it value in intervals less than 0.5sec</li>
                     <li>And always pass in the new title and message if any to <span className="code">updateProgressBar</span> method</li>
                 </ul>
                 <span className="paragraph code yellow flex progressbar-warning">Android ignores updates faster than 0.5sec on some devices</span>
-                <CodeBlock title="Progress-Bar" code={data?.progress_bar_update_code||''} />
-                <p tabIndex={0} className="paragraph">For Images:</p>
-                <p className="paragraph">To add image after sending set <span className="code">already_sent</span> in <span className="code">addNotificationStyle</span> method to <span className="code">true</span></p>
-                <CodeBlock title="Image" code={data?.adding_image_code||''} />
+                <CodeBlock title="Progress-Bar" code={data?.progress_bar_update_code || ''} />
             </section>
+
+            <section id='adding-image' className="page-section">
+                <h2 className=" long-title">For Images:</h2>
+                <hr />
+                {/* <p tabIndex={0} className="paragraph">For Images:</p> */}
+                <p className="paragraph">To add image after sending set <span className="code">already_sent</span> in <span className="code">addNotificationStyle</span> method to <span className="code">true</span></p>
+                <CodeBlock title="Image" code={data?.adding_image_code || ''} />
+            </section>
+
             <section id="channel-management" className="page-section" tabIndex={0}>
 
                 <h2 className="long-title">Channel Management</h2>
@@ -58,17 +63,18 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                     <li className="inner-section-2">Using this format <span className="code">.lower().replace(' ', '_')</span> </li>
                     <li>Custom Channel Name's Gives User ability to turn on/off specific notifications</li>
                 </ul>
-                <CodeBlock title='Channel Management' code={data?.channel_management_code||''} img={channelimg} />
+                <CodeBlock title='Channel Management' code={data?.channel_management_code || ''} img={channelimg} />
             </section>
+
             <section id="getting-identifer" className="page-section" tabIndex={0}>
                 <h2 className="long-title">Getting Identifer</h2>
                 <hr />
-                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler.getIdentifer</span></p>
+                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler{version <= 1.58?".getIdentifer":'.get_name'}</span></p>
 
                 <p>
-                    <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>
+                    {Boolean(version <= 1.58) && <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>}
                 </p>
-                <CodeBlock title="Identifer" code={data?.getting_identifier_code||''} />
+                <CodeBlock title="Identifer" code={data?.getting_identifier_code || ''} />
             </section>
 
 

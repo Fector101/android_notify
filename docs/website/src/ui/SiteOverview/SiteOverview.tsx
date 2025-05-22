@@ -5,6 +5,8 @@ import './siteoverview.css'
 import { useEffect, useState } from "react";
 // import { toast } from "sonner";
 import { ScrollToSection } from "../ScrollAssist";
+import { Iversion } from "../../assets/js/mytypes";
+import { nanoid } from "nanoid";
 
 function DropDown({ title, sections, hash, route }: { route: string; title: string; sections: string[], hash: string }) {
     const [opened, setOpened] = useState(false)
@@ -51,9 +53,42 @@ function DropDown({ title, sections, hash, route }: { route: string; title: stri
 
 }
 
-export default function SiteOverview() {
+    // export const Sidebar= [
+    //     {
+    //         title: 'Getting Started',
+    //         route: '/getting-started',
+    //         sections: {
+    //             'Introduction':'introduction',
+    //             'Features':'features',
+    //             'Installation':'installation',
+    //             'Basic Usage':'basic-usage'
+    //         }
+    //     },
+interface ISiteOverviewData {
+    title: string;
+    route: string;
+    sections: {
+        [key: string]: string;
+    }
+}
+
+export default function SiteOverview({ version }: { version: Iversion }) {
     const location = useLocation();
     const [hash, setHash] = useState(location.hash)
+    const [data, setData] = useState<ISiteOverviewData[]>()
+
+
+
+    async function changeVersionData(version: Iversion) {
+
+        const data = await import(`../../pages/versions-data/${version}.tsx`);
+        // console.log(data,' 1p11')
+        setData(data?.Sidebar)
+    }
+    useEffect(() => {
+        changeVersionData(version)
+    }, [version])
+
     useEffect(() => {
         setHash(location.hash)
         // toast.success(location.pathname)
@@ -97,16 +132,25 @@ export default function SiteOverview() {
 
         sections.forEach((s) => observer.observe(s));
         return () => observer.disconnect();
-        
+
     }, [location.pathname]);
 
-    return (
-        // <>
 
+    return (
         <div id="site-overview">
             <ScrollToSection />
-
-            <DropDown
+            {
+                data?.map((each) => {
+                    return <DropDown
+                        key={nanoid()}
+                        hash={hash}
+                        title={each.title}
+                        route={each.route}
+                        sections={Object.keys(each.sections)}
+                    />
+                })
+            }
+            {/* <DropDown
                 hash={hash}
                 route='/getting-started'
                 title="Getting Started"
@@ -116,8 +160,8 @@ export default function SiteOverview() {
                     'Installation',
                     'Basic Usage'
                 ]}
-            />
-            <DropDown
+            /> */}
+            {/* <DropDown
                 hash={hash}
                 title="Components"
                 route='/components'
@@ -170,58 +214,62 @@ export default function SiteOverview() {
                     // 'FAQ',
                     // 'Error Handling',
                 ]}
-            />
+            /> */}
         </div>
-
-        /* comment ./siteoverview.css .site-overview {`position: fixed;`} to see properly
-     <div className="site-overview">
-<DropDown 
-    hash={hash} 
-    title="Getting Started" 
-    sections={[
-        'Introduction', 
-        'Installation', 
-        'Basic Usage'
-    ]} 
-/>
-<DropDown 
-    hash={hash} 
-    title="Guides" 
-    sections={[
-        'Notification Options', 
-        'Customizing Behavior', 
-        'Error Handling'
-    ]} 
-/>
-<DropDown 
-    hash={hash} 
-    title="Reference" 
-    sections={[
-        'Notification Class', 
-        'Available Methods', 
-        'Examples'
-    ]} 
-/>
-<DropDown 
-    hash={hash} 
-    title="Support" 
-    sections={[
-        'FAQ', 
-        'Troubleshooting', 
-        'Contributing'
-    ]} 
-/>
-<DropDown 
-    hash={hash} 
-    title="About" 
-    sections={[
-        'What is Android-notify?', 
-        'License', 
-        'Changelog'
-    ]} 
-/>
-    </div> 
-    * </> */
-
     )
 }
+
+
+
+
+
+
+/* comment ./siteoverview.css .site-overview {`position: fixed;`} to see properly
+<div className="site-overview">
+<DropDown 
+hash={hash} 
+title="Getting Started" 
+sections={[
+'Introduction', 
+'Installation', 
+'Basic Usage'
+]} 
+/>
+<DropDown 
+hash={hash} 
+title="Guides" 
+sections={[
+'Notification Options', 
+'Customizing Behavior', 
+'Error Handling'
+]} 
+/>
+<DropDown 
+hash={hash} 
+title="Reference" 
+sections={[
+'Notification Class', 
+'Available Methods', 
+'Examples'
+]} 
+/>
+<DropDown 
+hash={hash} 
+title="Support" 
+sections={[
+'FAQ', 
+'Troubleshooting', 
+'Contributing'
+]} 
+/>
+<DropDown 
+hash={hash} 
+title="About" 
+sections={[
+'What is Android-notify?', 
+'License', 
+'Changelog'
+]} 
+/>
+</div> 
+</> */

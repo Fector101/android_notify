@@ -447,7 +447,7 @@ const STYLE_ATTRIBUTES = [
 const component_page = {
     big_picture_code: bigimgcode,
     large_icon_code: largeiconcode,
-    how_to_add_both_imgs: <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p>,
+    how_to_add_both_imgs: <p className="paragraph">For Both Images use <span className="code">Notification.setBigPicture</span> and <span className="code">Notification.setLargeIcon</span> together</p>,
     small_icon_code: appiconcode,
     buttons_code,
     progressbar_code: progressbarcode,
@@ -467,6 +467,48 @@ const reference_page = {
     NOTIFICATION_METHODS, HANDLER_METHODS, STYLE_ATTRIBUTES
 }
 
+
+export const Sidebar= [
+    {
+        title: 'Getting Started',
+        route: '/getting-started',
+        sections: {
+            'Introduction':'introduction',
+            'Features':'features',
+            'Installation':'installation',
+            'Basic Usage':'basic-usage'
+        }
+    },
+    {
+        title: 'Components',
+        route: '/components',
+        sections: {
+            'Images':'images',
+            'Buttons':'buttons',
+            'Progress Bars':'progress-bars',
+            'Texts':'texts'
+        }
+    },
+    {
+        title: 'Advanced Methods',
+        route: '/advanced-methods',
+        sections: {
+            'Updating Notification':'updating-notification',
+            'Adding Image':'adding-image',
+            'Channel Management':'channel-management',
+            'Getting Identifer':'getting-identifer'
+        }
+    },
+    {
+        title: 'Reference',
+        route: '/reference',
+        sections: {
+            'Notification Class':'notification-class',
+            'NotificationHandler Class':'notificationhandler-class',
+            'NotificationStyles Class':'notificationstyles-class'
+        }
+    }
+]
 
 export { component_page, advanced_methods_page, reference_page }
 // export {bigimgcode,buttons_code,progressbarcode,largeiconcode,inboxcode,bigtextcode,appiconcode}
