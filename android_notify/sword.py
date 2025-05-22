@@ -2,6 +2,8 @@
 import traceback
 import os,re
 import threading
+
+
 from .an_types import Importance
 from .an_utils import can_accept_arguments
 from .styles import NotificationStyles
@@ -32,7 +34,7 @@ try:
     IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
     ON_ANDROID = True
 except Exception as e:
-    if e.name != 'android':
+    if hasattr(e,'name') and e.name != 'android':
         print('Exception: ',e)
         print(traceback.format_exc())
 
@@ -537,7 +539,7 @@ class Notification(BaseNotification):
             print('Permission not granted to send notifications')
             # Not asking for permission too frequently, This makes dialog popup to stop showing
             # NotificationHandler.asks_permission()
-                
+
     def __start_notification_build(self, persistent, close_on_click):
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
@@ -562,7 +564,8 @@ class Notification(BaseNotification):
         self.__built_parameter_filled = True
 
     def __insert_app_icon(self,path=''):
-        if path or self.app_icon not in ['','Defaults to package app icon']:
+        if BuildVersion.SDK_INT >= 23 and (path or self.app_icon not in ['','Defaults to package app icon']):
+            # Bitmap Insert as Icon Not available below Android 6
             if self.logs:
                 print('getting custom icon...')
             self.__set_icon_from_bitmap(path or self.app_icon)
