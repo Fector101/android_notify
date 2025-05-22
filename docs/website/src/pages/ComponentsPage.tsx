@@ -94,20 +94,25 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                     {/* {data?.how_to_add_both_imgs} */}
                     {/* <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p> */}
                     <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon</h3>
-                    {isLegacyVersion(version)?
+                    {isLegacyVersion(version) ?
                         <p className='paragraph'>When you initialize Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
-                    :<p className='paragraph'>Use <span className="code">.setSmallIcon(path)</span> to set custom notification icon</p>
+                        : <p className='paragraph'>Use <span className="code">.setSmallIcon(path)</span> to set custom notification icon</p>
                     }
                     <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box.</p>
                     <CodeBlock title='Custom Icon' img={customIconImg} code={data?.small_icon_code || ''} />
                     {
-                        isLegacyVersion(version)?
-                        <></>
-                        :
-                        <CodeBlock code={`Notification(
+                        isLegacyVersion(version) ?
+                            <CodeBlock code={`Notification(
+    title="Using Online Image",
+    message="Pass image URL as path to setBigImage",
+    style=NotificationStyles.BIG_PICTURE,
+    big_picture_path="https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
+
+                            :
+                            <CodeBlock code={`Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage"
-).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg}/>
+).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
 
                     }
                     <p className='paragraph inner-section-1'>For about Images see <Link to='/advanced-methods#updating-notification'>advanced methods</Link> section</p>
