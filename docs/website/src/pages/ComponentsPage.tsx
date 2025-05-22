@@ -15,6 +15,7 @@ import progressbarImg from './../assets/imgs/progress.jpg'
 import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
 import customIconImg from "../assets/imgs/custom_icon.jpg"
+import onlineBigPicImg from "../assets/imgs/online-img.jpg"
 // import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
@@ -99,6 +100,16 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                     }
                     <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box.</p>
                     <CodeBlock title='Custom Icon' img={customIconImg} code={data?.small_icon_code || ''} />
+                    {
+                        isLegacyVersion(version)?
+                        <></>
+                        :
+                        <CodeBlock code={`Notification(
+    title="Using Online Image",
+    message="Pass image URL as path to setBigImage"
+).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg}/>
+
+                    }
                     <p className='paragraph inner-section-1'>For about Images see <Link to='/advanced-methods#updating-notification'>advanced methods</Link> section</p>
                 </div>
             </section>
