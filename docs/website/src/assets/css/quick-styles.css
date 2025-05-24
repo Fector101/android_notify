@@ -158,6 +158,7 @@ span.code.green {
 span.code.yellow {
     color: #dfdf1a;
 }
+
 span.code.yellow-shade {
     color: rgb(251, 225, 172);
 }
@@ -165,6 +166,7 @@ span.code.yellow-shade {
 span.code.green-shade {
     color: #71f171;
 }
+
 .opacity-0 {
     opacity: 0;
 }
@@ -177,4 +179,6 @@ span.code.green-shade {
     white-space: pre-line;
 }
 
-.align-self-end {}
+.text-align-center {
+    text-align: center;
+}

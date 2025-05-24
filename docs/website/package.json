@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node generate-last-updated.cjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

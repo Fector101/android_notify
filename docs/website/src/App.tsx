@@ -16,6 +16,7 @@ import ExtrasPage from "./pages/ExtrasPage.tsx";
 import VersionsPage from "./pages/VersionsPage.tsx";
 import { useState } from "react";
 import HomePage from "./pages/HomePage.tsx";
+import Footer from "./ui/Footer/Footer.tsx";
 
 function App() {
     const [version,setVersion]=useState(1.59)
@@ -37,6 +38,7 @@ function App() {
                     <Route path="*" element={<p className="page">Page Not Found</p>} />
                 </Routes>
             </main>
+            <Footer/>
             <Analytics />
         </>
     )
