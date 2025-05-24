@@ -610,7 +610,9 @@ class Notification(BaseNotification):
                 self.__builder.setSmallIcon(icon)
             else:
                 if self.logs:
-                    print('Failed getting img for custom notification icon defaulting to app icon')
+                    app_folder=os.path.join(app_storage_path(),'app')
+                    img_absolute_path = os.path.join(app_folder, img_path)
+                    print(f'Failed getting img for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
     @staticmethod
@@ -618,9 +620,13 @@ class Notification(BaseNotification):
         app_folder=os.path.join(app_storage_path(),'app')
         output_path = os.path.join(app_folder, relative_path)
         if not os.path.exists(output_path):
-            print(f"\nImage not found at path: {output_path}, (Local images gotten from App Path)")
-            print("These are the existing files in your app Folder:")
-            print('['+', '.join(os.listdir(app_folder)) + ']')
+            print(f"\nImage not found at path: {app_folder}, (Local images gotten from App Path)")
+            try:
+                print("- These are the existing files in your app Folder:")
+                print('['+', '.join(os.listdir(app_folder)) + ']')
+            except Exception as e:
+                print('Exception: ',e)
+                print("Couldn't get Files in App Folder")
             return None
         # TODO test with a badly written Image and catch error
         Uri = autoclass('android.net.Uri')
