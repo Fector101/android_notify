@@ -60,9 +60,9 @@ export default function ReferencePage({ version }: { version:Iversion}) {
 					<p className='paragraph'>Add methods working to free up __init__ kwargs [parsing out `style` attribute] </p>
 					<div className='paragraph'>
 						<span className="cod paragraph">setSmallIcon</span> == <span className="code yellow-shade">Notification(..., app_icon="...") </span><br/><br/>
-						<span className="cod">setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path="...", style=NotificationStyles.LARGE_ICON)</span><br/><br/>
-						<span className="cod">setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span><br/><br/>
-						<span className="cod">setBigText</span> == <span className="code yellow-shade">Notification(..., body="...", style=NotificationStyles.BIG_TEXT)</span><br/>
+						<span>setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path="...", style=NotificationStyles.LARGE_ICON)</span><br/><br/>
+						<span>setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span><br/><br/>
+						<span>setBigText</span> == <span className="code yellow-shade">Notification(..., body="...", style=NotificationStyles.BIG_TEXT)</span><br/>
 					</div>
 				</section>}
 			{/* Instance Methods Section */}

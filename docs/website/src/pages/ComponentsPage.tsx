@@ -93,7 +93,7 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                     {data?.how_to_add_both_imgs || <></>}
                     {/* {data?.how_to_add_both_imgs} */}
                     {/* <p className="paragraph">For Both Images pass in <span className="code">NotificationStyles.BOTH_IMGS</span> as argument to <span className="code">style</span> and provide both paths</p> */}
-                    <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon</h3>
+                    <h3 className='app-icon-h3 sub-header'>Changing Default Notification Icon [Android 6+]</h3>
                     {isLegacyVersion(version) ?
                         <p className='paragraph'>When you initialize Notification instance you can pass in file path to <span className="code">app_icon</span> </p>
                         : <p className='paragraph'>Use <span className="code">.setSmallIcon(path)</span> to set custom notification icon</p>

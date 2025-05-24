@@ -17,10 +17,10 @@ export default function HomePage() {
 
                 <p className="paragraph">- Freeing up __init__ kwargs, Created some new methods:</p>
                 <ul className='inner-section-2 paragraph'>
-                    <li><span className="code">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></li>
-                    <li><span className="code">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></li>
-                    <li><span className="code">setBigPicture</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_PICTURE)</span></li>
-                    <li><span className="code">setBigText</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_TEXT)</span></li>
+                    <li><span className="code green-shade">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></li>
+                    <li><span className="code green-shade">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></li>
+                    <li><span className="code green-shade">setBigPicture</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_PICTURE)</span></li>
+                    <li><span className="code green-shade">setBigText</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_TEXT)</span></li>
                 </ul>
                 <h3 className='paragraph'>New Features</h3>
                 <span className='code width100per flex paragraph'></span>
