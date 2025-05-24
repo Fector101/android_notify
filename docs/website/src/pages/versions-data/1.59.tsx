@@ -324,7 +324,7 @@ const NOTIFICATION_METHODS = [
             { name: 'cooldown', desc: "Defaults to 0.5secs,buffer time for when changes happen too fast, shouldn't be changed unless tested on specific device" }
         ]
     },
-    
+
     {
         id: 'createChannel(cls, ):',
         signature: 'createChannel(id, name:str, description?,importance:Importance?)',
@@ -336,7 +336,7 @@ const NOTIFICATION_METHODS = [
             { name: 'importance', desc: "['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly" },
         ]
     },
-    
+
     {
         id: 'deleteChannel',
         signature: 'deleteChannel(channel_id)',
@@ -468,46 +468,59 @@ const reference_page = {
 }
 
 
-export const Sidebar= [
+export const Sidebar = [
     {
         title: 'Getting Started',
         route: '/getting-started',
         sections: {
-            'Introduction':'introduction',
-            'Features':'features',
-            'Installation':'installation',
-            'Basic Usage':'basic-usage'
+            'Introduction': 'introduction',
+            'Features': 'features',
+            'Installation': 'installation',
+            'Basic Usage': 'basic-usage'
         }
     },
     {
         title: 'Components',
         route: '/components',
         sections: {
-            'Images':'images',
-            'Buttons':'buttons',
-            'Progress Bars':'progress-bars',
-            'Texts':'texts'
+            'Images': 'images',
+            'Buttons': 'buttons',
+            'Progress Bars': 'progress-bars',
+            'Texts': 'texts'
         }
     },
     {
         title: 'Advanced Methods',
         route: '/advanced-methods',
         sections: {
-            'Updating Notification':'updating-notification',
-            'Adding Image':'adding-image',
-            'Channel Management':'channel-management',
-            'Getting Identifer':'getting-identifer'
+            'Updating Notification': 'updating-notification',
+            'Adding Image': 'adding-image',
+            'Channel Management': 'channel-management',
+            'Getting Identifer': 'getting-identifer'
         }
     },
     {
         title: 'Reference',
         route: '/reference',
         sections: {
-            'Notification Class':'notification-class',
-            'NotificationHandler Class':'notificationhandler-class',
-            'NotificationStyles Class':'notificationstyles-class'
+            'Notification Class': 'notification-class',
+            'NotificationHandler Class': 'notificationhandler-class',
+            'NotificationStyles Class': 'notificationstyles-class'
         }
-    }
+    },
+    {
+        title: 'Extras',
+        route: '/extras',
+        sections: {
+            'How to update': 'how-to-update',
+            'Debugging Tips': 'debugging-tips',
+            'Contributing-Issues': 'contributing-issues',
+            'Support Project': 'support-project',
+            'Credits': 'credits',
+
+        }
+    },
+
 ]
 
 export { component_page, advanced_methods_page, reference_page }

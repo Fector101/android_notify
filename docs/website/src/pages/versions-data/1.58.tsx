@@ -417,7 +417,21 @@ export const Sidebar= [
             'NotificationHandler Class':HANDLER_METHODS,
             'NotificationStyles Class':STYLE_ATTRIBUTES
         }
-    }
+    },
+    {
+        title: 'Extras',
+        route: '/extras',
+        sections: {
+            'How to update': 'how-to-update',
+            'Debugging Tips': 'debugging-tips',
+            'Contributing-Issues': 'contributing-issues',
+            'Support Project': 'support-project',
+            'Credits': 'credits',
+
+        }
+    },
+
+    
 ]
 
 export { component_page, advanced_methods_page, reference_page }
