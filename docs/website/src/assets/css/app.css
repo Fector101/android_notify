@@ -59,11 +59,12 @@ body>#root {
 .page {
     padding-block: 20px;
     width: calc(100% - var(--overview-width));
-    margin-left: auto;
-    margin:auto;
-    /* margin-right: 2px; */
-    /* flex: 1; */
+    margin: auto;
 }
+
+/* margin-left: auto; */
+/* margin-right: 2px; */
+/* flex: 1; */
 
 .next-page-btns-box {
     padding: 0 20px;
@@ -153,9 +154,9 @@ body>#root {
 
 
 @media screen and (max-width:1000px) {
-    body>#root {
-        /* --overview-width: 0; */
-    }
+    /*body>#root {
+         --overview-width: 0; 
+    }*/
 
     .page {
         width: 100%;
@@ -169,19 +170,22 @@ body>#root {
         width: 100%;
         font-size: 14px;
     }
-    .next-page-btns-box{
+
+    .next-page-btns-box {
         overflow: hidden;
         /* background: #000; */
         padding: 0;
         gap: 5px;
     }
+
     .next-page-btn {
         padding: 8px;
         gap: 5px;
     }
-    .next-page-btn p{
+
+    .next-page-btn p {
         font-size: 13px;
         /* white-space: nowrap; */
     }
-    
+
 }

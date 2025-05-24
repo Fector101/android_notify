@@ -19,26 +19,29 @@ import HomePage from "./pages/HomePage.tsx";
 import Footer from "./ui/Footer/Footer.tsx";
 
 function App() {
-    const [version,setVersion]=useState(1.59)
+    const [version, setVersion] = useState(1.59)
     return (
         <>
             <Toaster position="top-right" />
-            <Header version={version} setVersion={setVersion}/>
-            <main className="flex">
+            <Header version={version} setVersion={setVersion} />
+            <main className="flex fd-colum">
                 <SiteOverview version={version} />
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/getting-started" element={<MainPage />} />
-                    <Route path="/components" element={<ComponentsPage version={version} />} />
-                    <Route path="/advanced-methods" element={<AdvancedMethodsPage version={version} />} />
-                    <Route path="/reference" element={<ReferencePage version={version} />} />
-                    <Route path="/extras" element={<ExtrasPage />} />
-                    {/* <Route path="/versions" element={<p className="main-page page">Will contain list of versions from 1.58+</p>} /> */}
-                    <Route path="/versions" element={<VersionsPage setVersion={setVersion} />} />
-                    <Route path="*" element={<p className="page">Page Not Found</p>} />
-                </Routes>
+                <main className="flex fd-column width100per">
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/getting-started" element={<MainPage />} />
+                        <Route path="/components" element={<ComponentsPage version={version} />} />
+                        <Route path="/advanced-methods" element={<AdvancedMethodsPage version={version} />} />
+                        <Route path="/reference" element={<ReferencePage version={version} />} />
+                        <Route path="/extras" element={<ExtrasPage />} />
+                        {/* <Route path="/versions" element={<p className="main-page page">Will contain list of versions from 1.58+</p>} /> */}
+                        <Route path="/versions" element={<VersionsPage setVersion={setVersion} />} />
+                        <Route path="*" element={<p className="page">Page Not Found</p>} />
+                    </Routes>
+                    <Footer />
+                </main>
+
             </main>
-            <Footer/>
             <Analytics />
         </>
     )
