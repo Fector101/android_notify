@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router'
 import { Iversion } from '../assets/js/mytypes';
+import { isLegacyVersion } from '../assets/js/helper';
 
 type arg = { name: string; desc: string }
 type object_list = {
@@ -17,7 +18,7 @@ interface IReferencePage {
 	HANDLER_METHODS: object_list[];
 	STYLE_ATTRIBUTES: object_list[];
 }
-export default function ReferencePage({ version }: { version:Iversion}) {
+export default function ReferencePage({ version }: { version: Iversion }) {
 	const [data, setData] = useState<IReferencePage>()
 
 	async function changeVersionData(version: Iversion) {
@@ -59,10 +60,10 @@ export default function ReferencePage({ version }: { version:Iversion}) {
 					<h2>For v1.59</h2>
 					<p className='paragraph'>Add methods working to free up __init__ kwargs [parsing out `style` attribute] </p>
 					<div className='paragraph'>
-						<span className="cod paragraph">setSmallIcon</span> == <span className="code yellow-shade">Notification(..., app_icon="...") </span><br/><br/>
-						<span>setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path="...", style=NotificationStyles.LARGE_ICON)</span><br/><br/>
-						<span>setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span><br/><br/>
-						<span>setBigText</span> == <span className="code yellow-shade">Notification(..., body="...", style=NotificationStyles.BIG_TEXT)</span><br/>
+						<span className="cod paragraph">setSmallIcon</span> == <span className="code yellow-shade">Notification(..., app_icon="...") </span><br /><br />
+						<span>setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path="...", style=NotificationStyles.LARGE_ICON)</span><br /><br />
+						<span>setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span><br /><br />
+						<span>setBigText</span> == <span className="code yellow-shade">Notification(..., body="...", style=NotificationStyles.BIG_TEXT)</span><br />
 					</div>
 				</section>}
 			{/* Instance Methods Section */}
@@ -106,7 +107,25 @@ export default function ReferencePage({ version }: { version:Iversion}) {
 			</section>
 
 			<section id="notificationstyles-class" className="space-y-6 page-section" tabIndex={0}>
-				<h2 className="text-xl font-bold">NotificationStyles attributes for Safely Adding Styles</h2>
+				{isLegacyVersion(version) ?
+					<h2 className="text-xl font-bold">NotificationStyles attributes for Safely Adding Styles</h2>
+					:
+					<>
+						<h2 className="text-xl font-bold">NotificationStyles</h2>
+						<p className="paragraph">
+							Most of NotificationStyles attributes are deprecated in v1.59 except <span className='code green'>NotificationStyles.INBOX</span>, but they're still available for backward compatibility.
+							You can use the <span className="code yellow-shade">style</span> attribute in the Notification class to set styles.</p>
+						<p>For example:</p>
+						<p>Notification.setLargeIcon('profile.png') replaced</p>
+						<p className="paragraph inner-section-2">
+							<span className="code yellow-shade">Notification(..., large_icon_path="profile.png", style=NotificationStyles.LARGE_ICON)</span>
+						</p>
+						<p className="paragraph">
+							You can also use the <span className="code yellow-shade">setLargeIcon</span>, <span className="code yellow-shade">setBigPicture</span>, and <span className="code yellow-shade">setBigText</span> 
+							methods to set the respective styles of <span className="code">NotificationStyles.LARGE_ICON</span>, <span className="code">NotificationStyles.BIG_PICTURE</span>, <span className="code">NotificationStyles.BIG_TEXT</span>
+						</p>
+					</>
+				}
 				<div className='flex flex-wrap align-items-cen justify-content-cen styles-container'>
 
 					{data?.STYLE_ATTRIBUTES.map((m) => (

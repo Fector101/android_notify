@@ -24,7 +24,7 @@ function App() {
         <>
             <Toaster position="top-right" />
             <Header version={version} setVersion={setVersion} />
-            <main className="flex fd-colum">
+            <main className="flex">
                 <SiteOverview version={version} />
                 <main className="flex fd-column width100per">
                     <Routes>

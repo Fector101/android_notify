@@ -148,6 +148,7 @@ span.code {
     border-radius: 3px;
     white-space: normal;
     word-break: break-word;
+    line-height: 1.8;
 }
 
 span.code.green {

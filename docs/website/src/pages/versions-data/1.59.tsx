@@ -402,11 +402,11 @@ const HANDLER_METHODS = [
 ];
 
 const STYLE_ATTRIBUTES = [
-    {
-        id: 'simple',
-        signature: 'NotificationStyles.DEFAULT',
-        description: 'contains default style "simple"'
-    },
+    // {
+    //     id: 'simple',
+    //     signature: 'NotificationStyles.DEFAULT',
+    //     description: 'contains default style "simple"'
+    // },
     {
         id: 'LARGE_ICON',
         signature: 'NotificationStyles.LARGE_ICON',
