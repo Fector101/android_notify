@@ -16,6 +16,8 @@ import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
 import customIconImg from "../assets/imgs/custom_icon.jpg"
 import onlineBigPicImg from "../assets/imgs/online-img.jpg"
+
+import bigTextGif from "../assets/imgs/big_text.gif"
 // import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
@@ -175,7 +177,7 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                 <CodeBlock title='Inbox Style' img={inboxImg} code={data?.inbox_style_code || ''} />
                 <h3 className='paragraph'>Big Text Style</h3>
                 <p className='paragraph'>When using big_text style <span className="code">message</span> acts as sub-title, Then when notification drop down button is pressed <span className="code">body</span> is revealed</p>
-                <CodeBlock title='Big Text Style' code={data?.big_text_style_code || ''} img='' />
+                <CodeBlock title='Big Text Style' code={data?.big_text_style_code || ''} img={bigTextGif} />
             </section>
 
             <span className='flex next-page-btns-box space-between'>
