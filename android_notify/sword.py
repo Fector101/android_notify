@@ -19,9 +19,16 @@ try:
     from android.config import ACTIVITY_CLASS_NAME
     from android.runnable import run_on_ui_thread
 
+    try:
+        from android import config
+        ns = config.JAVA_NAMESPACE
+        # print('This is Java name space:',ns)
+    except (ImportError,AttributeError):
+        ns='org.kivy.android'
+
     # Get the required Java classes needs to on android to import
     Bundle = autoclass('android.os.Bundle')
-    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    PythonActivity = autoclass(ns+'.PythonActivity')
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
@@ -43,12 +50,7 @@ except Exception as e:
     # print(MESSAGE) Already Printing in core.py
 
     # This is so no crashes when developing on PC
-    def run_on_ui_thread(func):
-        """Fallback for Developing on PC"""
-        def wrapper(*args, **kwargs):
-            # print("Simulating run on UI thread")
-            return func(*args, **kwargs)
-        return wrapper
+    from .an_utils import run_on_ui_thread
 
 if ON_ANDROID:
     try:
@@ -63,6 +65,7 @@ if ON_ANDROID:
         NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
+        # NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
     except Exception as e:
         print(e)
         print("""
@@ -86,6 +89,7 @@ class Notification(BaseNotification):
     :param progress_current_value: integer To set progress bar current value.
     :param progress_max_value: integer To set Max range for progress bar.
     :param body: large text For `big_Text` style, while `message` acts as subtitle.
+    :param lines_txt: text separated by newLine symbol For `inbox` style `use addLine method instead`
     ---
     (Advance Options)
     :param id: Pass in Old 'id' to use old instance
@@ -119,6 +123,9 @@ class Notification(BaseNotification):
         self.__built_parameter_filled=False
         self.__using_set_priority_method=False
 
+        # For components
+        self.__lines = []
+
         self.__format_channel(self.channel_name, self.channel_id)
         if not ON_ANDROID:
             return
@@ -127,6 +134,9 @@ class Notification(BaseNotification):
         notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
         self.notification_manager = cast(NotificationManager, notification_service)
         self.__builder = NotificationCompatBuilder(context, self.channel_id)
+
+    def addLine(self,text:str):
+        self.__lines.append(text)
 
     def cancel(self,_id=0):
         """
@@ -205,6 +215,7 @@ class Notification(BaseNotification):
         if self.__built_parameter_filled:
             # Don't dispatch before filling required values `self.__create_basic_notification`
             # We generally shouldn't dispatch till user call .send()
+            self.__applyNewLinesIfAny()
             self.__dispatch_notification()
 
     def setBigPicture(self,path):
@@ -508,11 +519,9 @@ class Notification(BaseNotification):
         if style == NotificationStyles.BIG_TEXT:
             self.setBigText(self.body)
 
-        elif style == NotificationStyles.INBOX:
-            inbox_style = NotificationCompatInboxStyle()
-            for line in self.message.split("\n"):
-                inbox_style.addLine(str(line))
-            self.__builder.setStyle(inbox_style)
+        elif style == NotificationStyles.INBOX and self.lines_txt:
+            lines = self.lines_txt.split("\n")
+            self.setLines(lines)
 
         elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
             img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
@@ -532,6 +541,20 @@ class Notification(BaseNotification):
 
         return True
 
+    def setLines(self, lines: list):
+        """Pass in a list of strings to be used for lines"""
+        if not lines:
+            return
+        if ON_ANDROID:
+            inbox_style = NotificationCompatInboxStyle()
+            for line in lines:
+                inbox_style.addLine(str(line))
+            self.__builder.setStyle(inbox_style)
+            print('Set Lines: ', lines)
+
+        if self.logs:
+            print('Added Lines: ', lines)
+
     def __dispatch_notification(self):
         if NotificationHandler.has_permission():
             self.notification_manager.notify(self.__id, self.__builder.build())
@@ -544,6 +567,12 @@ class Notification(BaseNotification):
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
             self.addNotificationStyle(self.style)
+        self.__applyNewLinesIfAny()
+
+    def __applyNewLinesIfAny(self):
+        if self.__lines:
+            self.setLines(self.__lines)
+            self.__lines=[] # for refresh method to known when new lines added
 
     def __create_basic_notification(self, persistent, close_on_click):
         if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:

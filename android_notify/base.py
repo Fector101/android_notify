@@ -18,6 +18,7 @@ class BaseNotification:
     progress_max_value: int = 100
     progress_current_value: float = 0.0 # Also Takes in Ints
     body: str = ''
+    lines_txt: str = ''
 
     # Notification Functions
     name: str = ''
