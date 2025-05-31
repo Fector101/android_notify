@@ -624,8 +624,8 @@ class Notification(BaseNotification):
             try:
                 print("- These are the existing files in your app Folder:")
                 print('['+', '.join(os.listdir(app_folder)) + ']')
-            except Exception as e:
-                print('Exception: ',e)
+            except Exception as could_not_get_files_in_path_error:
+                print('Exception: ', could_not_get_files_in_path_error)
                 print("Couldn't get Files in App Folder")
             return None
         # TODO test with a badly written Image and catch error
