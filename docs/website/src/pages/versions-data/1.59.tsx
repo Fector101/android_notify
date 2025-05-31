@@ -179,6 +179,7 @@ const NOTIFICATION_METHODS = [
 	big_picture_path: str = ''
 	large_icon_path: str = ''
 	body: str = ''
+	lines_txt: str = ''
 
     \t# Channel related
 	channel_name: str = ''
@@ -196,12 +197,21 @@ const NOTIFICATION_METHODS = [
             { name: 'big_picture_path', desc: "path or url to big image (for `BIG_PICTURE` style)" },
             { name: 'large_icon_path', desc: "path or url to image (for `LARGE_ICON` style)" },
             { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },
+            { name: 'lines_txt -- use addLine() instead', desc: "Lines of text for (for `INBOX` style) each line should be separated by '\\n'." },
             { name: 'callback', desc: "Function executed on notification tap." },
             { name: 'channel_name', desc: "Human-readable channel name." },
             { name: 'channel_id', desc: "Used to later reference Channel when sending each notification (extracted from channel name if provided or defaults to 'default_channel')." },
             { name: 'app_icon', desc: 'If not specified, defaults to the app icon. To change it, use a PNG—otherwise it will render as a black box.' },
             { name: 'logs', desc: 'Enable debug logs when not on Android.' },
 
+        ]
+    },
+    {
+        id: 'addLine',
+        signature: 'addLine(text)',
+        description: 'sets text for new line for inbox-style notification',
+        args: [
+            { name: 'text', desc: 'String for new line of text.' }
         ]
     },
     {
@@ -250,6 +260,14 @@ const NOTIFICATION_METHODS = [
         description: 'Sets a big text for when drop down button is pressed.',
         args: [
             { name: 'body', desc: 'The big text that will be displayed.' }
+        ]
+    },
+    {
+        id: 'setLines',
+        signature: 'setLines(lines)',
+        description: 'Sets a inbox lines texts for when drop down button is pressed, each string will be in a new line',
+        args: [
+            { name: 'lines', desc: "The List of texts that'll be used to create new lines." }
         ]
     },
     {

@@ -175,7 +175,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                                 <p className='paragraph'>Use <span className='link-design' onClick={()=>setVersion(1.59)}>v1.59.3</span> for proper implementation </p>
                             </>
                             :
-                            <p>You can use <span className="code">addLine</span> and pass in each line or<br/><span className="code">setLines</span> and pass in list of strings or <br/> Pass in txt separated by <span className="code">\n</span> as arg to <span className="code">lines_txt</span> to instance</p>
+                            <p>You can use <span className="code">addLine</span> and pass in each line or<br/><span className="code">setLines</span> and pass in list of strings or <br/> Pass in txt separated by <span className="code">\n</span> as arg to <span className="code">lines_txt</span> in instance</p>
                         // <p>
                         //     Simply Adds new line where <span className='code'>\n</span> is signified in message, Then specify <span className="code">style='inbox'</span> [will auto detect in other versions]
                         // </p>
