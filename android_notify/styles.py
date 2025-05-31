@@ -19,4 +19,4 @@ class NotificationStyles:
     BOTH_IMGS = "both_imgs"
 
     # MESSAGING = "messaging" # TODO
-    # CUSTOM = "custom" # TODO
+    # CUSTOM = "custom" # TODO v1.60
