@@ -183,6 +183,15 @@ span.code.green-shade {
 .text-align-center {
     text-align: center;
 }
-.gap-10{
+
+.gap-10 {
     gap: 10px;
+}
+
+.link-design {
+    color: var(--link-color);
+}
+.link-design:hover{
+    text-decoration: underline;
+    cursor: pointer;
 }

@@ -30,7 +30,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/getting-started" element={<MainPage />} />
-                        <Route path="/components" element={<ComponentsPage version={version} />} />
+                        <Route path="/components" element={<ComponentsPage version={version} setVersion={setVersion} />} />
                         <Route path="/advanced-methods" element={<AdvancedMethodsPage version={version} />} />
                         <Route path="/reference" element={<ReferencePage version={version} />} />
                         <Route path="/extras" element={<ExtrasPage />} />

@@ -40,10 +40,12 @@ notification.setLargeIcon("assets/imgs/profile.png")
 notification.send()`
 const inboxcode = `from android_notify import NotificationStyles
 notification = Notification(
-    title='Inbox Notification',
-    message='Line 1\\nLine 2\\nLine 3',
-    style=NotificationStyles.INBOX,
+    title="5 New mails from Frank",
+    message="Check them out",
 )
+notification.addLine("Re: Planning")
+notification.addLine("Delivery on its way")
+notification.addLine("Follow-up")
 notification.send()
 `
 // TODO : add a gif for big-text notification

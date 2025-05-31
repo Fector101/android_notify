@@ -18,6 +18,7 @@ import customIconImg from "../assets/imgs/custom_icon.jpg"
 import onlineBigPicImg from "../assets/imgs/online-img.jpg"
 
 import bigTextGif from "../assets/imgs/big_text.gif"
+import inboxTextGif from "../assets/imgs/inbox_text.gif"
 // import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
@@ -36,8 +37,9 @@ interface IComponentPage {
     inbox_style_code: string;
     big_text_style_code: string
 }
+type set_version = React.Dispatch<React.SetStateAction<number>>
 
-export default function ComponentsPage({ version }: { version: Iversion }) {
+export default function ComponentsPage({ version, setVersion }: { version: Iversion, setVersion: set_version }) {
     const [data, setData] = useState<IComponentPage>()
 
     async function changeVersionData(version: Iversion) {
@@ -166,15 +168,25 @@ export default function ComponentsPage({ version }: { version: Iversion }) {
                 <hr />
                 <h3>Multi-Line Text </h3>
                 <div className="paragraph inner-section-1">
-                    <p>
-                        Simply Adds new line where <span className='code'>\n</span> is signified in message, Then specify <span className="code">style='inbox'</span> [will auto detect in other versions]</p>
+                    {
+                        isLegacyVersion(version) ?
+                            <>
+                                <p>This feature doesn't work properly for v1.58, No way to set message and lines together. </p>
+                                <p className='paragraph'>Use <span className='link-design' onClick={()=>setVersion(1.59)}>v1.59.3</span> for proper implementation </p>
+                            </>
+                            :
+                            <p>You can use <span className="code">addLine</span> and pass in each line or<br/><span className="code">setLines</span> and pass in list of strings or <br/> Pass in txt separated by <span className="code">\n</span> as arg to <span className="code">lines_txt</span> to instance</p>
+                        // <p>
+                        //     Simply Adds new line where <span className='code'>\n</span> is signified in message, Then specify <span className="code">style='inbox'</span> [will auto detect in other versions]
+                        // </p>
+                    }
                     {/* <ul>
                         <li>Use <code>\\n</code> to add new lines in the message</li>
                         <li>Use <code>\\t</code> to add tabs in the message</li>
                         <li>Use <code>\\r</code> to add carriage returns in the message</li>
                         </ul> */}
                 </div>
-                <CodeBlock title='Inbox Style' img={inboxImg} code={data?.inbox_style_code || ''} />
+                <CodeBlock title='Inbox Style' img={isLegacyVersion(version)?inboxImg:inboxTextGif} code={data?.inbox_style_code || ''} />
                 <h3 className='paragraph'>Big Text Style</h3>
                 <p className='paragraph'>When using big_text style <span className="code">message</span> acts as sub-title, Then when notification drop down button is pressed <span className="code">body</span> is revealed</p>
                 <CodeBlock title='Big Text Style' code={data?.big_text_style_code || ''} img={bigTextGif} />
