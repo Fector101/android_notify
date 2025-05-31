@@ -15,7 +15,7 @@ class BaseNotification:
     # Style-specific attributes
     big_picture_path: str = ''
     large_icon_path: str = ''
-    progress_max_value: int = 100
+    progress_max_value: int = 0 #100
     progress_current_value: float = 0.0 # Also Takes in Ints
     body: str = ''
     lines_txt: str = ''

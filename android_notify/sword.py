@@ -533,8 +533,8 @@ class Notification(BaseNotification):
             if self.large_icon_path:
                 self.setLargeIcon(self.large_icon_path)
 
-        elif style == NotificationStyles.PROGRESS:
-            self.__builder.setProgress(self.progress_max_value, self.progress_current_value, False)
+        elif self.progress_max_value or self.progress_current_value:
+            self.__builder.setProgress(self.progress_max_value, self.progress_current_value or 0.1, False)
 
         if already_sent:
             self.refresh()
