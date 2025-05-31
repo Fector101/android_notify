@@ -113,7 +113,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 					<>
 						<h2 className="text-xl font-bold">NotificationStyles</h2>
 						<p className="paragraph">
-							Most of NotificationStyles attributes are deprecated in v1.59 except <span className='code green'>NotificationStyles.INBOX</span>, but they're still available for backward compatibility.
+							All NotificationStyles attributes are deprecated in v1.59.3, but they're still available for backward compatibility.
 							You can use the <span className="code yellow-shade">style</span> attribute in the Notification class to set styles.</p>
 						<p>For example:</p>
 						<p>Notification.setLargeIcon('profile.png') replaced</p>
@@ -121,8 +121,8 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 							<span className="code yellow-shade">Notification(..., large_icon_path="profile.png", style=NotificationStyles.LARGE_ICON)</span>
 						</p>
 						<p className="paragraph">
-							You can also use the <span className="code yellow-shade">setLargeIcon</span>, <span className="code yellow-shade">setBigPicture</span>, and <span className="code yellow-shade">setBigText</span> 
-							methods to set the respective styles of <span className="code">NotificationStyles.LARGE_ICON</span>, <span className="code">NotificationStyles.BIG_PICTURE</span>, <span className="code">NotificationStyles.BIG_TEXT</span>
+							You can also use the <span className="code yellow-shade">setLargeIcon</span>, <span className="code yellow-shade">setBigPicture</span>, <span className="code yellow-shade">setBigText</span> and <span className="code yellow-shade">setLines</span> methods to set the respective styles of <span className="code">NotificationStyles.LARGE_ICON</span>, <span className="code">NotificationStyles.BIG_PICTURE</span>, 
+							<span className="code">NotificationStyles.BIG_TEXT</span> and <span className="code">NotificationStyles.INBOX</span>.
 						</p>
 					</>
 				}

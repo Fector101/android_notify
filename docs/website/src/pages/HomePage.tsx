@@ -21,6 +21,7 @@ export default function HomePage() {
                     <li><span className="code green-shade">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></li>
                     <li><span className="code green-shade">setBigPicture</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span></li>
                     <li><span className="code green-shade">setBigText</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_TEXT)</span></li>
+                    <li><span className="code green-shade">setLines</span> == <span className="code yellow-shade">Notification(...,lines_txt="...",style=NotificationStyles.INBOX)</span></li>
                 </ul>
                 <h3 className='paragraph'>New Features</h3>
                 <span className='code width100per flex paragraph'></span>
