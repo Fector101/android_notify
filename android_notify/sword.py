@@ -1,79 +1,30 @@
 """This Module Contain Class for creating Notification With Java"""
-import traceback
-import os,re
-import threading
-
+import os, time, threading, traceback
+from typing import Any
+from jnius import cast
 
 from .an_types import Importance
-from .an_utils import can_accept_arguments
+from .an_utils import can_accept_arguments, get_python_activity_context, \
+    get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
+    get_bitmap_from_url, add_data_to_intent
+
+from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID
+from .config import (Bundle, String, BuildVersion,
+                     Intent,PendingIntent,
+                     IconCompat,app_storage_path,
+                     NotificationChannel,RemoteViews,
+                     run_on_ui_thread,android_activity,
+                    request_permissions, Permission,check_permission
+                     )
+from .config import (NotificationCompat, NotificationCompatBuilder,
+                     NotificationCompatBigTextStyle,NotificationCompatBigPictureStyle,
+                     NotificationCompatInboxStyle, NotificationCompatDecoratedCustomViewStyle
+                     )
 from .styles import NotificationStyles
 from .base import BaseNotification
 DEV=0
-ON_ANDROID = False
-
-# noinspection PyBroadException
-try:
-    # Android Imports
-    from jnius import autoclass,cast
-    from android import activity
-    from android.config import ACTIVITY_CLASS_NAME
-    from android.runnable import run_on_ui_thread
-
-    try:
-        from android import config
-        ns = config.JAVA_NAMESPACE
-        # print('This is Java name space:',ns)
-    except (ImportError,AttributeError):
-        ns='org.kivy.android'
-
-    # Get the required Java classes needs to on android to import
-    Bundle = autoclass('android.os.Bundle')
-    PythonActivity = autoclass(ns+'.PythonActivity')
-    String = autoclass('java.lang.String')
-    Intent = autoclass('android.content.Intent')
-    PendingIntent = autoclass('android.app.PendingIntent')
-    context = PythonActivity.mActivity
-    BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')
-    VersionCodes = autoclass('android.os.Build$VERSION_CODES')
-    NotificationManager = autoclass('android.app.NotificationManager')
-    NotificationChannel = autoclass('android.app.NotificationChannel')
-    IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
-    ON_ANDROID = True
-except Exception as e:
-    if hasattr(e,'name') and e.name != 'android':
-        print('Exception: ',e)
-        print(traceback.format_exc())
-
-    MESSAGE='This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.'
-    # from .types_idea import *
-    # print(MESSAGE) Already Printing in core.py
-
-    # This is so no crashes when developing on PC
-    from .an_utils import run_on_ui_thread
-
-if ON_ANDROID:
-    try:
-        from android.permissions import request_permissions, Permission,check_permission
-        from android.storage import app_storage_path
-
-        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
-        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-
-        # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-        # NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
-    except Exception as e:
-        print(e)
-        print("""
-        Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
-        * android.enable_androidx = True
-        * android.permissions = POST_NOTIFICATIONS
-        """)
+PythonActivity = get_python_activity()
+context = get_python_activity_context()
 
 class Notification(BaseNotification):
     """
@@ -81,9 +32,9 @@ class Notification(BaseNotification):
 
     :param title: Title of the notification.
     :param message: Message body.
-    :param style: Style of the notification 
-    ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs').
-    both_imgs == using lager icon and big picture
+    ---
+    (Style Options)
+    :param style: Style of the notification ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
     :param big_picture_path: Relative Path to the image resource.
     :param large_icon_path: Relative Path to the image resource.
     :param progress_current_value: integer To set progress bar current value.
@@ -99,6 +50,11 @@ class Notification(BaseNotification):
     ---
     (Options during Dev On PC)
     :param logs: - Bool Defaults to True
+    ---
+    (Custom Style Options)
+    :param title_color: title color str (to be safe use hex code)
+    :param message_color: message color str (to be safe use hex code)
+
     """
 
     notification_ids = [0]
@@ -125,14 +81,16 @@ class Notification(BaseNotification):
 
         # For components
         self.__lines = []
-
+        self.__has_small_icon = False #important notification can't send without
+        self.__using_custom = self.message_color or self.title_color
         self.__format_channel(self.channel_name, self.channel_id)
         if not ON_ANDROID:
             return
 
-        NotificationHandler.asks_permission()
-        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-        self.notification_manager = cast(NotificationManager, notification_service)
+        if not from_service_file() and not NotificationHandler.has_permission():
+            NotificationHandler.asks_permission()
+
+        self.notification_manager = get_notification_manager()
         self.__builder = NotificationCompatBuilder(context, self.channel_id)
 
     def addLine(self,text:str):
@@ -154,7 +112,7 @@ class Notification(BaseNotification):
         Removes all app Notifications from tray
         """
         if ON_ANDROID:
-            cls.__return_notification_manger().cancelAll()
+            get_notification_manager().cancelAll()
         if cls.logs:
             print('Removed All Notifications.')
 
@@ -172,8 +130,8 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return False
 
-        notification_manager=cls.__return_notification_manger()
-        android_importance_value = cls.__get_android_importance(importance)
+        notification_manager= get_notification_manager()
+        android_importance_value = get_android_importance(importance)
 
         if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(id) is None:
             channel = NotificationChannel(id, name, android_importance_value)
@@ -189,7 +147,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return None
 
-        cls.__return_notification_manger().deleteNotificationChannel(channel_id)
+        get_notification_manager().deleteNotificationChannel(channel_id)
 
     @classmethod
     def deleteAllChannel(cls):
@@ -201,7 +159,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return amount
 
-        notification_manager = cls.__return_notification_manger()
+        notification_manager = get_notification_manager()
         channels = cls.getChannels()
         for index in range(channels.size()):
             amount += 1
@@ -287,7 +245,10 @@ class Notification(BaseNotification):
         if self.logs:
             print(f'new notification title: {self.title}')
         if ON_ANDROID:
-            self.__builder.setContentTitle(String(self.title))
+            if self.isUsingCustom():
+                self.__apply_basic_custom_style()
+            else:
+                self.__builder.setContentTitle(String(self.title))
             self.refresh()
 
     def updateMessage(self,new_message):
@@ -300,7 +261,10 @@ class Notification(BaseNotification):
         if self.logs:
             print(f'new notification message: {self.message}')
         if ON_ANDROID:
-            self.__builder.setContentText(String(self.message))
+            if self.isUsingCustom():
+                self.__apply_basic_custom_style()
+            else:
+                self.__builder.setContentText(String(self.message))
             self.refresh()
 
     def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
@@ -317,8 +281,8 @@ class Notification(BaseNotification):
 
         # replacing new values for when timer is called
         self.progress_current_value = current_value
-        self.__progress_bar_msg = message
-        self.__progress_bar_title = title
+        self.__progress_bar_msg = message or self.message
+        self.__progress_bar_title = title or self.title
 
         if self.__update_timer and self.__update_timer.is_alive():
             # Make Logs too Dirty
@@ -407,7 +371,7 @@ class Notification(BaseNotification):
         """
         self.__using_set_priority_method=True
         if ON_ANDROID:
-            android_importance_value = self.__get_android_importance(importance)
+            android_importance_value = get_android_importance(importance)
             if not isinstance(android_importance_value, str):  # Can be an empty str if importance='none'
                 self.__builder.setPriority(android_importance_value)
 
@@ -428,13 +392,12 @@ class Notification(BaseNotification):
             string_to_display=''
             print("\n Sent Notification!!!")
             for name,value in vars(self).items():
-                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name",'body','name']:
-                    if name == "progress_max_value":
-                        if self.style == NotificationStyles.PROGRESS:
-                            string_to_display += f'\n {name}: {value}'
-                    elif name == "body":
-                        if self.style == NotificationStyles.BIG_TEXT:
-                            string_to_display += f'\n {name}: {value}'
+
+                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name",'body','name','lines_txt','title_color','message_color']:
+                    if name == "progress_max_value" and self.progress_max_value:
+                        string_to_display += f'\n {name}: {value}'
+                    elif name == "body" and self.lines_txt:
+                        string_to_display += f'\n {name}: {value}'
                     else:
                         string_to_display += f'\n {name}: {value}'
 
@@ -516,18 +479,14 @@ class Notification(BaseNotification):
             # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and print
             return False
 
-        if style == NotificationStyles.BIG_TEXT:
+        if self.body:
             self.setBigText(self.body)
 
-        elif style == NotificationStyles.INBOX and self.lines_txt:
+        elif self.lines_txt:
             lines = self.lines_txt.split("\n")
             self.setLines(lines)
 
-        elif (style == NotificationStyles.LARGE_ICON and self.large_icon_path) or (style == NotificationStyles.BIG_PICTURE and self.big_picture_path):
-            img = self.large_icon_path if style == NotificationStyles.LARGE_ICON else self.big_picture_path
-            self.__build_img(img, style)
-
-        elif style == NotificationStyles.BOTH_IMGS and (self.big_picture_path or self.large_icon_path):
+        elif self.big_picture_path or self.large_icon_path:
             if self.big_picture_path:
                 self.setBigPicture(self.big_picture_path)
             if self.large_icon_path:
@@ -556,10 +515,16 @@ class Notification(BaseNotification):
             print('Added Lines: ', lines)
 
     def __dispatch_notification(self):
-        if NotificationHandler.has_permission():
+        if from_service_file(): # android has_permission has some internal error when checking from service
+            try:
+                self.notification_manager.notify(self.__id, self.__builder.build())
+            except Exception as sending_notification_from_service_error:
+                print('error sending notification from service:',sending_notification_from_service_error)
+        elif NotificationHandler.has_permission():
             self.notification_manager.notify(self.__id, self.__builder.build())
         else:
             print('Permission not granted to send notifications')
+            # TODO find way to open app notification settings and not ask only through POP-UP
             # Not asking for permission too frequently, This makes dialog popup to stop showing
             # NotificationHandler.asks_permission()
 
@@ -579,17 +544,27 @@ class Notification(BaseNotification):
             self.createChannel(self.channel_id, self.channel_name)
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
+
         # Build the notification
-        # str() This is to prevent Error When user does Notification.title='blah' instead of Notification(title='blah'
-        # TODO fix this by creating a on_title method in other versions
-        self.__builder.setContentTitle(str(self.title))
-        self.__builder.setContentText(str(self.message))
+        if self.isUsingCustom():
+            self.__apply_basic_custom_style()
+        else:
+            self.__builder.setContentTitle(str(self.title))
+            self.__builder.setContentText(str(self.message))
         self.__insert_app_icon()
         self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL)
         self.__builder.setOnlyAlertOnce(True)
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
-        self.__add_intent_to_open_app()
+
+        if not from_service_file():
+            try:
+                self.__add_intent_to_open_app()
+            except Exception as failed_to_add_intent_to_open_app:
+                if self.logs:
+                    print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
+                    traceback.print_exc()
+
         self.__built_parameter_filled = True
 
     def __insert_app_icon(self,path=''):
@@ -601,6 +576,7 @@ class Notification(BaseNotification):
         else:
             if self.logs:
                 print('using default icon...')
+            self.__has_small_icon = True
             self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
     def __build_img(self, user_img, img_style):
@@ -608,12 +584,12 @@ class Notification(BaseNotification):
             def callback(bitmap_):
                 self.__apply_notification_image(bitmap_,img_style)
             thread = threading.Thread(
-                                        target=self.__get_bitmap_from_url,
-                                        args=[user_img,callback]
+                                        target=get_bitmap_from_url,
+                                        args=[user_img,callback,self.logs]
                                     )
             thread.start()
         else:
-            bitmap = self.__get_img_from_path(user_img)
+            bitmap = get_img_from_path(user_img)
             if bitmap:
                 self.__apply_notification_image(bitmap, img_style)
 
@@ -624,16 +600,18 @@ class Notification(BaseNotification):
                 if bitmap_:
                     icon_ = IconCompat.createWithBitmap(bitmap_)
                     self.__builder.setSmallIcon(icon_)
+                    self.__has_small_icon = True
                 else:
                     if self.logs:
                         print('Using Default Icon as fallback......')
+                    self.__has_small_icon = True
                     self.__builder.setSmallIcon(context.getApplicationInfo().icon)
             threading.Thread(
-                target=self.__get_bitmap_from_url,
-                args=[img_path,callback]
+                target=get_bitmap_from_url(),
+                args=[img_path,callback,self.logs]
                 ).start()
         else:
-            bitmap = self.__get_img_from_path(img_path)
+            bitmap = get_img_from_path(img_path)
             if bitmap:
                 icon = IconCompat.createWithBitmap(bitmap)
                 self.__builder.setSmallIcon(icon)
@@ -643,51 +621,6 @@ class Notification(BaseNotification):
                     img_absolute_path = os.path.join(app_folder, img_path)
                     print(f'Failed getting img for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
-
-    @staticmethod
-    def __get_img_from_path(relative_path):
-        app_folder=os.path.join(app_storage_path(),'app')
-        output_path = os.path.join(app_folder, relative_path)
-        if not os.path.exists(output_path):
-            print(f"\nImage not found at path: {app_folder}, (Local images gotten from App Path)")
-            try:
-                print("- These are the existing files in your app Folder:")
-                print('['+', '.join(os.listdir(app_folder)) + ']')
-            except Exception as could_not_get_files_in_path_error:
-                print('Exception: ', could_not_get_files_in_path_error)
-                print("Couldn't get Files in App Folder")
-            return None
-        # TODO test with a badly written Image and catch error
-        Uri = autoclass('android.net.Uri')
-        uri = Uri.parse(f"file://{output_path}")
-        return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
-
-    def __get_bitmap_from_url(self, url, callback):
-        """Gets Bitmap from url
-
-        Args:
-            url (str): img url
-            callback (function): method to be called after thread done -passes in bitmap data as argument
-        """
-        if self.logs:
-            print("getting Bitmap from URL---")
-        try:
-            URL = autoclass('java.net.URL')
-            url = URL(url)
-            connection = url.openConnection()
-            connection.connect()
-            input_stream = connection.getInputStream()
-            bitmap = BitmapFactory.decodeStream(input_stream)
-            input_stream.close()
-            if bitmap:
-                callback(bitmap)
-            else:
-                print('Error No Bitmap for small icon ------------')
-        except Exception as extracting_bitmap_frm_URL_error:
-            callback(None)
-            # TODO get all types of JAVA Error that can fail here
-            print('Error Type ',extracting_bitmap_frm_URL_error)
-            print('Failed to get Bitmap from URL ',traceback.format_exc())
 
     @run_on_ui_thread
     def __apply_notification_image(self, bitmap, img_style):
@@ -711,7 +644,7 @@ class Notification(BaseNotification):
         intent = Intent(context, PythonActivity)
         action = str(self.name or self.__id)
         intent.setAction(action)
-        self.__add_data_to_intent(intent)
+        add_data_to_intent(intent,self.title)
         self.main_functions[action]=self.callback
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
@@ -720,14 +653,6 @@ class Notification(BaseNotification):
                             intent, PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 31 else PendingIntent.FLAG_UPDATE_CURRENT
                         )
         self.__builder.setContentIntent(pending_intent)
-        
-    def __add_data_to_intent(self, intent):
-        """Persist Some data to notification object for later use"""
-        bundle = Bundle()
-        bundle.putString("title",  self.title or 'Title Placeholder')
-        # bundle.putInt("notify_id", self.__id)
-        bundle.putInt("notify_id", 101)
-        intent.putExtras(bundle)
 
     def __get_id_for_button(self):
         btn_id = self.button_ids[-1] + 1
@@ -748,67 +673,70 @@ class Notification(BaseNotification):
 
             # If no channel_id then generating channel_id from passed in channel_name
             if channel_id == 'default_channel':
-                generated_id = self.__generate_channel_id(channel_name)
+                generated_id = generate_channel_id(channel_name)
                 self.channel_id = generated_id
-
-    @staticmethod
-    def __generate_channel_id(channel_name: str) -> str:
-        """
-        Generate a readable and consistent channel ID from a channel name.
-        
-        Args:
-            channel_name (str): The name of the notification channel.
-        
-        Returns:
-            str: A sanitized channel ID.
-        """
-        # Normalize the channel name
-        channel_id = channel_name.strip().lower()
-        # Replace spaces and special characters with underscores
-        channel_id = re.sub(r'[^a-z0-9]+', '_', channel_id)
-        # Remove leading/trailing underscores
-        channel_id = channel_id.strip('_')
-        return channel_id[:50]
 
     def __get_unique_id(self):
         notification_id = self.notification_ids[-1] + 1
         self.notification_ids.append(notification_id)
         return notification_id
 
-    @staticmethod
-    def __return_notification_manger():
-        notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-        return cast(NotificationManager, notification_service)
-
     @classmethod
-    def getChannels(cls):
+    def getChannels(cls) -> list[Any] | Any:
         """Return all existing channels"""
         if not ON_ANDROID:
             return []
 
-        return cls.__return_notification_manger().getNotificationChannels()
+        return get_notification_manager().getNotificationChannels()
 
-    @staticmethod
-    def __get_android_importance(importance:Importance):
-        """
-        Returns Android Importance Values
-        :param importance: ['urgent','high','medium','low','none']
-        :return: Android equivalent int or empty str
-        """
-        value=''
-        if importance == 'urgent':
-            value = NotificationCompat.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else  NotificationManagerCompat.IMPORTANCE_HIGH
-        elif importance == 'high':
-            value = NotificationCompat.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
-        elif importance == 'medium':
-            value = NotificationCompat.PRIORITY_LOW  if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
-        elif importance == 'low':
-            value = NotificationCompat.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
-        elif importance == 'none':
-            value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
+    def __apply_basic_custom_style(self):
 
-        return value
-        # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
+        # Load layout
+        resources = context.getResources()
+        package_name = context.getPackageName()
+
+        # ids
+        small_layout_id = resources.getIdentifier("an_colored_basic_small", "layout", package_name)
+        large_layout_id = resources.getIdentifier("an_colored_basic_large", "layout", package_name)
+        title_id = resources.getIdentifier("title", "id", package_name)
+        message_id = resources.getIdentifier("message", "id", package_name)
+
+        # Layout
+        notificationLayout = RemoteViews(package_name, small_layout_id)
+        notificationLayoutExpanded = RemoteViews(package_name, large_layout_id)
+
+        if DEV:
+            print('small: ',small_layout_id, 'notificationLayout: ',notificationLayout)
+
+        # Notification Content
+        setLayoutText(
+                layout=notificationLayout, id=title_id,
+                text=self.title, color=self.title_color
+        )
+        setLayoutText(
+                layout=notificationLayoutExpanded, id=title_id,
+                text=self.title, color=self.title_color
+        )
+        setLayoutText(
+                layout=notificationLayoutExpanded, id=message_id,
+                text=self.message, color=self.message_color
+        )
+        # self.__setLayoutText(
+        #     layout=notificationLayout, id=message_id,
+        #     text=self.message, color=self.message_color
+        # )
+        if not self.__built_parameter_filled:
+            current_time_mills = int(time.time() * 1000)
+            self.__builder.setWhen(current_time_mills)
+            self.__builder.setShowWhen(True)
+        self.__builder.setStyle(NotificationCompatDecoratedCustomViewStyle())
+        self.__builder.setCustomContentView(notificationLayout)
+        self.__builder.setCustomBigContentView(notificationLayoutExpanded)
+
+    def isUsingCustom(self):
+        self.__using_custom = self.title_color or self.message_color
+        return bool(self.__using_custom)
+
     # TODO method to create channel groups
 
 
@@ -887,7 +815,7 @@ class NotificationHandler:
             print("binding done already ")
             return True
         try:
-            activity.bind(on_new_intent=cls.__notification_handler)
+            android_activity.bind(on_new_intent=cls.__notification_handler)
             cls.__bound = True
             return True
         except Exception as binding_listener_error:
@@ -901,8 +829,10 @@ class NotificationHandler:
             return "Not on Android"
 
         #Beta TODO use BroadcastReceiver
+        if from_service_file():
+            return False # error 'NoneType' object has no attribute 'registerNewIntentListener'
         try:
-            activity.unbind(on_new_intent=cls.__notification_handler)
+            android_activity.unbind(on_new_intent=cls.__notification_handler)
             return True
         except Exception as unbinding_listener_error:
             print("Failed to unbind notifications listener: ",unbinding_listener_error)
@@ -958,4 +888,12 @@ class NotificationHandler:
                     callback()
 
 
-NotificationHandler.bindNotifyListener()
+if not from_service_file():
+    try:
+        NotificationHandler.bindNotifyListener()
+    except Exception as bind_error:
+        print("notification listener bind error:",bind_error)
+        traceback.print_exc()
+else:
+    # error 'NoneType' object has no attribute 'registerNewIntentListener'
+    print("didn't bind listener, In service file:")
