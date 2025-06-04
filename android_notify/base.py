@@ -2,6 +2,7 @@
 from dataclasses import dataclass, fields
 import difflib
 from .styles import NotificationStyles
+# For Dev when creating new attr use have to set type for validate_args to work
 
 @dataclass
 class BaseNotification:
@@ -15,7 +16,7 @@ class BaseNotification:
     # Style-specific attributes
     big_picture_path: str = ''
     large_icon_path: str = ''
-    progress_max_value: int = 0 #100
+    progress_max_value: int = 0
     progress_current_value: float = 0.0 # Also Takes in Ints
     body: str = ''
     lines_txt: str = ''
@@ -28,6 +29,7 @@ class BaseNotification:
     id: int = 0
     app_icon: str = 'Defaults to package app icon'
 
+    # Channel related
     channel_name: str = 'Default Channel'
     """User visible channel name"""
     channel_id: str = 'default_channel'
@@ -35,6 +37,10 @@ class BaseNotification:
 
     silent: bool = False
     logs: bool = False
+
+    # Custom Notification Attrs
+    title_color: str = ''
+    message_color: str = ''
 
     def __init__(self, **kwargs):
         """Custom init to handle validation before dataclass assigns values"""
