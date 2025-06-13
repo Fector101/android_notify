@@ -89,7 +89,8 @@ def setLayoutText(layout, id, text, color):
     # checked if self.title_color available before entering method
     if id and text:
         layout.setTextViewText(id, text)
-        layout.setTextColor(id, Color.parseColor(color or 'black'))
+        if color:
+            layout.setTextColor(id, Color.parseColor(color))
 
 def get_bitmap_from_url(url, callback, logs):
     """Gets Bitmap from url

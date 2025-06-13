@@ -1,6 +1,6 @@
 """This Module Contain Class for creating Notification With Java"""
 import os, time, threading, traceback
-from typing import Any
+from typing import Any, Callable
 from jnius import cast
 
 from .an_types import Importance
@@ -18,7 +18,8 @@ from .config import (Bundle, String, BuildVersion,
                      )
 from .config import (NotificationCompat, NotificationCompatBuilder,
                      NotificationCompatBigTextStyle,NotificationCompatBigPictureStyle,
-                     NotificationCompatInboxStyle, NotificationCompatDecoratedCustomViewStyle
+                     NotificationCompatInboxStyle, NotificationCompatDecoratedCustomViewStyle,
+                    Color
                      )
 from .styles import NotificationStyles
 from .base import BaseNotification
@@ -37,12 +38,13 @@ class Notification(BaseNotification):
     :param style: Style of the notification ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
     :param big_picture_path: Relative Path to the image resource.
     :param large_icon_path: Relative Path to the image resource.
-    :param progress_current_value: integer To set progress bar current value.
-    :param progress_max_value: integer To set Max range for progress bar.
-    :param body: large text For `big_Text` style, while `message` acts as subtitle.
+    :param progress_current_value: Integer To set progress bar current value.
+    :param progress_max_value: Integer To set Max range for progress bar.
+    :param body: Large text For `big_Text` style, while `message` acts as subtitle.
     :param lines_txt: text separated by newLine symbol For `inbox` style `use addLine method instead`
     ---
     (Advance Options)
+    :param sub_text: str for additional information next to title
     :param id: Pass in Old 'id' to use old instance
     :param callback: Function for notification Click.
     :param channel_name: - str Defaults to "Default Channel"
@@ -222,8 +224,31 @@ class Notification(BaseNotification):
             big_text_style.bigText(str(body))
             self.__builder.setStyle(big_text_style)
         elif self.logs:
-            # When on android there are other logs
+            # When on android, there are other logs
             print('Done setting big text')
+
+    def setSubText(self, text):
+        """
+        In android version 7+ text displays in header next to title,
+        While in lesser versions displays in third line of text, where progress-bar occupies
+        :param text: str for subtext
+
+        """
+        self.sub_text = str(text)
+        if self.logs:
+            print(f'new notification sub text: {self.sub_text}')
+        if ON_ANDROID:
+            self.__builder.setSubText(self.sub_text)
+
+    def setColor(self,color:str):
+        """
+        Sets Notification accent color, visible change in SmallIcon color
+        :param color:  str - red,pink,... (to be safe use hex code)
+        """
+        if self.logs:
+            print(f'new notification sub text: {self.sub_text}')
+        if ON_ANDROID:
+            self.__builder.setColor(Color.parseColor(color))
 
     def showInfiniteProgressBar(self):
         """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
@@ -267,7 +292,7 @@ class Notification(BaseNotification):
                 self.__builder.setContentText(String(self.message))
             self.refresh()
 
-    def updateProgressBar(self,current_value:int,message:str='',title:str='',cooldown=0.5):
+    def updateProgressBar(self, current_value:int, message:str='', title:str='', cooldown=0.5, _callback:Callable=None):
         """Updates progress bar current value
 
         Args:
@@ -275,8 +300,9 @@ class Notification(BaseNotification):
             message (str): defaults to last message
             title (str): defaults to last title
             cooldown (float, optional): Little Time to Wait before change actually reflects, to avoid android Ignoring Change, Defaults to 0.5secs
+            _callback (object): function for when change actual happens
 
-        NOTE: There is a 0.5sec delay for value change, if updating title,msg with progressbar frequently pass them in too to avoid update issues
+        NOTE: There is a 0.5 sec delay for value change, if updating title,msg with progressbar frequently pass them in too to avoid update issues
         """
 
         # replacing new values for when timer is called
@@ -299,6 +325,13 @@ class Notification(BaseNotification):
             if self.logs:
                 print(f'Progress Bar Update value: {self.progress_current_value}')
 
+            if _callback:
+                try:
+                    _callback()
+                except Exception as passed_in_callback_error:
+                    print('Exception passed_in_callback_error:', passed_in_callback_error)
+                    traceback.print_exc()
+
             if not ON_ANDROID:
                 self.__update_timer = None
                 return
@@ -320,7 +353,7 @@ class Notification(BaseNotification):
         self.__update_timer = threading.Timer(cooldown, delayed_update)
         self.__update_timer.start()
 
-    def removeProgressBar(self,message='',show_on_update=True, title:str='',cooldown=0.5):
+    def removeProgressBar(self, message='', show_on_update=True, title:str='', cooldown=0.5, _callback:Callable=None):
         """Removes Progress Bar from Notification
 
         Args:
@@ -328,8 +361,9 @@ class Notification(BaseNotification):
             show_on_update (bool, optional): To show notification briefly when progressbar removed. Defaults to True.
             title (str, optional): notification title. Defaults to 'last title'.
             cooldown (float, optional): Little Time to Wait before change actually reflects, to avoid android Ignoring Change, Defaults to 0.5secs
+            _callback (object): function for when change actual happens
 
-        In-Built Delay of 0.5sec According to Android Docs Don't Update Progressbar too Frequently
+        In-Built Delay of 0.5 sec According to Android Docs Don't Update Progressbar too Frequently
         """
 
         # To Cancel any queued timer from `updateProgressBar` method and to avoid race effect incase it somehow gets called while in this method
@@ -342,12 +376,18 @@ class Notification(BaseNotification):
             self.__update_timer.cancel()
             self.__update_timer = None
 
-
         def delayed_update():
             if self.logs:
                 msg = message or self.message
                 title_=title or self.title
                 print(f'removed progress bar with message: {msg} and title: {title_}')
+
+            if _callback:
+                try:
+                    _callback()
+                except Exception as passed_in_callback_error:
+                    print('Exception passed_in_callback_error:', passed_in_callback_error)
+                    traceback.print_exc()
 
             if not ON_ANDROID:
                 return
@@ -661,7 +701,7 @@ class Notification(BaseNotification):
 
     def __format_channel(self, channel_name:str='Default Channel',channel_id:str='default_channel'):
         """
-        Formats and sets self.channel_name and self.channel_id to formatted version
+        Formats and sets self.channel_name and self.channel_id to a formatted version
         :param channel_name:
         :param channel_id:
         :return:

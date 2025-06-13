@@ -92,8 +92,10 @@ class IconCompat:
         pass
 
 class Color:
-    def __init__(self, color):
+    def __init__(self):
         pass
+    def parseColor(self,color:str):
+        return self
 
 class RemoteViews:
     def __init__(self, package_name, small_layout_id):
@@ -121,9 +123,9 @@ class NotificationCompat:
 
 class MActions:
     def clear(self):
-        """Removes buttons"""
+        """This Removes all buttons"""
         print('dummy clear')
-        
+
 class NotificationCompatBuilder:
     def __init__(self,context,channel_id):
         self.mActions = MActions()
@@ -164,8 +166,10 @@ class NotificationCompatBuilder:
         pass
     def setCustomBigContentView(self,layout):
         pass
-
-
+    def setSubText(self,text):
+        pass
+    def setColor(self, color:Color) -> None:
+        pass
 class NotificationCompatBigTextStyle:
     def bigText(self,body):
         return self

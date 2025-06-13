@@ -48,6 +48,8 @@ if ON_ANDROID:
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
         NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+        Color = autoclass('android.graphics.Color')
+
     except Exception as dependencies_import_error:
         print('dependencies_import_error: ',dependencies_import_error)
         print("""

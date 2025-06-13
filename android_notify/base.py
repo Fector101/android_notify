@@ -28,6 +28,7 @@ class BaseNotification:
     # Advanced Options
     id: int = 0
     app_icon: str = 'Defaults to package app icon'
+    sub_text: str=''
 
     # Channel related
     channel_name: str = 'Default Channel'
