@@ -50,6 +50,7 @@ body>#root {
     height: 100%;
     width: 100%;
     padding-bottom: 5px;
+    font-size: 15px;
 }
 
 #root>main {
@@ -58,7 +59,7 @@ body>#root {
 
 .page {
     padding-block: 20px;
-    width: calc(100% - var(--overview-width));
+    /* width: calc(100% - var(--overview-width)); */
     margin: auto;
 }
 
