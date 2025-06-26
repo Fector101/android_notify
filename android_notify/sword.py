@@ -63,6 +63,7 @@ class Notification(BaseNotification):
     button_ids=[0]
     btns_box={}
     main_functions={}
+    passed_check=False
 
     # During Development (When running on PC)
     BaseNotification.logs=not ON_ANDROID
@@ -86,6 +87,9 @@ class Notification(BaseNotification):
         self.__has_small_icon = False #important notification can't send without
         self.__using_custom = self.message_color or self.title_color
         self.__format_channel(self.channel_name, self.channel_id)
+        self.__builder = None # want to make builder always available for getter
+        self.notification_manager = None
+        
         if not ON_ANDROID:
             return
 
@@ -423,29 +427,52 @@ class Notification(BaseNotification):
             persistent (bool): True To not remove Notification When User hits clears All notifications button
             close_on_click (bool): True if you want Notification to be removed when clicked
         """
-        self.silent= silent or self.silent
+        self.silent = silent or self.silent
         if ON_ANDROID:
             self.__start_notification_build(persistent, close_on_click)
             self.__dispatch_notification()
 
-        if self.logs:
-            string_to_display=''
-            print("\n Sent Notification!!!")
-            for name,value in vars(self).items():
+        self.__send_logs()
+    
+    def send_(self,silent:bool=False,persistent=False,close_on_click=True):
+        """Sends notification without checking for additional notification permission
 
-                if value and name in ["title", "message", "style", "body", "large_icon_path", "big_picture_path", "progress_current_value", "progress_max_value", "channel_name",'body','name','lines_txt','title_color','message_color']:
-                    if name == "progress_max_value" and self.progress_max_value:
-                        string_to_display += f'\n {name}: {value}'
-                    elif name == "body" and self.lines_txt:
-                        string_to_display += f'\n {name}: {value}'
-                    else:
-                        string_to_display += f'\n {name}: {value}'
+        Args:
+            silent (bool): True if you don't want to show briefly on screen
+            persistent (bool): True To not remove Notification When User hits clears All notifications button
+            close_on_click (bool): True if you want Notification to be removed when clicked
+        """        
+        self.passed_check = True
+        self.send(silent,persistent,close_on_click)
 
-            string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
-            print(string_to_display)
-            if DEV:
-                print(f'channel_name: {self.channel_name}, Channel ID: {self.channel_id}, __id: {self.__id}')
+    def __send_logs(self):
+        if not self.logs:
+            return
+        string_to_display=''
+        print("\n Sent Notification!!!")
+        displayed_args = [
+            "title", "message",
+            "style", "body", "large_icon_path", "big_picture_path",
+            "progress_max_value",
+            'name', "channel_name",
+            ]
+        is_progress_not_default = isinstance(self.progress_current_value, int) or (isinstance(self.progress_current_value, float) and self.progress_current_value != 0.0)
+        for name,value in vars(self).items():
+            if value and name in displayed_args:
+                if name == "progress_max_value":
+                    if is_progress_not_default:
+                        string_to_display += f'\n progress_current_value: {self.progress_current_value}, {name}: {value}'
+                elif name == "channel_name":
+                    string_to_display += f'\n {name}: {value}, channel_id: {self.channel_id}'
+                else:
+                    string_to_display += f'\n {name}: {value}'
 
+        string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
+        print(string_to_display)
+        
+    def builder(self):
+        return self.__builder
+        
     def addButton(self, text:str,on_release):
         """For adding action buttons
 
@@ -555,13 +582,20 @@ class Notification(BaseNotification):
             print('Added Lines: ', lines)
 
     def __dispatch_notification(self):
+        # self.passed_check is for self.send_() some devices don't return true when checking for permission when it's actually True in settingsAdd commentMore actions
+        # And so users can do Notification.passed_check = True at top of their file and use regular .send()
+        
         if from_service_file(): # android has_permission has some internal error when checking from service
             try:
                 self.notification_manager.notify(self.__id, self.__builder.build())
             except Exception as sending_notification_from_service_error:
                 print('error sending notification from service:',sending_notification_from_service_error)
-        elif NotificationHandler.has_permission():
-            self.notification_manager.notify(self.__id, self.__builder.build())
+        elif self.passed_check or NotificationHandler.has_permission():
+            try:
+                self.notification_manager.notify(self.__id, self.__builder.build())
+            except Exception as notify_error:
+                print('Exception:', notify_error)
+                print('Failed to send traceback:', traceback.format_exc())
         else:
             print('Permission not granted to send notifications')
             # TODO find way to open app notification settings and not ask only through POP-UP
@@ -601,9 +635,10 @@ class Notification(BaseNotification):
             try:
                 self.__add_intent_to_open_app()
             except Exception as failed_to_add_intent_to_open_app:
-                if self.logs:
-                    print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
-                    traceback.print_exc()
+                #if self.logs:
+                #TODO remove this check and print error logs always
+                print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
+                traceback.print_exc()
 
         self.__built_parameter_filled = True
 
