@@ -14,17 +14,18 @@ The Android Notify package provides a simple yet comprehensive way to create and
 - **Multiple Notification Styles**: Support for various notification styles including:
   - Simple text notifications
   - Progress bar notifications (determinate and indeterminate)
-  - Big text notifications
-  - Inbox-style notifications
   - Large icon notifications
   - Big picture notifications
   - Combined image styles
+  - Custom notification Icon
+  - Big text notifications
+  - Inbox-style notifications
+  - Colored texts and Icons
 
 - **Rich Functionality**:
   - Add action buttons with custom callbacks
   - Update notification content dynamically
   - Manage progress bars with fine-grained control
-  - Custom notification Icon
   - Custom notification channels for Android 8.0+ (Creating and Deleting)
   - Silent notifications
   - Persistent notifications
