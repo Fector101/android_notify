@@ -17,14 +17,14 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Large icon notifications
   - Big picture notifications
   - Combined image styles
-  - Custom notification Icon #[images section](https://android-notify.vercel.app/components#images)
+  - Custom notification Icon - [images section](https://android-notify.vercel.app/components#images)
   - Big text notifications
   - Inbox-style notifications
   - Colored texts and Icons
 
 - **Rich Functionality**:
   - Add action buttons with custom callbacks
-  - Update notification content dynamically
+  - [Update notification](https://android-notify.vercel.app/advanced-methods#updating-notification) content dynamically
   - Manage progress bars with fine-grained control
   - [Custom notification channels](https://android-notify.vercel.app/advanced-methods#channel-management) for Android 8.0+ (Creating and Deleting)
   - Silent notifications
