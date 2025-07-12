@@ -13,7 +13,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
 
 - **Multiple Notification Styles**: Support for various notification styles including:
   - Simple text notifications
-  - Progress bar notifications (determinate and indeterminate)
+  - [Progress bar notifications](https://android-notify.vercel.app/components#progress-bars) (determinate and indeterminate)
   - Large icon notifications
   - Big picture notifications
   - Combined image styles
@@ -26,7 +26,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Add action buttons with custom callbacks
   - Update notification content dynamically
   - Manage progress bars with fine-grained control
-  - Custom notification channels for Android 8.0+ (Creating and Deleting)
+  - [Custom notification channels](https://android-notify.vercel.app/advanced-methods#channel-management) for Android 8.0+ (Creating and Deleting)
   - Silent notifications
   - Persistent notifications
   - Click handlers and callbacks
