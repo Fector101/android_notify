@@ -633,7 +633,7 @@ class Notification(BaseNotification):
             self.__lines=[] # for refresh method to known when new lines added
 
     def __create_basic_notification(self, persistent, close_on_click):
-        if BuildVersion.SDK_INT >= 26 and self.notification_manager.getNotificationChannel(self.channel_id) is None:
+        if not self.channelExists(self.channel_id):
             self.createChannel(self.channel_id, self.channel_name)
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
