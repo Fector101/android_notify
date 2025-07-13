@@ -71,7 +71,8 @@ pip install android_notify
 ```
 
 ## Documentation
-
+For Dev Version use
+`requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip`
 To use colored text in your notifications:
 - Copy the [res](android_notify/res) folder to your app path.  
 Lastly in your `buildozer.spec` file
