@@ -123,6 +123,18 @@ class Notification(BaseNotification):
             print('Removed All Notifications.')
 
     @classmethod
+    def channelExists(cls, id):
+        """
+        Checks if a notification channel exists
+        """
+        if not ON_ANDROID:
+            return False
+            
+        if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(id):
+            return True
+        return False
+        
+    @classmethod
     def createChannel(cls, id, name:str, description='',importance:Importance='urgent'):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
@@ -139,7 +151,7 @@ class Notification(BaseNotification):
         notification_manager= get_notification_manager()
         android_importance_value = get_android_importance(importance)
 
-        if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(id) is None:
+        if not cls.channelExists(id):
             channel = NotificationChannel(id, name, android_importance_value)
             if description:
                 channel.setDescription(description)
@@ -153,8 +165,9 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return None
 
-        get_notification_manager().deleteNotificationChannel(channel_id)
-
+        if cls.channelExists(channel_id):
+            get_notification_manager().deleteNotificationChannel(channel_id)
+            
     @classmethod
     def deleteAllChannel(cls):
         """Deletes all notification channel
@@ -173,6 +186,12 @@ class Notification(BaseNotification):
             channel_id = channel.getId()
             notification_manager.deleteNotificationChannel(channel_id)
         return amount
+        
+    def doChannelsExist(ids):
+        """Uses list of IDs to check if channel exists
+        returns list of channels that don't exist
+        """
+        
 
     def refresh(self):
         """TO apply new components on notification"""
