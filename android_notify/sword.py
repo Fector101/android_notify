@@ -123,14 +123,14 @@ class Notification(BaseNotification):
             print('Removed All Notifications.')
 
     @classmethod
-    def channelExists(cls, id):
+    def channelExists(cls, channel_id):
         """
         Checks if a notification channel exists
         """
         if not ON_ANDROID:
             return False
             
-        if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(id):
+        if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(channel_id):
             return True
         return False
         
@@ -187,10 +187,23 @@ class Notification(BaseNotification):
             notification_manager.deleteNotificationChannel(channel_id)
         return amount
         
-    def doChannelsExist(ids):
+    @classmethod
+    def doChannelsExist(cls,ids):
         """Uses list of IDs to check if channel exists
         returns list of channels that don't exist
         """
+        if not ON_ANDROID:
+            return ids  # Assume none exist on non-Android environments
+        missing_channels = []
+        notification_manager = get_notification_manager()
+        for channel_id in ids:
+            exists = (
+            BuildVersion.SDK_INT >= 26 and 
+            notification_manager.getNotificationChannel(channel_id)
+            )
+            if not exists:
+                missing_channels.append(channel_id)
+        return missing_channels
         
 
     def refresh(self):
@@ -701,7 +714,7 @@ class Notification(BaseNotification):
                     self.__has_small_icon = True
                     self.__builder.setSmallIcon(context.getApplicationInfo().icon)
             threading.Thread(
-                target=get_bitmap_from_url(),
+                target=get_bitmap_from_url,
                 args=[img_path,callback,self.logs]
                 ).start()
         else:
