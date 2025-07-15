@@ -282,7 +282,7 @@ class Notification(BaseNotification):
         :param color:  str - red,pink,... (to be safe use hex code)
         """
         if self.logs:
-            print(f'new notification sub text: {self.sub_text}')
+            print(f'new notification icon color: {color}')
         if ON_ANDROID:
             self.__builder.setColor(Color.parseColor(color))
 
