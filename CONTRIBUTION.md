@@ -16,14 +16,16 @@ Create your own copy via the Fork button.
 
 2. Clone Locally
 
-git clone https://github.com/your-username/android-notify.git
+```sh
+git clone https://github.com/Fector101/android_notify.git
 cd android-notify
+```
 
 
 3. Create a Branch
-
+```sh
 git checkout -b feature-or-fix-name
-
+```
 
 4. Make Your Changes
 
@@ -36,13 +38,14 @@ If it's a bug fix, try to include a test or log explanation.
 
 
 5. Commit Clearly
-
+```sh
 git commit -m "Fix: corrected NameError in service.py"
-
+```
 
 6. Push and Open a PR
-
+```sh
 git push origin feature-or-fix-name
+```
 
 Go to GitHub and open a Pull Request to the main branch.
 
