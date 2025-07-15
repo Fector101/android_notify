@@ -129,7 +129,7 @@ class Notification(BaseNotification):
         """
         if not ON_ANDROID:
             return False
-            
+        notification_manager= get_notification_manager()
         if BuildVersion.SDK_INT >= 26 and notification_manager.getNotificationChannel(channel_id):
             return True
         return False
