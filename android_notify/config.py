@@ -2,6 +2,7 @@ import os, traceback
 from jnius import cast, autoclass
 
 ON_ANDROID = False
+VERSION = "1.6.2"
 
 try:
     from android import config
