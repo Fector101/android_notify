@@ -19,14 +19,14 @@ note to be in home page:
 
 
 # resources
-# for vibration
+### for vibration
 https://stackoverflow.com/a/17066803/19961621
 
 
 # Pseudos
 
 ## Vibration pseudo
-# for default
+### for default
 
 ```java
 import android.os.Vibrator
@@ -60,7 +60,7 @@ v.vibrate(pattern, 0)
 ### my implementation
 
 ```python
-Notification.vibration_pattern=[start,vibrate,sleep] # users will use `vibration_pattern` to change pattern when using `send`
-
+# users will use `vibration_pattern` to change pattern when using `send`
+Notification.vibration_pattern=[start,vibrate,sleep]
 Notification.vibrate(ms=500,indefinite=False,pattern=[0,100,1000], start=0)
 ```
