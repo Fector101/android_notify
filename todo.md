@@ -2,11 +2,11 @@
 - Version code name: sounds, colours, services.
  
 note to be in home page: 
-    - sounds
-    - colours
-    - vibrations
-    - services
-    - groups
+- sounds
+- colours
+- vibrations
+- services
+- groups
 
 - custom sounds, text and icon colours, service compatibility, notification groups, vibratand 10 Custom notifications
 
