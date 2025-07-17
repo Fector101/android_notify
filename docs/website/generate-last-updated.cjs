@@ -10,12 +10,13 @@ try {
  
   const date = new Date(rawDate);
 
-  const formatted = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium", // e.g. Jul 17, 2025
-    timeStyle: "short",  // e.g. 2:45 PM
-    hour12: true
-  }).format(date);
-
+const formatted = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  hour12: true,
+  timeZone: "Africa/Lagos"  // or "UTC+1" if you prefer generic
+}).format(date);
+  
   const outputPath = path.join(__dirname, "public", "last-updated.txt");
   fs.writeFileSync(outputPath, formatted, "utf8");
 
