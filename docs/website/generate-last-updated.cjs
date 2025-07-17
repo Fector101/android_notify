@@ -10,13 +10,13 @@ try {
  
   const date = new Date(rawDate);
 
-const formatted = new Intl.DateTimeFormat("en-US", {
+let formatted = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
   timeStyle: "short",
   hour12: true,
   timeZone: "Africa/Lagos"  // or "UTC+1" if you prefer generic
 }).format(date);
-  
+  formatted += " WAT"
   const outputPath = path.join(__dirname, "public", "last-updated.txt");
   fs.writeFileSync(outputPath, formatted, "utf8");
 
