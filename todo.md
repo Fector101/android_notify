@@ -22,6 +22,8 @@ note to be in home page:
 ### for vibration
 https://stackoverflow.com/a/17066803/19961621
 
+### important for implementing BroadcastReceiver probably v1.61 (so not to delay v1.60[stable] longer)
+https://github.com/Guhan-SenSam/Android-Notification-in-Python
 
 # Pseudos
 
