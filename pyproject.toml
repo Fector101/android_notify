@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "android-notify"
+version = "1.60.2"
+description = "A Python package that simplifies creating Android notifications in Kivy apps."
+authors = ["Fabian <fector101@yahoo.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://android-notify.vercel.app"
+repository = "https://github.com/fector101/android_notify"
+documentation = "https://android-notify.vercel.app"
+keywords = [
+  "android", "notifications", "kivy", "mobile", "post-notifications", "pyjnius",
+  "android-notifications", "kivy-notifications", "python-android", "mobile-development",
+  "push-notifications", "mobile-app", "kivy-application"
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Android",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+kivy = ">=2.0.0"
+pyjnius = ">=1.4.2"
+
+[tool.poetry.scripts]
+android-notify-cli = "android_notify.__main__:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
