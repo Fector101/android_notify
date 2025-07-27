@@ -1,7 +1,7 @@
 """Collection of useful functions"""
 
 import inspect, os, re, traceback
-from jnius import autoclass
+from .config import autoclass
 from .an_types import Importance
 from .config import (
                      get_python_activity_context, app_storage_path,ON_ANDROID,
