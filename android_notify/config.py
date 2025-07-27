@@ -1,8 +1,14 @@
 import os, traceback
-from jnius import cast, autoclass
+try:
+    from jnius import cast, autoclass
+except ImportError as e:
+    # So commandline still works if java isn't installed and get pyjinus import error
+    print('Exception occured in __init__.py: ',e)
+    cast = lambda x: x
+    autoclass = lambda x: None
 
 ON_ANDROID = False
-VERSION = "1.6.2"
+__version__ = "1.60.2(dev)"
 
 try:
     from android import config
