@@ -29,7 +29,7 @@ export default function MainPage() {
                 <hr />
                 <p className='reader'>Android-Notify simplifies the process of creating and managing android notifications with <span className='code green'>Python</span>.</p>
 
-                <p className='paragraph reader'>It built using pyjnius to interact with Android's native Java Classes and APIs.</p>
+                <p className='paragraph reader'>It's built using pyjnius to interact with Android's native Java Classes and APIs.</p>
                 <p className='paragraph'>
 The goal of android-notify is to handle all the Java for you, allowing you to focus on your notification content using Python, without worrying about platform-specific implementation details. It also eliminates the need for unnecessary third-party APIs or online services.
                 </p>
