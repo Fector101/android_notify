@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 // import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import "../assets/css/home-page.css"
-import "../assets/css/app.css"
 export default function HomePage() {
     return (
         <div className="page main-page home-page">
