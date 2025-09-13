@@ -8,7 +8,7 @@ import bigPicImg from '../../assets/imgs/bigpicturenoti.jpg'
 import btnsImg from '../../assets/imgs/btns.jpg'
 import progressbarImg from '../../assets/imgs/progress.jpg'
 import largeIconImg from '../../assets/imgs/largeicon.jpg'
-import inboxImg from '../../assets/imgs/inboxnoti.jpg'
+//import inboxImg from '../../assets/imgs/inboxnoti.jpg'
 import customIconImg from "../../assets/imgs/custom_icon.jpg"
 import onlineBigPicImg from "../../assets/imgs/online-img.jpg"
 
@@ -17,7 +17,7 @@ import inboxTextGif from "../../assets/imgs/inbox_text.gif"
 
 import { useEffect, useState } from 'react';
 import { useVersion } from '../VersionContext';
-import { versions } from '../../versions-data';
+//import { versions } from '../../versions-data';
 
 const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
