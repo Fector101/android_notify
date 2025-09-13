@@ -17,7 +17,7 @@ import inboxTextGif from "../../assets/imgs/inbox_text.gif"
 
 import { useEffect, useState } from 'react';
 import { useVersion } from '../VersionContext';
-//import { versions } from '../../versions-data';
+import { versions } from '../../versions-data';
 
 const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
