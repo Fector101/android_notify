@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Prism } from 'react-syntax-highlighter'
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -33,10 +33,6 @@ export function CodeBlock({ title, img, code, lang = 'python' }: { title?: strin
 
         element?.querySelector('.copy-icon')?.classList.add('display-none')
         element?.querySelector('.check-icon')?.classList.remove('display-none')
-        // setTimeout(() => {
-        //     element?.querySelector('.copy-icon')?.classList.remove('display-none')
-        //     element?.querySelector('.check-icon')?.classList.add('display-none')
-        // },500)
         copyText(txt)
 
     }
