@@ -41,7 +41,7 @@ notification = Notification(
 const inboxcode = `from android_notify import NotificationStyles
 notification = Notification(
     title='Inbox Notification',
-    message='Line 1\\nLine 2\\nLine 3',
+    message='Line 1\\\\nLine 2\\\\nLine 3',
     style=NotificationStyles.INBOX,
 )
 notification.send()
@@ -82,110 +82,30 @@ const appiconcode = `Notification(
 
 // Advanced Methods Page
 
-export const title_and_message_update = `notification = Notification(title="Initial Title")
-notification.send()
+export const title_and_message_update = "notification = Notification(title='Initial Title')\nnotification.send()\n\n# Update title\nnotification.updateTitle('New Title')\n\n# Update message\nnotification.updateMessage('New Message')"
 
-# Update title
-notification.updateTitle("New Title")
+export const progress_bar_update = "# Changes progress-bar values\nnotification.updateProgressBar(\n    current_value=30,\n    message='30KB/100KB',\n    title='Download update... 30%'\n)\n# Remove progress bar\n# show_on_update to notification briefly after removed progressbar\nnotification.removeProgressBar('Download Complete',show_on_update=True)\n"
+export const adding_image_code = "from android_notify import NotificationStyles\nfrom kivy.clock import Clock\n\nnotification = Notification(\n    title='title',\n    style='message'\n)\nnotification.send()\n\n# Add Image\ndef addImg(dt):\n    notification.large_icon_path='users/imgs/profile1234.png'\n    notification.addNotificationStyle(\n        NotificationStyles.LARGE_ICON,\n        already_sent=True\n    )\nClock.schedule_once(addImg,5)\n"
 
-# Update message
-notification.updateMessage("New Message")`
-
-export const progress_bar_update = `# Changes progress-bar values
-notification.updateProgressBar(
-    current_value=30,
-    message="30KB/100KB",
-    title='Download update... 30%'
-)
-# Remove progress bar
-# show_on_update to notification briefly after removed progressbar
-notification.removeProgressBar("Download Complete",show_on_update=True)
-`
-export const adding_image_code = `from android_notify import NotificationStyles
-from kivy.clock import Clock
-
-notification = Notification(
-    title="title",
-    style="message"
-)
-notification.send()
-
-# Add Image
-def addImg(dt):
-    notification.large_icon_path="users/imgs/profile1234.png"
-    notification.addNotificationStyle(
-        NotificationStyles.LARGE_ICON,
-        already_sent=True
-    )
-Clock.schedule_once(addImg,5)
-`
-
-export const channel_management_code = `Notification(
-    title="Download finished",
-    message="How to Catch a Fish.mp4",
-    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
-    channel_id="downloads_notifications"  # Optional: specify custom channel ID
-)
-`
-export const getting_identifer = `
-from kivymd.app import MDApp
-from android_notify import Notification, NotificationHandler
-
-class Myapp(MDApp):
-    
-    def on_start(self):
-        Notification(
-            title="Change Page",
-            message="Click to change App page.",
-            identifer='change_app_page'
-        ).send()
-
-        Notification(
-            title="Change Color",
-            message="Click to change App Color",
-            identifer='change_app_color'
-        ).send()
-
-    def on_resume(self):
-        # Is called every time app is reopened
-        notify_identifer = NotificationHandler.getIdentifer()
-        if notify_identifer == 'change_app_page':
-            # Code to change Screen
-            pass
-        elif notify_identifer == 'change_app_color':
-            # Code to change Screen Color
-            pass`
+export const channel_management_code = "Notification(\n    title='Download finished',\n    message='How to Catch a Fish.mp4',\n    channel_name='Download Notifications',  # Will create User-visible name 'Download Notifications'\n    channel_id='downloads_notifications'  # Optional: specify custom channel ID\n)\n"
+export const getting_identifer = "\nfrom kivymd.app import MDApp\nfrom android_notify import Notification, NotificationHandler\n\nclass Myapp(MDApp):\n\n    def on_start(self):\n        Notification(\n            title='Change Page',\n            message='Click to change App page.',\n            identifer='change_app_page'\n        ).send()\n\n        Notification(\n            title='Change Color',\n            message='Click to change App Color',\n            identifer='change_app_color'\n        ).send()\n\n    def on_resume(self):\n        # Is called every time app is reopened\n        notify_identifer = NotificationHandler.getIdentifer()\n        if notify_identifer == 'change_app_page':\n            # Code to change Screen\n            pass\n        elif notify_identifer == 'change_app_color':\n            # Code to change Screen Color\n            pass"
 
 
 // Reference Page
 const NOTIFICATION_METHODS = [
     {
         id: 'init',
-        signature: `init
-	title: str = ''
-	message: str = ''
-	style: str = 'simple'
-	big_picture_path: str = ''
-	large_icon_path: str = ''
-	progress_current_value: int = 0
-	progress_max_value: int = 100
-	body: str = ''
-	callback: Callable=None
-	channel_name: str = ''
-	channel_id: str = ''
-	app_icon: str = ''
-	logs: bool = True
-`,
+        signature: "init\n        title: str = ''\n        message: str = ''\n        style: str = 'simple'\n        big_picture_path: str = ''\n        large_icon_path: str = ''\n        progress_current_value: int = 0\n        progress_max_value: int = 100\n        body: str = ''\n        callback: Callable=None\n        channel_name: str = ''\n        channel_id: str = ''\n        app_icon: str = ''\n        logs: bool = True\n",
         description: 'Initializes the notification instance.',
         args: [
             { name: 'title', desc: 'string containing notification title' },
             { name: 'message', desc: 'string containing notification message' },
-            { name: 'style', desc: "can be ['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]" },
-            { name: 'big_picture_path', desc: "path or url to big image (for `BIG_PICTURE` style)" },
-            { name: 'large_icon_path', desc: "path or url to image (for `LARGE_ICON` style)" },
-            { name: 'progress_current_value', desc: "integer to set progress bar current value (for `PROGRESS` style)." },
+            { name: 'style', desc: "can be ['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs']" },
+            { name: 'big_picture_path', desc: "path or url to big image (for \`BIG_PICTURE\` style)" },
+            { name: 'large_icon_path', desc: "path or url to image (for \`LARGE_ICON\` style)" },
+            { name: 'progress_current_value', desc: "integer to set progress bar current value (for \`PROGRESS\` style)." },
             { name: 'progress_max_value', desc: "integer for max range for progress value." },
-            { name: 'body', desc: "Detailed text (for `BIG_TEXT` style)." },
+            { name: 'body', desc: "Detailed text (for \`BIG_TEXT\` style)." },
             { name: 'callback', desc: "Function executed on notification tap." },
             { name: 'channel_name', desc: "Human-readable channel name." },
             { name: 'channel_id', desc: "Used to later reference Channel when sending each notification (extracted from channel name if provided or defaults to 'default_channel')." },
@@ -236,7 +156,7 @@ const NOTIFICATION_METHODS = [
         id: 'showInfiniteProgressBar',
         signature: 'showInfiniteProgressBar()',
         description:
-            'Shows an indeterminate progress bar. Remove with `removeProgressBar()` or update with `updateProgressBar()`.'
+            'Shows an indeterminate progress bar. Remove with \`removeProgressBar()\` or update with \`updateProgressBar()\`.',
     },
     {
         id: 'updateMessage',
@@ -302,13 +222,13 @@ const HANDLER_METHODS = [
     {
         id: 'unbindNotifyListener',
         signature: 'NotificationHandler.unbindNotifyListener()',
-        description: 'Removes the listener set by `bindNotifyListener()`.'
+        description: 'Removes the listener set by \`bindNotifyListener()\`.',
     },
     {
         id: 'is_on_android',
         signature: 'NotificationHandler.is_on_android()',
         description:
-            'Returns `true` if running on Android, `false` otherwise—useful for platform checks.'
+            'Returns \`true\` if running on Android, \`false\` otherwise—useful for platform checks.'
     }
 ];
 
@@ -403,19 +323,19 @@ export const Sidebar= [
         title: 'Advanced Methods',
         route: '/advanced-methods',
         sections: {
-            'Updating Notification':title_and_message_update,
-            'Adding Image':adding_image_code,
-            'Channel Management':channel_management_code,
-            'Getting Identifer':getting_identifer
+            'Updating Notification':"updating-notification",
+            'Adding Image':"adding-image",
+            'Channel Management':"channel-management",
+            'Getting Identifer':"getting-identifer"
         }
     },
     {
         title: 'Reference',
         route: '/reference',
         sections: {
-            'Notification Class':NOTIFICATION_METHODS,
-            'NotificationHandler Class':HANDLER_METHODS,
-            'NotificationStyles Class':STYLE_ATTRIBUTES
+            'Notification Class':"notification-class",
+            'NotificationHandler Class':"notificationhandler-class",
+            'NotificationStyles Class':"notificationstyles-class"
         }
     },
     {
@@ -431,7 +351,7 @@ export const Sidebar= [
         }
     },
 
-    
+
 ]
 
 export { component_page, advanced_methods_page, reference_page }

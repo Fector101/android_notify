@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { ChevronDown, ChevronUp } from "lucide-react"
 import './siteoverview.css'
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { ScrollToSection } from "../ScrollAssist";
 import { Iversion } from "../../assets/js/mytypes";
 import { nanoid } from "nanoid";
+import { versions } from "../../versions-data";
 
 function DropDown({ title, sections, hash, route }: { route: string; title: string; sections: string[], hash: string }) {
     const [opened, setOpened] = useState(false)
@@ -70,7 +71,7 @@ interface ISiteOverviewData {
     title: string;
     route: string;
     sections: {
-        [key: string]: string;
+        [key: string]: string | undefined;
     }
 }
 
@@ -79,61 +80,57 @@ export default function SiteOverview({ version }: { version: Iversion }) {
     const [hash, setHash] = useState('') // placeholder
     const [data, setData] = useState<ISiteOverviewData[]>()
 
-
-
-    async function changeVersionData(version: Iversion) {
-
-        const data = await import(`../../pages/versions-data/${version}.tsx`);
-        // console.log(data,' 1p11')
-        setData(data?.Sidebar)
-    }
     useEffect(() => {
-        changeVersionData(version)
+        const versionData = versions[String(version) as keyof typeof versions];
+        setData(versionData.Sidebar as ISiteOverviewData[])
     }, [version])
 
     useEffect(() => {
-        setHash(window.location.hash)
-        // toast.success(pathname)
+        if (typeof window !== 'undefined') {
+            setHash(window.location.hash)
+        }
     }, [pathname])
 
     useEffect(() => {
-        const sections = Array.from(
-            document.querySelectorAll("section.page-section")
-        );
-        // map sectionId → last seen intersectionRatio
-        const ratios = new Map(sections.map((s) => [s.id, 0]));
+        if (typeof document !== 'undefined') {
+            const sections = Array.from(
+                document.querySelectorAll("section.page-section")
+            );
+            // map sectionId → last seen intersectionRatio
+            const ratios = new Map(sections.map((s) => [s.id, 0]));
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                // update ratios for anything that changed
-                entries.forEach((entry) => {
-                    ratios.set(entry.target.id, entry.intersectionRatio);
-                });
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    // update ratios for anything that changed
+                    entries.forEach((entry) => {
+                        ratios.set(entry.target.id, entry.intersectionRatio);
+                    });
 
-                // pick the section with the largest ratio
-                let bestId = null;
-                let bestRatio = 0;
-                for (const [id, ratio] of ratios.entries()) {
-                    if (ratio > bestRatio) {
-                        bestRatio = ratio;
-                        bestId = id;
+                    // pick the section with the largest ratio
+                    let bestId = null;
+                    let bestRatio = 0;
+                    for (const [id, ratio] of ratios.entries()) {
+                        if (ratio > bestRatio) {
+                            bestRatio = ratio;
+                            bestId = id;
+                        }
                     }
-                }
 
-                if (bestId) {
-                    const hash = `#${bestId}`;
-                    setHash(hash)
-                    history.replaceState(null, "", hash);
+                    if (bestId) {
+                        const hash = `#${bestId}`;
+                        setHash(hash)
+                        history.replaceState(null, "", hash);
+                    }
+                },
+                {
+                    // fine‐grained ratios from 0 to 1 in steps of 0.01
+                    threshold: Array.from({ length: 101 }, (_, i) => i / 100),
                 }
-            },
-            {
-                // fine‐grained ratios from 0 to 1 in steps of 0.01
-                threshold: Array.from({ length: 101 }, (_, i) => i / 100),
-            }
-        );
+            );
 
-        sections.forEach((s) => observer.observe(s));
-        return () => observer.disconnect();
+            sections.forEach((s) => observer.observe(s));
+            return () => observer.disconnect();
+        }
 
     }, [pathname]);
 

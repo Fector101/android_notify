@@ -1,13 +1,14 @@
 "use client"
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link'
-import { CodeBlock } from "../../ui/CodeBlock/CodeBlock";
-import { ScrollToSection } from "../../ui/ScrollAssist";
+import dynamic from 'next/dynamic'
 import '../../assets/css/advmethodspage.css'
 import channelimg from '../../assets/imgs/channelname.jpg'
 import { useEffect, useState } from 'react';
-import { Iversion } from '../../assets/js/mytypes';
-import { isLegacyVersion } from '../../assets/js/helper';
+import { useVersion } from '../VersionContext';
+import { versions } from '../../versions-data';
+
+const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
 interface IAdvancedMethodsPage {
     title_and_message_update_code: string;
@@ -17,20 +18,16 @@ interface IAdvancedMethodsPage {
     getting_identifier_code: string;
 }
 
-export default function AdvancedMethodsPage({ version }: { version: Iversion }) {
+export default function AdvancedMethodsPage() {
+    const { version } = useVersion();
     const [data, setData] = useState<IAdvancedMethodsPage>()
 
-    async function changeVersionData(version: Iversion) {
-
-        const data = await import(`../../pages/versions-data/${version}.tsx`);
-        setData(data.advanced_methods_page)
-    }
     useEffect(() => {
-        changeVersionData(version)
+        const versionData = versions[String(version) as keyof typeof versions];
+        setData(versionData.advanced_methods_page)
     }, [version])
     return (
         <div className="main-page page adv-methods-page">
-            <ScrollToSection />
             <section id='updating-notification' className="page-section">
                 <h2 className=" long-title">Updating Notification</h2>
                 <hr />
@@ -51,17 +48,8 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                 <hr />
                 {/* <p tabIndex={0} className="paragraph">For Images:</p> */}
                 <p className="paragraph">To add image after sending
-                {isLegacyVersion(version) ?
-                    <>
-                        <span> set </span>
-                        <span className="code">already_sent</span> in <span className="code">addNotificationStyle</span> method to <span className="code">true</span>
-                    </>
-                    :
-                    <>
                     <span> use </span>
                     <span className="code">setLargeIcon</span> or <span className="code">setBigPicture</span> then <span className="code">.refresh</span>
-                    </>
-                }
                 </p>
                 <CodeBlock title="Image" code={data?.adding_image_code || ''} />
             </section>
@@ -74,8 +62,8 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                 <p className="paragraph">You can customize the channel name and ID:</p>
                 <ul className="inner-section-2 paragraph">
                     <li>If not specified <span className="code">channel_id</span> will be auto generated from <span className="code">channel_name</span></li>
-                    <li className="inner-section-2">Using this format <span className="code">.lower().replace(' ', '_')</span> </li>
-                    <li>Custom Channel Name's Gives User ability to turn on/off specific notifications</li>
+                    <li className="inner-section-2">Using this format <span className="code">.lower().replace(&apos; &apos;, &apos;_&apos;)</span> </li>
+                    <li>Custom Channel Name&apos;s Gives User ability to turn on/off specific notifications</li>
                 </ul>
                 <CodeBlock title='Channel Management' code={data?.channel_management_code || ''} img={channelimg} />
             </section>
@@ -83,11 +71,8 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
             <section id="getting-identifer" className="page-section" tabIndex={0}>
                 <h2 className="long-title">Getting Identifer</h2>
                 <hr />
-                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler{isLegacyVersion(version) ? ".getIdentifer" : '.get_name'}</span></p>
+                <p>If you want to get the Exact Notification Clicked to Open App, you can use NotificationHandler to get unique identifer (str) <span className="code">NotificationHandler.get_name</span></p>
 
-                <p>
-                    {isLegacyVersion(version) && <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>}
-                </p>
                 <CodeBlock title="Identifer" code={data?.getting_identifier_code || ''} />
             </section>
 

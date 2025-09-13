@@ -2,16 +2,16 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid'
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { ScrollToSection } from '../../ui/ScrollAssist';
 import '../../assets/css/versionspage.css'
+import { useVersion } from '../VersionContext';
 
 interface IDropDown {
     version: number;
     sections: { msg: React.ReactNode; type: 'good' | 'warning' | 'bad' | '' }[];
-    setVersion: React.Dispatch<React.SetStateAction<number>>
 }
 
-function DropDown({ version, sections, setVersion }: IDropDown) {
+function DropDown({ version, sections }: IDropDown) {
+    const { setVersion } = useVersion();
     const [opened, setOpened] = useState(false)
     const warnings = sections.filter(each => each.type === 'warning')
     const critical_list = sections.filter(each => each.type === 'bad')
@@ -73,14 +73,13 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
     )
 
 }
-export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<number>> }) {
+export default function VersionsPage() {
 
 
     return (
         <div className="page main-page versions-page flex fd-column">
-            <ScrollToSection />
             <section className="page-section rules">
-                <p className="good">Version's marked with green have new features or API</p>
+                <p className="good">Version&apos;s marked with green have new features or API</p>
                 {/* <p>Yellow marker  while For older issue had an <p className="warning">issue with an advanced method</p></p> */}
                 <p className='warning'>For Yellow marker:</p>
                 <ul className='inner-section-2'>
@@ -91,24 +90,24 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                 <hr />
             </section>
             <section className="versions">
-                <DropDown setVersion={setVersion} version={1.59} sections={[
+                <DropDown version={1.59} sections={[
                     { msg: 'Add new features', type: '' },
                     { msg: <>Added a way to access Old Notification instance with <span className="code">Notification().id</span> </>, type: 'good' },
                     { msg: <>methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span>, For if old instance not available and need to cancel one use id with <span className="code">Notification.cancel(_id)</span></>, type: 'good' },
                     { msg: <>When setting a new component after <span className="code">Notification().send</span>  use <span className="code">Notification().refresh</span> </>, type: 'good' },
                     { msg: <>Instead of only requesting in init created <span className="code">NotificationHandler.asks_permission</span> and <span className="code">NotificationHandler.has_permission</span> </>, type: 'good' },
                     { msg: 'Add methods working to free up __init__ kwargs [parsing out `style` attribute]', type: '' },
-                    { msg: <><span className="code">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></>, type: 'good' },
-                    { msg: <><span className="code">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></>, type: 'good' },
-                    { msg: <><span className="code">setBigPicture</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_PICTURE)</span></>, type: 'good' },
-                    { msg: <><span className="code">setBigText</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_TEXT)</span></>, type: 'good' },
+                    { msg: <><span className="code">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon=&quot;...&quot;) </span></>, type: 'good' },
+                    { msg: <><span className="code">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path=&quot;...&quot;,style=NotificationStyles.LARGE_ICON)</span></>, type: 'good' },
+                    { msg: <><span className="code">setBigPicture</span> == <span className="code yellow-shade">Notification(...,body=&quot;...&quot;,style=NotificationStyles.BIG_PICTURE)</span></>, type: 'good' },
+                    { msg: <><span className="code">setBigText</span> == <span className="code yellow-shade">Notification(...,big_picture_path=&quot;...&quot;,style=NotificationStyles.BIG_TEXT)</span></>, type: 'good' },
                     { msg: <>For creating channels <span className="code">Notification.createChannel(name, id, desc</span> </>, type: 'good' },
                     { msg: <>For deleting channels <span className="code">Notification.deleteAllChannel()</span> and <span className="code">Notification.deleteChannel(channel_id)</span> </>, type: 'good' },
                     { msg: 'Changed ', type: '' },
                     { msg: '`Notification.identifer` to `Notification.name`', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` to `NotificationHandler.get_name`', type: 'warning' },
                 ]} />
-                <DropDown setVersion={setVersion} version={1.58} sections={[
+                <DropDown version={1.58} sections={[
                     { msg: '`showInfiniteProgressBar` Had no guard block when not on android', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` always returned value even when app not opened from notification', type: 'bad' },
                 ]} />

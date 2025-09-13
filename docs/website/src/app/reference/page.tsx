@@ -1,38 +1,38 @@
 "use client"
-import '../assets/css/referencepage.css';
+import '../../assets/css/referencepage.css';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
-import { Iversion } from '../../assets/js/mytypes';
-import { isLegacyVersion } from '../../assets/js/helper';
+import dynamic from 'next/dynamic'
+import { isLegacyVersion } from '../../assets/js/version-helper';
+import { useVersion } from '../VersionContext';
+import { versions } from '../../versions-data';
+
+const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
 type arg = { name: string; desc: string }
 type object_list = {
 	id: string;
 	signature: string;
 	description: string;
-	args: arg[]
+	args?: arg[]
 }
 interface IReferencePage {
 	NOTIFICATION_METHODS: object_list[];
 	HANDLER_METHODS: object_list[];
 	STYLE_ATTRIBUTES: object_list[];
 }
-export default function ReferencePage({ version }: { version: Iversion }) {
+export default function ReferencePage() {
+	const { version } = useVersion();
 	const [data, setData] = useState<IReferencePage>()
 
-	async function changeVersionData(version: Iversion) {
-
-		const data = await import(`../../pages/versions-data/${version}.tsx`);
-		setData(data.reference_page)
-	}
 	useEffect(() => {
-		changeVersionData(version)
+		const versionData = versions[String(version) as keyof typeof versions];
+		setData(versionData.reference_page)
 	}, [version])
 	return (
 		<div className="page main-page reference-page">
-
 			<h2>Reference</h2>
 			<hr />
 			{/* Table of Contents */}
@@ -61,10 +61,10 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 					<h2>For v1.59</h2>
 					<p className='paragraph'>Add methods working to free up __init__ kwargs [parsing out `style` attribute] </p>
 					<div className='paragraph'>
-						<span className="cod paragraph">setSmallIcon</span> == <span className="code yellow-shade">Notification(..., app_icon="...") </span><br /><br />
-						<span>setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path="...", style=NotificationStyles.LARGE_ICON)</span><br /><br />
-						<span>setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span><br /><br />
-						<span>setBigText</span> == <span className="code yellow-shade">Notification(..., body="...", style=NotificationStyles.BIG_TEXT)</span><br />
+						<span className="cod paragraph">setSmallIcon</span> == <span className="code yellow-shade">Notification(..., app_icon=&quot;...&quot;) </span><br /><br />
+						<span>setLargeIcon</span> == <span className="code yellow-shade">Notification(..., large_icon_path=&quot;...&quot;, style=NotificationStyles.LARGE_ICON)</span><br /><br />
+						<span>setBigPicture</span> == <span className="code yellow-shade">Notification(..., big_picture_path=&quot;...&quot;,style=NotificationStyles.BIG_PICTURE)</span><br /><br />
+						<span>setBigText</span> == <span className="code yellow-shade">Notification(..., body=&quot;...&quot;, style=NotificationStyles.BIG_TEXT)</span><br />
 					</div>
 				</section>}
 			{/* Instance Methods Section */}
@@ -75,9 +75,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 						key={nanoid()}
 						className="bg-gray-50 p-4 rounded-lg shadow-sm transition"
 					>
-						<p className={m.id + ' ref-code'} >
-							{m.signature.replace(/\t/g, '\u00A0\u00A0\u00A0\u00A0')}
-						</p>
+						{/* <CodeBlock code={m.signature} /> */}
 
 						<p className="paragraph mb-2 text-gray-700">{m.description}</p>
 						{m.args && (
@@ -114,12 +112,12 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 					<>
 						<h2 className="text-xl font-bold">NotificationStyles</h2>
 						<p className="paragraph">
-							All NotificationStyles attributes are deprecated in v1.59.3, but they're still available for backward compatibility.
+							All NotificationStyles attributes are deprecated in v1.59.3, but they&apos;re still available for backward compatibility.
 							You can use the <span className="code yellow-shade">style</span> attribute in the Notification class to set styles.</p>
 						<p>For example:</p>
-						<p>Notification.setLargeIcon('profile.png') replaced</p>
+						<p>Notification.setLargeIcon(&apos;profile.png&apos;) replaced</p>
 						<p className="paragraph inner-section-2">
-							<span className="code yellow-shade">Notification(..., large_icon_path="profile.png", style=NotificationStyles.LARGE_ICON)</span>
+							<span className="code yellow-shade">Notification(..., large_icon_path=&quot;profile.png&quot;, style=NotificationStyles.LARGE_ICON)</span>
 						</p>
 						<p className="paragraph">
 							You can also use the <span className="code yellow-shade">setLargeIcon</span>, <span className="code yellow-shade">setBigPicture</span>, <span className="code yellow-shade">setBigText</span> and <span className="code yellow-shade">setLines</span> methods to set the respective styles of <span className="code">NotificationStyles.LARGE_ICON</span>, <span className="code">NotificationStyles.BIG_PICTURE</span>,

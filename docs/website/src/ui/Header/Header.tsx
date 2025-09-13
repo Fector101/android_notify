@@ -7,7 +7,7 @@ import './header.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { toTitleCase } from '../../assets/js/helper';
-import pages_dict from '../../pages/versions-data/general';
+import { general } from '../../versions-data';
 import { useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 import { Iversion } from '../../assets/js/mytypes';
@@ -17,12 +17,12 @@ import { Iversion } from '../../assets/js/mytypes';
 // };
 interface IHeader {
     version: Iversion;
-    setVersion: React.Dispatch<React.SetStateAction<number>>
+    setVersion: React.Dispatch<React.SetStateAction<Iversion>>
 }
 export default function Header({ version,setVersion }:IHeader) {
     // const [search,setSearch]=useState('')
     const pathname = usePathname();
-    let description = pages_dict[pathname.slice(1)]?.description || '';
+    let description = general[pathname.slice(1) as keyof typeof general]?.description || '';
     description = description ? ' - ' + description : '';
     const isMobileView = useRef(window.innerWidth < 770)
     const [isOpen, setIsOpen] = useState(() => !isMobileView.current)

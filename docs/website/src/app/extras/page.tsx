@@ -1,17 +1,18 @@
+"use client"
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ScrollToSection } from '../../ui/ScrollAssist'
-import { CodeBlock } from '../../ui/CodeBlock/CodeBlock';
+import dynamic from 'next/dynamic';
+
+const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
 export default function ExtrasPage() {
     return (
         <div className="page main-page">
-            <ScrollToSection />
             <section className="page-section" id='how-to-update'>
                 <h2>How to Update</h2>
                 <hr />
-                <p className="paragraph">When using buildozer and you want to use a new version, buildozer doesn't automatically remove old versions,</p>
-                <p>You'll have to delete the old version in the .buildozer folder these are some commands to help automate the process for linux, windows and mac</p>
+                <p className="paragraph">When using buildozer and you want to use a new version, buildozer doesn&apos;t automatically remove old versions,</p>
+                <p>You&apos;ll have to delete the old version in the .buildozer folder these are some commands to help automate the process for linux, windows and mac</p>
 
                 <p className="paragraph">Linux</p>
                 <CodeBlock code={`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`} lang='bash' />
@@ -19,9 +20,9 @@ export default function ExtrasPage() {
                 <p className="paragraph">Windows</p>
                 <div className='paragraph inner-section-2'>
                     <p>On PowerShell</p>
-                    <p className='paragraph'>If command prints folder paths containing `android-notify` replace <span className='code'>Write-Output</span> with <span className='code'>Remove-Item</span></p>
+                    <p className='paragraph'>If command prints folder paths containing \`android-notify\` replace <span className='code'>Write-Output</span> with <span className='code'>Remove-Item</span></p>
                     <span className='code paragraph block'></span>
-                    <CodeBlock code={`cd .buildozer\nGet-ChildItem -Path . -Directory -Filter "android_notify*" | ForEach-Object { Write-Output $_.FullName }\ncd ..`} lang='powershell' />
+                    <CodeBlock code={`cd .buildozer\\nGet-ChildItem -Path . -Directory -Filter "android_notify*" | ForEach-Object { Write-Output $_.FullName }\\ncd ..`} lang='powershell' />
 
                     <p className='paragraph'>Git Bash (if installed)</p>
                     <CodeBlock code={`cd .buildozer && find . -type d -name "android_notify*" -print0 | xargs -0 rm -r && cd ..`} lang='bash' />
@@ -37,7 +38,7 @@ export default function ExtrasPage() {
                 <hr />
                 <ul className="inner-section-2">
                     <li> Enable logs during development: Notification.logs = True </li>
-                    <li>Check channel creation with Android's notification settings </li>
+                    <li>Check channel creation with Android&apos;s notification settings </li>
                     <li> Verify image paths before sending notifications </li>
                 </ul>
 

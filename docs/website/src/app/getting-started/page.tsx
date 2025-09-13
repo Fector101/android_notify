@@ -1,20 +1,21 @@
+"use client"
 import {  ChevronRight } from 'lucide-react';
 import Link from 'next/link'
-import { ScrollToSection } from '../../ui/ScrollAssist';
-import { CodeBlock } from '../../ui/CodeBlock/CodeBlock';
+import dynamic from 'next/dynamic'
 import '../../assets/css/mainpage.css'
-import { code, installation_code_buildozer, installation_code_pip } from '../../pages/versions-data/mainpage';
+import { mainpage } from '../../versions-data';
+
+const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
 export default function MainPage() {
     return (
         <div className="page main-page flex fd-column">
-            <ScrollToSection />
             <section className="page-section" id='introduction'>
                 <h2>Introduction</h2>
                 <hr />
                 <p className='reader'>Android-Notify simplifies the process of creating and managing android notifications with <span className='code green'>Python</span>.</p>
 
-                <p className='paragraph reader'>It's built using pyjnius to interact with Android's native Java Classes and APIs.</p>
+                <p className='paragraph reader'>It&apos;s built using pyjnius to interact with Android&apos;s native Java Classes and APIs.</p>
                 <p className='paragraph'>
 The goal of android-notify is to handle all the Java for you, allowing you to focus on your notification content using Python, without worrying about platform-specific implementation details. It also eliminates the need for unnecessary third-party APIs or online services.
                 </p>
@@ -42,10 +43,10 @@ The goal of android-notify is to handle all the Java for you, allowing you to fo
                 <div className='inner-section-1'>
                     <h3 className='sub-header'>Buildozer</h3>
                     <p>In your `buildozer.spec` file include the following:</p>
-                    <CodeBlock code={installation_code_buildozer} lang='ini' />
+                    <CodeBlock code={mainpage.installation_code_buildozer} lang='ini' />
                     <h3 className='sub-header'>PIP</h3>
                     <p className='paragraph'>You Can also install Via PIP for testing purposes</p>
-                    <CodeBlock code={installation_code_pip} lang='bash' />
+                    <CodeBlock code={mainpage.installation_code_pip} lang='bash' />
 
                 </div>
             </section>
@@ -58,7 +59,7 @@ The goal of android-notify is to handle all the Java for you, allowing you to fo
                 <div className='inner-section-1'>
                     <p>You can easily create and send notifications with just a few lines of code.</p>
                     <p>Below is a simple example of how to create a basic notification:</p>
-                    <CodeBlock code={code} />
+                    <CodeBlock code={mainpage.code} />
 
 
                 </div>
