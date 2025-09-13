@@ -4,9 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { ChevronDown, ChevronUp } from "lucide-react"
 import './siteoverview.css'
-import { useEffect, useState } from "react";
-// import { toast } from "sonner";
-import { ScrollToSection } from "../ScrollAssist";
+import { useEffect, useState } from "react"; { ScrollToSection } from "../ScrollAssist";
 import { Iversion } from "../../assets/js/mytypes";
 import { nanoid } from "nanoid";
 import { versions } from "../../versions-data";
@@ -56,17 +54,6 @@ function DropDown({ title, sections, hash, route }: { route: string; title: stri
 
 }
 
-    // export const Sidebar= [
-    //     {
-    //         title: 'Getting Started',
-    //         route: '/getting-started',
-    //         sections: {
-    //             'Introduction':'introduction',
-    //             'Features':'features',
-    //             'Installation':'installation',
-    //             'Basic Usage':'basic-usage'
-    //         }
-    //     },
 interface ISiteOverviewData {
     title: string;
     route: string;
@@ -220,55 +207,3 @@ export default function SiteOverview({ version }: { version: Iversion }) {
 
 
 
-
-
-
-/* comment ./siteoverview.css .site-overview {`position: fixed;`} to see properly
-<div className="site-overview">
-<DropDown 
-hash={hash} 
-title="Getting Started" 
-sections={[
-'Introduction', 
-'Installation', 
-'Basic Usage'
-]} 
-/>
-<DropDown 
-hash={hash} 
-title="Guides" 
-sections={[
-'Notification Options', 
-'Customizing Behavior', 
-'Error Handling'
-]} 
-/>
-<DropDown 
-hash={hash} 
-title="Reference" 
-sections={[
-'Notification Class', 
-'Available Methods', 
-'Examples'
-]} 
-/>
-<DropDown 
-hash={hash} 
-title="Support" 
-sections={[
-'FAQ', 
-'Troubleshooting', 
-'Contributing'
-]} 
-/>
-<DropDown 
-hash={hash} 
-title="About" 
-sections={[
-'What is Android-notify?', 
-'License', 
-'Changelog'
-]} 
-/>
-</div> 
-</> */
