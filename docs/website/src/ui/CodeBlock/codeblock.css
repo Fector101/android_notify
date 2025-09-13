@@ -52,7 +52,7 @@
     flex-direction: column;
 }
 
-.code-block .content img {
+.code-block .content .img {
     max-width: 450px;
     width: 100%;
     margin: 0 auto;
