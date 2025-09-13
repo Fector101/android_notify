@@ -1,4 +1,6 @@
-import { Link, useLocation } from "react-router";
+"use client"
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { ChevronDown, ChevronUp } from "lucide-react"
 import './siteoverview.css'
@@ -37,7 +39,7 @@ function DropDown({ title, sections, hash, route }: { route: string; title: stri
                             const hash_ = '#' + each_section.toLocaleLowerCase().replace(/ /g, '-')
                             const state = hash == hash_
                             return <li key={each_section}>
-                                <Link className={state ? 'active' : ''} to={route + hash_} tabIndex={opened ? 0 : -1}>
+                                <Link className={state ? 'active' : ''} href={route + hash_} tabIndex={opened ? 0 : -1}>
                                     {each_section}
                                 </Link>
                             </li>
@@ -73,8 +75,8 @@ interface ISiteOverviewData {
 }
 
 export default function SiteOverview({ version }: { version: Iversion }) {
-    const location = useLocation();
-    const [hash, setHash] = useState(location.hash)
+    const pathname = usePathname();
+    const [hash, setHash] = useState('') // placeholder
     const [data, setData] = useState<ISiteOverviewData[]>()
 
 
@@ -90,9 +92,9 @@ export default function SiteOverview({ version }: { version: Iversion }) {
     }, [version])
 
     useEffect(() => {
-        setHash(location.hash)
-        // toast.success(location.pathname)
-    }, [location])
+        setHash(window.location.hash)
+        // toast.success(pathname)
+    }, [pathname])
 
     useEffect(() => {
         const sections = Array.from(
@@ -133,7 +135,7 @@ export default function SiteOverview({ version }: { version: Iversion }) {
         sections.forEach((s) => observer.observe(s));
         return () => observer.disconnect();
 
-    }, [location.pathname]);
+    }, [pathname]);
 
 
     return (
