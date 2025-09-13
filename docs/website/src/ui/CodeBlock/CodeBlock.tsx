@@ -52,7 +52,7 @@ export function CodeBlock({ title, img, code, lang = 'python' }: { title?: strin
                 <Prism language={lang} style={dracula} customStyle={{ margin: 0, padding: '20px', borderRadius: 0, fontSize: fontSize, overflowX: 'auto' }}>
                     {code}
                 </Prism>
-                {img && <Image src={img} alt={title || 'demo'} />}
+                {img && <Image className="img" src={img} alt={title || 'demo'} />}
             </div>
         </div>
 
