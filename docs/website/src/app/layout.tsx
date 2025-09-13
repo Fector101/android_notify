@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { VersionProvider } from "./VersionContext";
 import dynamic from 'next/dynamic';
 
-import "./globals.css";
+//import "./globals.css";
 import '../assets/css/quick-styles.css';
 import '../assets/css/app.css';
 
