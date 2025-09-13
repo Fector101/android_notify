@@ -9,7 +9,6 @@ import { isLegacyVersion } from '../../assets/js/version-helper';
 import { useVersion } from '../VersionContext';
 import { versions } from '../../versions-data';
 
-const CodeBlock = dynamic(() => import('../../ui/CodeBlock/CodeBlock').then(mod => mod.CodeBlock), { ssr: false });
 
 type arg = { name: string; desc: string }
 type object_list = {
