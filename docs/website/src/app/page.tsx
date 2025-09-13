@@ -1,7 +1,6 @@
 "use client"
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-// import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import "../assets/css/home-page.css"
 export default function HomePage() {
     return (
@@ -35,28 +34,8 @@ export default function HomePage() {
                 <p className="paragraph">- Fixed a bug where .getIdentifer returned value even when app wasn&apos;t opened by notification.</p>
                 <h3 className='paragraph'>Changes</h3>
                 <p className="paragraph">- Changed .getIdentifer to .get_name</p>
-                {/* Copilot Shit */}
-                {/*
-                <p className="paragraph">- Improved the handling of notification channels for better compatibility with Android 13 and above.</p>
-                <p className="paragraph">- Added support for custom icons in notifications.</p>
-                <p className="paragraph">- Updated the documentation to provide clearer examples and usage instructions.</p>
-                <p className="paragraph">- Optimized the library for better performance and reduced memory usage.</p>
-                <p className="paragraph">- Fixed various minor bugs and issues reported by users.</p>
-                <p className="paragraph">- Added new features to enhance the user experience.</p>
-                <p className="paragraph">- Improved the overall stability and reliability of the library.</p>
-                <p className="paragraph">- Updated dependencies to the latest versions.</p>
-                <p className="paragraph">- Added new features to enhance the user experience.</p> */}
-                {/* <p className="paragraph">- Improved the overall stability and reliability of the library.</p> */}
-                {/* <p className="paragraph margin-left-auto auto-width">Happy coding!</p> */}
+                
             </section>
-            {/* <section className="page-section" id='home'> */}
-                {/* <h2>Home</h2>
-                <hr />
-                <p className="paragraph">Welcome to the Android Notify documentation! This guide will help you understand how to use the library effectively.</p>
-                <p className="paragraph">Android Notify is a Python library that allows you to generate notifications in your Android devices. It provides a simple and efficient way to create and manage notifications, making it easier for developers to enhance their applications with notification features.</p>
-                <p className="paragraph">This documentation covers everything from installation to advanced usage, including examples and best practices. Whether you're a beginner or an experienced developer, you'll find valuable information here.</p>
-                <p className="paragraph">If you have any questions or need further assistance, feel free to reach out to the community or the library maintainers.</p> */}
-            {/* </section> */}
 
 
             <span className='flex next-page-btns-box space-between'>
@@ -68,11 +47,10 @@ export default function HomePage() {
                     </span>
                 </Link>
                 <Link className='next-page-btn' href='/getting-started'>
-                    {/* <Link className='next-page-btn' href='/event-handling'> */}
                     <span>
                         <p className='next-txt'>Next</p>
                         <p className='page-name'>Getting Started</p>
-                        {/* <p className='page-name'>Event Handling</p> */}
+                        
                     </span>
                     <ChevronRight />
                 </Link>
