@@ -1,11 +1,4 @@
-// import { dracula,dark, xonokai,vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-// import { Prism } from 'react-syntax-highlighter'
-// import { a11yDark, github, githubGist, gradientDark} from 'react-syntax-highlighter/dist/esm/styles/hljs';
-// import { vsDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-// import { Prism as Prism } from 'react-syntax-highlighter';
-
 import {  ChevronRight } from 'lucide-react';
-// import { useEffect } from 'react';
 import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
@@ -14,13 +7,6 @@ import { code, installation_code_buildozer, installation_code_pip } from './vers
 
 export default function MainPage() {
 
-    // const [sudoku_list, setSudokuList] = useState<(number | '')[][]>()
-    // const [sudoku_puzzle, setSudokuPuzzle] = useState<(number | '')[][]>()
-
-    // const [input_value,setInputValue] = useState(1)
-
-    // useEffect(() => {
-    // }, [])
     return (
         <div className="page main-page flex fd-column">
             <ScrollToSection />
