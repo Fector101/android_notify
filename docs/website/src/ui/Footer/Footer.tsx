@@ -14,6 +14,7 @@ export default function Footer() {
         fetch('/last-updated.txt')
             .then(res => res.text())
             .then(text => setDate(text));
+console.log(date)
     }, []);
     return (
         <footer className='flex justify-content-cen text-align-center align-items-cen'>
@@ -23,7 +24,7 @@ export default function Footer() {
             {/* <p>Documentation hosted on <Link href='https://vercel.com/'>Vercel</Link></p> */}
             <div className="flex fd-column gap-10">
                 <p>Thoroughly Tested and supported by <Link href='https://github.com/Fector101/laner'>Laner</Link> </p>
-                <p>Last Updated: {date}, © {new Date().getFullYear()} Fabian</p>
+                <p>Last Updated: 13th Sep, © {new Date().getFullYear()} Fabian</p>
             </div>
 
             <div className='support-links-box flex fd-column justify-content-cen text-align-center'>
