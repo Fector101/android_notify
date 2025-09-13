@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 
 import { ChevronDown, ChevronUp } from "lucide-react"
 import './siteoverview.css'
-import { useEffect, useState } from "react"; { ScrollToSection } from "../ScrollAssist";
+import { useEffect, useState } from "react";
+import { ScrollToSection } from "../ScrollAssist";
 import { Iversion } from "../../assets/js/mytypes";
 import { nanoid } from "nanoid";
 import { versions } from "../../versions-data";
@@ -136,71 +137,8 @@ export default function SiteOverview({ version }: { version: Iversion }) {
                     />
                 })
             }
-            {/* <DropDown
-                hash={hash}
-                route='/getting-started'
-                title="Getting Started"
-                sections={[
-                    'Introduction',
-                    'Features',
-                    'Installation',
-                    'Basic Usage'
-                ]}
-            /> */}
-            {/* <DropDown
-                hash={hash}
-                title="Components"
-                route='/components'
-                sections={[
-                    'Images',
-                    'Buttons',
-                    'Progress Bars',
-                    'Texts',
-                    //'Persistent Notifications'
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Advanced Methods"
-                route='/advanced-methods'
-
-                sections={[
-                    'Updating Notification', // 'Adding More Components',
-                    // 'Notification Clicks',
-                    'Channel Management',
-                    'Getting Identifer', //TODO version typo
-
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Reference"
-                route='/reference'
-                sections={[
-                    'Notification Class',
-                    'NotificationHandler Class',
-                    'NotificationStyles Class',
-                    // 'Available Methods',
-                    // 'Advanced Parameters'
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Extras"
-                route='/extras'
-                sections={[
-                    'How to update',
-                    'Debugging Tips',
-                    // 'Error Handling',
-                    'Contributing-Issues',
-                    // 'Changelog'
-                    // 'Author',
-                    'Credits',
-                    'Support Project',
-                    // 'FAQ',
-                    // 'Error Handling',
-                ]}
-            /> */}
         </div>
     )
 }
+
+
