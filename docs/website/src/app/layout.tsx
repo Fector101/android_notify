@@ -41,6 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+<div id="root">
         <Toaster position="top-right" />
         <VersionProvider>
           <Suspense>
@@ -48,6 +49,7 @@ export default function RootLayout({
           </Suspense>
         </VersionProvider>
         <Analytics />
+      </div>
       </body>
     </html>
   );
