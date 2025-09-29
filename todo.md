@@ -66,3 +66,10 @@ v.vibrate(pattern, 0)
 Notification.vibration_pattern=[start,vibrate,sleep]
 Notification.vibrate(ms=500,indefinite=False,pattern=[0,100,1000], start=0)
 ```
+
+
+---
+# to remove 
+unused code
+1. Remove `run_on_ui_thread` decorator where not necessary like these methods`addNotificationStyle`,`__apply_notification_image`.
+But leave it in `asks_permission` where UI Thread is necessary
