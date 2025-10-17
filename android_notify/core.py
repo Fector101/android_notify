@@ -2,20 +2,33 @@
 import random
 import os
 ON_ANDROID = False
+
+def get_activity_class_name():
+    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
+    if not ACTIVITY_CLASS_NAME:
+        try:
+            from android import config
+            ACTIVITY_CLASS_NAME = getattr(config, "JAVA_NAMESPACE", None)
+        except (ImportError, AttributeError):
+            ACTIVITY_CLASS_NAME = 'org.kivy.android'
+    return ACTIVITY_CLASS_NAME
+
 try:
-    from jnius import autoclass,cast # Needs Java to be installed
+
+    from jnius import autoclass # Needs Java to be installed
     # Get the required Java classes
-    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    ACTIVITY_CLASS_NAME = get_activity_class_name()
+    PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
+    context = PythonActivity.mActivity # Get the app's context 
     NotificationChannel = autoclass('android.app.NotificationChannel')
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
-    context = PythonActivity.mActivity # Get the app's context 
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     BuildVersion = autoclass('android.os.Build$VERSION')    
     ON_ANDROID=True
 except Exception as e:
-    print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.')
+    print('\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
 
 if ON_ANDROID:
     try:
@@ -28,11 +41,11 @@ if ON_ANDROID:
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
     except Exception as e:
-        print("""
+        print("""\n
         Dependency Error: Add the following in buildozer.spec:
         * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
         * android.enable_androidx = True
-        * android.permissions = POST_NOTIFICATIONS
+        * android.permissions = POST_NOTIFICATIONS\n
         """)
 
 def asks_permission_if_needed():
@@ -83,7 +96,9 @@ def send_notification(
     if not ON_ANDROID:
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
-    asks_permission_if_needed()
+    
+    if not ("MAIN_ACTIVITY_HOST_CLASS_NAME" in os.environ):
+        asks_permission_if_needed() # android package is from p4a which is for kivy
     channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
@@ -101,7 +116,7 @@ def send_notification(
     builder.setContentTitle(title)
     builder.setContentText(message)
     builder.setSmallIcon(context.getApplicationInfo().icon)
-    builder.setDefaults(NotificationCompat.DEFAULT_ALL) 
+    builder.setDefaults(NotificationCompat.DEFAULT_ALL)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     
     img=None
