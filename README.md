@@ -108,6 +108,7 @@ To this:
 # Used to request access to Notification
 -keep class androidx.core.app.ActivityCompat { *; }
 ```
+[complete flet example](docs/examples/flet-working)
 
 Can be installed via `pip` For testing purposes:
 
