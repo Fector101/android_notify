@@ -3,6 +3,9 @@ import random
 import os
 ON_ANDROID = False
 
+def on_flet_app():
+    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
+
 def get_activity_class_name():
     ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
     if not ACTIVITY_CLASS_NAME:
@@ -48,15 +51,41 @@ if ON_ANDROID:
         * android.permissions = POST_NOTIFICATIONS\n
         """)
 
+
+def get_app_root_path():
+    if on_flet_app():
+        return os.path.join(context.getFilesDir().getAbsolutePath(),'flet')
+    else:
+        from android.storage import app_storage_path # type: ignore
+        return app_storage_path()
+    
 def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
-    from android.permissions import request_permissions, Permission,check_permission # type: ignore
+    if on_flet_app():
+        VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
+        ContextCompat = autoclass('androidx.core.content.ContextCompat')
+        # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
+        #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
+        ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
+        Manifest = autoclass('android.Manifest$permission')
+        VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
 
-    permissions=[Permission.POST_NOTIFICATIONS]
-    if not all(check_permission(p) for p in permissions):
-        request_permissions(permissions)
+        if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
+            permission = Manifest.POST_NOTIFICATIONS
+            granted = ContextCompat.checkSelfPermission(context, permission)
+
+            if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
+                ActivityCompat.requestPermissions(context, [permission], 101)
+    else: # android package is from p4a which is for kivy
+        try:
+            from android.permissions import request_permissions, Permission,check_permission # type: ignore
+            permissions=[Permission.POST_NOTIFICATIONS]
+            if not all(check_permission(p) for p in permissions):
+                request_permissions(permissions)
+        except Exception as e:
+            print("android_notify- error trying to request notification access: ", e)
 
 def get_image_uri(relative_path):
     """
@@ -64,17 +93,34 @@ def get_image_uri(relative_path):
     :param relative_path: The relative path to the image (e.g., 'assets/imgs/icon.png').
     :return: Absolute URI java Object (e.g., 'file:///path/to/file.png').
     """
-    from android.storage import app_storage_path # type: ignore
-
-    output_path = os.path.join(app_storage_path(),'app', relative_path)
-    # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
+    app_root_path = get_app_root_path() 
+    output_path = os.path.join(app_root_path,'app', relative_path)
+    print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
     
     if not os.path.exists(output_path):
-        raise FileNotFoundError(f"Image not found at path: {output_path}")
+        raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
     
     Uri = autoclass('android.net.Uri')
     return Uri.parse(f"file://{output_path}")
 
+def get_icon_object(uri):
+    BitmapFactory = autoclass('android.graphics.BitmapFactory')
+    IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
+
+    bitmap= BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+    return IconCompat.createWithBitmap(bitmap)
+
+def insert_app_icon(builder,custom_icon_path):
+    if custom_icon_path:
+        try:
+            uri = get_image_uri(custom_icon_path)
+            icon = get_icon_object(uri)
+            builder.setSmallIcon(icon)
+        except Exception as e:
+            print('android_notify- error: ',e)
+            builder.setSmallIcon(context.getApplicationInfo().icon)
+    else:
+        builder.setSmallIcon(context.getApplicationInfo().icon)
 
 def send_notification(
     title:str,
@@ -82,7 +128,8 @@ def send_notification(
     style=None,
     img_path=None,
     channel_name="Default Channel",
-    channel_id:str="default_channel"
+    channel_id:str="default_channel",
+    custom_app_icon="",
     ):
     """
     Send a notification on Android.
@@ -97,8 +144,7 @@ def send_notification(
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
     
-    if not ("MAIN_ACTIVITY_HOST_CLASS_NAME" in os.environ):
-        asks_permission_if_needed() # android package is from p4a which is for kivy
+    asks_permission_if_needed()
     channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
@@ -115,7 +161,7 @@ def send_notification(
     builder = NotificationCompatBuilder(context, channel_id)
     builder.setContentTitle(title)
     builder.setContentText(message)
-    builder.setSmallIcon(context.getApplicationInfo().icon)
+    insert_app_icon(builder,custom_app_icon)
     builder.setDefaults(NotificationCompat.DEFAULT_ALL)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
     
