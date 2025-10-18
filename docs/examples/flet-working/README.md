@@ -5,7 +5,7 @@
  `\Ubuntu\home\fabian\an-stuff\build\flutter\android\app\proguard-rules.pro`
 
  ## Note
- Any Time you change these in `pyproject.toml`, you have to repaste the above settings in files listed above, after running `flet build apk` command in first go no better way for now.
+ Any Time you change these in `pyproject.toml`, you have to repaste the provided settings in files listed above, after running `flet build apk` command in first go no better way for now.
 
  ```toml
 [project]
