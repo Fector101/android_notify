@@ -1,0 +1,95 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+android {
+    namespace "com.mycompany.pyjnius_demox"
+    compileSdkVersion flutter.compileSdkVersion
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+        doNotStrip "*/arm64-v8a/libpython*.so"
+        doNotStrip "*/armeabi-v7a/libpython*.so"
+        doNotStrip "*/x86/libpython*.so"
+        doNotStrip "*/x86_64/libpython*.so"
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    
+    
+
+    defaultConfig {        
+        applicationId "com.mycompany.pyjnius_demox"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+
+        println("Gradle build config:")
+        println("  minSdkVersion: $flutter.minSdkVersion")
+        println("  targetSdkVersion: $flutter.targetSdkVersion")
+        println("  versionCode: $flutter.versionCode")
+        println("  versionName: $flutter.versionName")
+
+// flet: split_per_abi 
+        ndk {
+            
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+            
+        }
+// flet: end of split_per_abi 
+    }
+
+// flet: android_signing 
+
+    buildTypes {
+        release {
+// flet: android_signing 
+            signingConfig signingConfigs.debug
+// flet: end of android_signing 
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.6.0'
+    implementation 'androidx.core:core-ktx:1.15.0'
+}
