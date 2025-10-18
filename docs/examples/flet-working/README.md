@@ -1,3 +1,8 @@
+
+**Flet Sample Image:**  
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/basic-flet-notification.jpg)
+
+
 ## Path for `build.gradle`
  `\Ubuntu\home\fabian\an-stuff\build\flutter\android\app\build.gradle`  
 
