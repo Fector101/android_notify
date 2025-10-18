@@ -50,7 +50,7 @@ Notification(
 
 ## Installation
 
-### Kivy Android apps:  
+### Kivy apps:  
 
 In your **`buildozer.spec`** file, ensure you include the following:
 
@@ -66,7 +66,7 @@ android.enable_androidx = True
 android.api = 35
 ```
 
-### Flet Android apps:  
+### Flet apps:  
 
 1/3) In your `pyproject.toml` file, ensure you include the following:
 
@@ -105,6 +105,8 @@ To this:
 -keep class androidx.core.**Notification** { *; }
 -keep class androidx.core.**Notification**$* { *; }
 
+# Used to request access to Notification
+-keep class androidx.core.app.ActivityCompat { *; }
 ```
 
 Can be installed via `pip` For testing purposes:
