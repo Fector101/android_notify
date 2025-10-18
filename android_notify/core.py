@@ -130,6 +130,9 @@ def send_notification(
     channel_name="Default Channel",
     channel_id:str="default_channel",
     custom_app_icon="",
+
+    big_text="",
+    lines=""
     ):
     """
     Send a notification on Android.
@@ -175,8 +178,10 @@ def send_notification(
     # Apply notification styles
     try:
         if style == "big_text":
+            if big_text=="":
+                print("android_notify- `big_text=''` argument also needed for style='big_text'")
             big_text_style = NotificationCompatBigTextStyle()
-            big_text_style.bigText(message)
+            big_text_style.bigText(big_text)
             builder.setStyle(big_text_style)
         elif style == "big_picture" and img_path:
             bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
@@ -184,8 +189,11 @@ def send_notification(
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
             builder.setStyle(big_picture_style)
         elif style == "inbox":
+            if lines=="":
+                print("android_notify- `'lines='` argument also needed for style='inbox'")
+                
             inbox_style = NotificationCompatInboxStyle()
-            for line in message.split("\n"):
+            for line in lines.split("\n"):
                 inbox_style.addLine(line)
             builder.setStyle(inbox_style)
         elif style == "large_icon" and img_path:
