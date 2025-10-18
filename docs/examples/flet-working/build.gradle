@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.mycompany.pyjnius_demox"
+    namespace "com.mycompany.antest_demo"
     compileSdkVersion flutter.compileSdkVersion
 
     packagingOptions {
@@ -53,7 +53,7 @@ android {
     
 
     defaultConfig {        
-        applicationId "com.mycompany.pyjnius_demox"
+        applicationId "com.mycompany.antest_demo"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
