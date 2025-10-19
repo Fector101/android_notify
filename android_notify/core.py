@@ -210,7 +210,6 @@ def send_notification(
 
         if big_picture:
             bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(big_picture))
-            builder.setLargeIcon(bitmap)
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
             builder.setStyle(big_picture_style)
 
