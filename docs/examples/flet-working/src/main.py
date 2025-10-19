@@ -29,7 +29,7 @@ def main(page: ft.Page):
         
         try:
             from core import send_notification
-            send_notification(title='Hello World',message='From android_notify',custom_app_icon=f'assets/icon.png')
+            send_notification(title='Hello World',message='From android_notify',custom_app_icon_path=f'assets/icon.png')
         except Exception as e:
             print("Error importing android_notify: {}".format(e))
     

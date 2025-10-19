@@ -95,7 +95,7 @@ def get_image_uri(relative_path):
     """
     app_root_path = get_app_root_path() 
     output_path = os.path.join(app_root_path,'app', relative_path)
-    print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
+    # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
     
     if not os.path.exists(output_path):
         raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
@@ -120,6 +120,7 @@ def insert_app_icon(builder,custom_icon_path):
             print('android_notify- error: ',e)
             builder.setSmallIcon(context.getApplicationInfo().icon)
     else:
+        print('Found res icon -->',context.getApplicationInfo().icon,'<--')
         builder.setSmallIcon(context.getApplicationInfo().icon)
 
 def send_notification(
@@ -129,7 +130,12 @@ def send_notification(
     img_path=None,
     channel_name="Default Channel",
     channel_id:str="default_channel",
-    custom_app_icon="",
+    custom_app_icon_path="",
+
+    big_picture_path='',
+    large_icon_path='',
+    big_text="",
+    lines=""
     ):
     """
     Send a notification on Android.
@@ -143,7 +149,7 @@ def send_notification(
     if not ON_ANDROID:
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
-    
+
     asks_permission_if_needed()
     channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
     # Get notification manager
@@ -151,7 +157,7 @@ def send_notification(
 
     # importance= autoclass('android.app.NotificationManager').IMPORTANCE_HIGH # also works #NotificationManager.IMPORTANCE_DEFAULT
     importance= NotificationManagerCompat.IMPORTANCE_HIGH #autoclass('android.app.NotificationManager').IMPORTANCE_HIGH also works #NotificationManager.IMPORTANCE_DEFAULT
-    
+
     # Notification Channel (Required for Android 8.0+)
     if BuildVersion.SDK_INT >= 26:
         channel = NotificationChannel(channel_id, channel_name,importance)
@@ -161,38 +167,53 @@ def send_notification(
     builder = NotificationCompatBuilder(context, channel_id)
     builder.setContentTitle(title)
     builder.setContentText(message)
-    insert_app_icon(builder,custom_app_icon)
+    insert_app_icon(builder,custom_app_icon_path)
     builder.setDefaults(NotificationCompat.DEFAULT_ALL)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
-    
-    img=None
+
     if img_path:
+        print('android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path"instead ')
+
+    big_picture = None
+    if big_picture_path:
         try:
-            img = get_image_uri(img_path)
+            big_picture = get_image_uri(big_picture_path)
         except FileNotFoundError as e:
-            print('Failed Adding Bitmap: ',e)
-    
+            print('android_notify- Error Getting Uri for big_picture_path: ',e)
+
+    large_icon = None
+    if large_icon_path:
+        try:
+            large_icon = get_image_uri(large_icon_path)
+        except FileNotFoundError as e:
+            print('android_notify- Error Getting Uri for large_icon_path: ',e)
+
+
     # Apply notification styles
     try:
-        if style == "big_text":
+        if big_text:
             big_text_style = NotificationCompatBigTextStyle()
-            big_text_style.bigText(message)
+            big_text_style.bigText(big_text)
             builder.setStyle(big_text_style)
-        elif style == "big_picture" and img_path:
-            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
+
+        elif lines:
+            inbox_style = NotificationCompatInboxStyle()
+            for line in lines.split("\n"):
+                inbox_style.addLine(line)
+            builder.setStyle(inbox_style)
+
+        if large_icon:
+            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(large_icon))
+            builder.setLargeIcon(bitmap)
+
+        if big_picture:
+            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(big_picture))
             builder.setLargeIcon(bitmap)
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
             builder.setStyle(big_picture_style)
-        elif style == "inbox":
-            inbox_style = NotificationCompatInboxStyle()
-            for line in message.split("\n"):
-                inbox_style.addLine(line)
-            builder.setStyle(inbox_style)
-        elif style == "large_icon" and img_path:
-            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(img))
-            builder.setLargeIcon(bitmap)
+
     except Exception as e:
-        print('Failed Adding Style: ',e)
+        print('android_notify- Error Failed Adding Style: ',e)
     # Display the notification
     notification_id = random.randint(0, 100)
     notification_manager.notify(notification_id, builder.build())
