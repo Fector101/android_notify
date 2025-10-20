@@ -53,18 +53,23 @@ if ON_ANDROID:
 
 
 def get_app_root_path():
+    path = ''
     if on_flet_app():
-        return os.path.join(context.getFilesDir().getAbsolutePath(),'flet')
+        path= os.path.join(context.getFilesDir().getAbsolutePath(),'flet')
     else:
-        from android.storage import app_storage_path # type: ignore
-        return app_storage_path()
-    
+        try:
+            from android.storage import app_storage_path # type: ignore
+            path = app_storage_path()
+        except Exception as e:
+            print('android-notify- Error getting apk main file path: ',e)
+            return './'
+    return os.path.join(path,'app')
+
 def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
     if on_flet_app():
-        VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
         ContextCompat = autoclass('androidx.core.content.ContextCompat')
         # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
         #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
@@ -94,7 +99,7 @@ def get_image_uri(relative_path):
     :return: Absolute URI java Object (e.g., 'file:///path/to/file.png').
     """
     app_root_path = get_app_root_path() 
-    output_path = os.path.join(app_root_path,'app', relative_path)
+    output_path = os.path.join(app_root_path, relative_path)
     # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
     
     if not os.path.exists(output_path):
