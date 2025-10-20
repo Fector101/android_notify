@@ -8,18 +8,17 @@ from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
     get_bitmap_from_url, add_data_to_intent
 
-from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID
+from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
                      Intent,PendingIntent,
                      IconCompat,app_storage_path,
                      NotificationChannel,RemoteViews,
-                     run_on_ui_thread,android_activity,
-                    request_permissions, Permission,check_permission
+                     run_on_ui_thread,
                      )
 from .config import (NotificationCompat, NotificationCompatBuilder,
                      NotificationCompatBigTextStyle,NotificationCompatBigPictureStyle,
                      NotificationCompatInboxStyle, NotificationCompatDecoratedCustomViewStyle,
-                    Color
+                     Color
                      )
 from .styles import NotificationStyles
 from .base import BaseNotification
@@ -622,7 +621,7 @@ class Notification(BaseNotification):
                 self.notification_manager.notify(self.__id, self.__builder.build())
             except Exception as sending_notification_from_service_error:
                 print('error sending notification from service:',sending_notification_from_service_error)
-        elif self.passed_check or NotificationHandler.has_permission():
+        elif on_flet_app() or self.passed_check or NotificationHandler.has_permission():
             try:
                 self.notification_manager.notify(self.__id, self.__builder.build())
             except Exception as notify_error:
@@ -852,6 +851,10 @@ class NotificationHandler:
     __name = None
     __bound = False
     __requesting_permission=False
+    android_activity=None
+    if ON_ANDROID and not on_flet_app():
+        from android import activity
+        android_activity = activity
     @classmethod
     def get_name(cls):
         """Returns name or id str for Clicked Notification."""
@@ -881,7 +884,7 @@ class NotificationHandler:
     def __notification_handler(cls, intent):
         """Calls Function Attached to notification on click.
             Don't Call this function manual, it's Already Attach to Notification.
-        
+
         Sets self.__name #action of Notification that was clicked from Notification.name or Notification.id
         """
         if not cls.is_on_android():
@@ -915,6 +918,9 @@ class NotificationHandler:
     @classmethod
     def bindNotifyListener(cls):
         """This Creates a Listener for All Notification Clicks and Functions"""
+        if on_flet_app():
+            return False
+
         if not cls.is_on_android():
             return "Not on Android"
         #TODO keep trying BroadcastReceiver
@@ -922,7 +928,7 @@ class NotificationHandler:
             print("binding done already ")
             return True
         try:
-            android_activity.bind(on_new_intent=cls.__notification_handler)
+            cls.android_activity.bind(on_new_intent=cls.__notification_handler)
             cls.__bound = True
             return True
         except Exception as binding_listener_error:
@@ -936,10 +942,10 @@ class NotificationHandler:
             return "Not on Android"
 
         #Beta TODO use BroadcastReceiver
-        if from_service_file():
+        if on_flet_app() or from_service_file():
             return False # error 'NoneType' object has no attribute 'registerNewIntentListener'
         try:
-            android_activity.unbind(on_new_intent=cls.__notification_handler)
+            cls.android_activity.unbind(on_new_intent=cls.__notification_handler)
             return True
         except Exception as unbinding_listener_error:
             print("Failed to unbind notifications listener: ",unbinding_listener_error)
@@ -958,7 +964,22 @@ class NotificationHandler:
         """
         if not ON_ANDROID:
             return True
-        return check_permission(Permission.POST_NOTIFICATIONS)
+
+        if on_flet_app():
+            from .config import autoclass
+            ContextCompat = autoclass('androidx.core.content.ContextCompat')
+            Manifest = autoclass('android.Manifest$permission')
+            VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
+
+            if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
+                permission = Manifest.POST_NOTIFICATIONS
+                return ContextCompat.checkSelfPermission(context, permission)
+            else:
+                print("android_notify- On Low android version don't need permission")
+                return True #doesn't need permission
+        else:
+            from android.permissions import Permission, check_permission
+            return check_permission(Permission.POST_NOTIFICATIONS)
 
     @classmethod
     @run_on_ui_thread
@@ -984,8 +1005,19 @@ class NotificationHandler:
                 cls.__requesting_permission = False
 
         if not cls.has_permission():
-            cls.__requesting_permission = True
-            request_permissions([Permission.POST_NOTIFICATIONS],on_permissions_result)
+            if on_flet_app():
+                from .config import autoclass
+                ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
+                Manifest = autoclass('android.Manifest$permission')
+                permission = Manifest.POST_NOTIFICATIONS
+                ActivityCompat.requestPermissions(context, [permission], 101)
+                return None
+                # TODO Callback when user answers request question
+            else:
+                from android.permissions import request_permissions, Permission
+                cls.__requesting_permission = True
+                request_permissions([Permission.POST_NOTIFICATIONS],on_permissions_result)
+                return None
         else:
             cls.__requesting_permission = False
             if callback:
@@ -993,14 +1025,15 @@ class NotificationHandler:
                     callback(True)
                 else:
                     callback()
+            return None
 
 
-if not from_service_file():
+if not on_flet_app() and from_service_file():
+    print("didn't bind listener, In service file")
+elif ON_ANDROID:
     try:
         NotificationHandler.bindNotifyListener()
     except Exception as bind_error:
+        # error 'NoneType' object has no attribute 'registerNewIntentListener'
         print("notification listener bind error:",bind_error)
         traceback.print_exc()
-else:
-    # error 'NoneType' object has no attribute 'registerNewIntentListener'
-    print("didn't bind listener, In service file:")

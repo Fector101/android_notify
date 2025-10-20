@@ -1,26 +1,37 @@
 import os, traceback
-try:
-    from jnius import cast, autoclass
-except ImportError as e:
-    # So commandline still works if java isn't installed and get pyjinus import error
-    print('Exception occured in __init__.py: ',e)
-    cast = lambda x: x
-    autoclass = lambda x: None
 
 ON_ANDROID = False
 __version__ = "1.60.2(dev)"
 
-try:
-    from android import config
-    ACTIVITY_CLASS_NAME = config.JAVA_NAMESPACE
-except (ImportError, AttributeError):
-    ACTIVITY_CLASS_NAME = 'org.kivy.android'
+def on_flet_app():
+    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
+
+def get_activity_class_name():
+    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
+    if not ACTIVITY_CLASS_NAME:
+        try:
+            from android import config
+            ACTIVITY_CLASS_NAME = getattr(config, "JAVA_NAMESPACE", None)
+        except (ImportError, AttributeError):
+            ACTIVITY_CLASS_NAME = 'org.kivy.android'
+    return ACTIVITY_CLASS_NAME
 
 
+if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
+    from jnius import cast, autoclass
+else:
+    # print('Not on Flet android env...\n')
+    try:
+        import kivy #TODO find var for kivy
+        from jnius import cast, autoclass
+    except Exception as e:
+        print('android-notify: No pjnius, not on android')
+        # So commandline still works if java isn't installed and get pyjinus import error
+        # print('Exception occured in __init__.py: ',e)
+        cast = lambda x: x
+        autoclass = lambda x: None
 try:
     # Android Imports
-    from android import activity as android_activity
-    from jnius import autoclass,cast
 
     # Get the required Java classes needs to on android to import
     Bundle = autoclass('android.os.Bundle')
@@ -33,21 +44,20 @@ try:
     NotificationChannel = autoclass('android.app.NotificationChannel')
     RemoteViews = autoclass('android.widget.RemoteViews')
 
-    ON_ANDROID = True
+    ON_ANDROID = RemoteViews
 except Exception as e:
     from .an_types import *
     if hasattr(e,'name') and e.name != 'android' :
         print('Exception: ',e)
         print(traceback.format_exc())
 
+
 if ON_ANDROID:
     try:
-        from android.permissions import request_permissions, Permission, check_permission
-        from android.storage import app_storage_path
-
         NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
         NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
         IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
+        Color = autoclass('android.graphics.Color')
 
         # Notification Design
         NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
@@ -55,7 +65,6 @@ if ON_ANDROID:
         NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
         NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
-        Color = autoclass('android.graphics.Color')
 
     except Exception as dependencies_import_error:
         print('dependencies_import_error: ',dependencies_import_error)
@@ -65,23 +74,16 @@ if ON_ANDROID:
         * android.enable_androidx = True
         * android.permissions = POST_NOTIFICATIONS
         """)
-        def app_storage_path():
-            return './'
+
         from .an_types import *
-        from .an_types import AndroidActivity as android_activity
 else:
-    def app_storage_path():
-        return './'
     from .an_types import *
-    from  .an_types import AndroidActivity as android_activity
-
-
 
 def from_service_file():
     return 'PYTHON_SERVICE_ARGUMENT' in os.environ
 
 run_on_ui_thread = None
-if from_service_file() or not ON_ANDROID:
+if on_flet_app() or from_service_file() or not ON_ANDROID:
     def run_on_ui_thread(func):
         """Fallback for Developing on PC"""
 
@@ -90,20 +92,21 @@ if from_service_file() or not ON_ANDROID:
             return func(*args, **kwargs)
 
         return wrapper
-else:
+else:# TODO find var for kivy
     from android.runnable import run_on_ui_thread
 
 def get_python_activity():
     if not ON_ANDROID:
         from .an_types import PythonActivity
         return PythonActivity
+    ACTIVITY_CLASS_NAME = get_activity_class_name()
     if from_service_file():
-        # PythonService = autoclass(ACTIVITY_CLASS_NAME + '.PythonService')
         PythonActivity = autoclass(ACTIVITY_CLASS_NAME + '.PythonService')
+    elif on_flet_app():
+        PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
     else:
         PythonActivity = autoclass(ACTIVITY_CLASS_NAME + '.PythonActivity')
     return PythonActivity
-
 
 def get_python_activity_context():
     if not ON_ANDROID:
@@ -130,3 +133,13 @@ def get_notification_manager():
         return None
     notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
     return cast(NotificationManager, notification_service)
+
+def app_storage_path():
+    if on_flet_app():
+        return os.path.join(context.getFilesDir().getAbsolutePath(), 'flet')
+    else:
+        try:
+            from android.storage import app_storage_path  # type: ignore
+            return app_storage_path()
+        except Exception as e:
+            return './'  # TODO return file main.py path (not android)
