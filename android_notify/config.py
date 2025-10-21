@@ -11,7 +11,7 @@ def get_activity_class_name():
     if not ACTIVITY_CLASS_NAME:
         try:
             from android import config
-            ACTIVITY_CLASS_NAME = getattr(config, "JAVA_NAMESPACE", None)
+            ACTIVITY_CLASS_NAME = config.JAVA_NAMESPACE
         except (ImportError, AttributeError):
             ACTIVITY_CLASS_NAME = 'org.kivy.android'
     return ACTIVITY_CLASS_NAME
@@ -139,7 +139,7 @@ def app_storage_path():
         return os.path.join(context.getFilesDir().getAbsolutePath(), 'flet')
     else:
         try:
-            from android.storage import app_storage_path  # type: ignore
-            return app_storage_path()
+            from android.storage import app_storage_path as kivy_app_storage_path  # type: ignore
+            return kivy_app_storage_path()
         except Exception as e:
             return './'  # TODO return file main.py path (not android)
