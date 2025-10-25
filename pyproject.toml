@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "android-notify"
+version = "1.60.0"
+description = "A Python package that simplifies creating Android notifications in Kivy and Flet apps."
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+    { name = "Fabian", email = "fector101@yahoo.com" }
+]
+license = "MIT"
+requires-python = ">=3.6"
+dependencies = [
+    "pyjnius>=1.4.2"
+]
+keywords = [
+    "android",
+    "notifications",
+    "kivy",
+    "mobile",
+    "post-notifications",
+    "pyjnius",
+    "android-notifications",
+    "kivy-notifications",
+    "python-android",
+    "mobile-development",
+    "push-notifications",
+    "mobile-app",
+    "kivy-application"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Android",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Homepage = "https://android-notify.vercel.app"
+Documentation = "https://android-notify.vercel.app/"
+Source = "https://github.com/fector101/android_notify"
+Tracker = "https://github.com/fector101/android_notify/issues"
+Funding = "https://www.buymeacoffee.com/fector101"
+
+[project.optional-dependencies]
+dev = [
+    "kivy>=2.0.0"
+]
+
+[project.scripts]
+android-notify = "android_notify.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
