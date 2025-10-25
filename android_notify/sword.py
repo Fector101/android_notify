@@ -783,6 +783,10 @@ class Notification(BaseNotification):
                 self.channel_id = generated_id
 
     def __get_unique_id(self):
+        if from_service_file():
+            max_int = 2_147_483_647
+            return int(time.time() * 1000) % max_int
+
         notification_id = self.notification_ids[-1] + 1
         self.notification_ids.append(notification_id)
         return notification_id
