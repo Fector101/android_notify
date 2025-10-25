@@ -108,7 +108,9 @@ To this:
 # Used to request access to Notification
 -keep class androidx.core.app.ActivityCompat { *; }
 ```
-[complete flet example](docs/examples/flet-working)
+> [!NOTE]  
+> If you change these values `name, bundle_id, product, company` in your `pyproject.toml` file, make sure to go through the above steps again to ensure the changes are reflected in the build files.
+[complete flet example](https://github.com/Fector101/android_notify/tree/main/docs/examples/flet-working)
 
 Can be installed via `pip` For testing purposes:
 
@@ -122,7 +124,7 @@ For Dev Version use
 
 
 To use colored text in your notifications:
-- Copy the [res](android_notify/res) folder to your app path.  
+- Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
 Lastly in your `buildozer.spec` file
 - Add `source.include_exts = xml` and `android.add_resources = ./res`
 
