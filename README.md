@@ -73,7 +73,7 @@ android.api = 35
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android_notify"
+  "pyjnius","android-notify"
 ]
 
 [tool.flet.android.permission]
@@ -109,13 +109,14 @@ To this:
 -keep class androidx.core.app.ActivityCompat { *; }
 ```
 > [!NOTE]  
-> If you change these values `name, bundle_id, product, company` in your `pyproject.toml` file, make sure to go through the above steps again to ensure the changes are reflected in the build files.
+> If you change these values `dependencies, name, bundle_id, product, company` in your `pyproject.toml` file, make sure to go through the above steps again to ensure the changes are reflected in the build files.
 [complete flet example](https://github.com/Fector101/android_notify/tree/main/docs/examples/flet-working)
 
 Can be installed via `pip` For testing purposes:
 
 ```bash
 pip install android_notify
+android-notify -v
 ```
 
 ## Documentation
