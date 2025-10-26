@@ -17,6 +17,7 @@ def main():
         print_version()
     # # Placeholder for the main functionality
     # print("Android Notify CLI is running...")
+    # DEV:  pip install -e ., when edit and test project locally
 
 
 if __name__ == "__main__":

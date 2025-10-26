@@ -11,3 +11,5 @@ __pycache__
 .idea
 todo.md
 .vscode
+dist
+build
