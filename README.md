@@ -56,68 +56,32 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add pyjnius so ensure it's packaged with the build
-requirements = python3, kivy, pyjnius, android-notify
+requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
-
-# Required dependencies (write exactly as shown, no quotation marks)
-android.gradle_dependencies = androidx.core:core:1.6.0, androidx.core:core-ktx:1.15.0
-android.enable_androidx = True
-android.api = 35
 ```
 
 ### Flet apps:  
 
-1/3) In your `pyproject.toml` file, ensure you include the following:
+In your `pyproject.toml` file, ensure you include the following:
 
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify"
+  "pyjnius","https://github.com/Fector101/android_notify/archive/without-androidx.zip"
 ]
 
 [tool.flet.android.permission]
 "android.permission.POST_NOTIFICATIONS" = true
 ```
-2/3) At Path `<project-root>/build/flutter/android/app/build.gradle` add the following lines at the end of the file:
-
-Change from this: `dependencies{}`  
-To this:
-```gradle
-dependencies {
-    implementation 'androidx.core:core:1.6.0'
-    implementation 'androidx.core:core-ktx:1.15.0'
-}
-```
-3/3) At Path `<project-root>/build/flutter/android/app/proguard-rules.pro` add the following lines at the end of the file:
-
-Change from this:
-```proguard
--keep class com.flet.serious_python_android.** { *; }
--keepnames class * { *; }
-```
-To this:
-```proguard
--keep class com.flet.serious_python_android.** { *; }
--keepnames class * { *; }
-
-# Keep any AndroidX Core class with 'Notification' in its name
--keep class androidx.core.**Notification** { *; }
--keep class androidx.core.**Notification**$* { *; }
-
-# Used to request access to Notification
--keep class androidx.core.app.ActivityCompat { *; }
-```
-> [!NOTE]  
-> If you change these values `dependencies, name, bundle_id, product, company` in your `pyproject.toml` file, make sure to go through the above steps again to ensure the changes are reflected in the build files.
-[complete flet example](https://github.com/Fector101/android_notify/tree/main/docs/examples/flet-working)
-
+### Testing
 Can be installed via `pip` For testing purposes:
 
 ```bash
 pip install android_notify
 android-notify -v
 ```
+Or via [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3)
 
 ## Documentation
 For Dev Version use
