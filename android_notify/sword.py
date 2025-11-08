@@ -65,7 +65,7 @@ class Notification(BaseNotification):
     passed_check=False
 
     # During Development (When running on PC)
-    BaseNotification.logs=True #not ON_ANDROID
+    BaseNotification.logs = not ON_ANDROID
     def __init__(self,**kwargs): #@dataclass already does work
         super().__init__(**kwargs)
 
@@ -1041,3 +1041,4 @@ elif ON_ANDROID:
         # error 'NoneType' object has no attribute 'registerNewIntentListener'
         print("notification listener bind error:",bind_error)
         traceback.print_exc()
+
