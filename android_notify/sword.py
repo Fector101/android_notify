@@ -65,7 +65,7 @@ class Notification(BaseNotification):
     passed_check=False
 
     # During Development (When running on PC)
-    BaseNotification.logs=not ON_ANDROID
+    BaseNotification.logs=True #not ON_ANDROID
     def __init__(self,**kwargs): #@dataclass already does work
         super().__init__(**kwargs)
 
