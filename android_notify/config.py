@@ -1,7 +1,7 @@
 import os, traceback
 
 ON_ANDROID = False
-__version__ = "1.60.0"
+__version__ = "1.60.2 [no androidx]"
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
@@ -43,7 +43,8 @@ try:
     NotificationManager = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
     RemoteViews = autoclass('android.widget.RemoteViews')
-
+    AndroidNotification = autoclass("android.app.Notification")
+    
     ON_ANDROID = RemoteViews
 except Exception as e:
     from .an_types import *
@@ -54,26 +55,20 @@ except Exception as e:
 
 if ON_ANDROID:
     try:
-        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
-        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
+        NotificationManagerCompat = autoclass('android.app.NotificationManager')
         IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
         Color = autoclass('android.graphics.Color')
 
         # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-        NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+        NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+        NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
+        NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
+        NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
+        #NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
 
-    except Exception as dependencies_import_error:
-        print('dependencies_import_error: ',dependencies_import_error)
-        print("""
-        Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
-        * android.enable_androidx = True
-        * android.permissions = POST_NOTIFICATIONS
-        """)
+    except Exception as styles_import_error:
+        print('styles_import_error: ',styles_import_error)
+        
 
         from .an_types import *
 else:
