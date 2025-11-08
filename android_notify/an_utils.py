@@ -6,7 +6,7 @@ from .an_types import Importance
 from .config import (
                      get_python_activity_context, app_storage_path,ON_ANDROID,
                      BitmapFactory, BuildVersion, Bundle,
-                     NotificationManagerCompat,NotificationCompat
+                     NotificationManagerCompat,AndroidNotification
                     )
 
 if ON_ANDROID:
@@ -37,13 +37,13 @@ def get_android_importance(importance: Importance):
         return None
     value = ''
     if importance == 'urgent':
-        value = NotificationCompat.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_HIGH
+        value = AndroidNotification.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_HIGH
     elif importance == 'high':
-        value = NotificationCompat.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
+        value = AndroidNotification.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
     elif importance == 'medium':
-        value = NotificationCompat.PRIORITY_LOW if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
+        value = AndroidNotification.PRIORITY_LOW if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
     elif importance == 'low':
-        value = NotificationCompat.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
+        value = AndroidNotification.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
     elif importance == 'none':
         value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
 
