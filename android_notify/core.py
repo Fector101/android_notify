@@ -1,55 +1,41 @@
 """ Non-Advanced Stuff """
 import random
-import os
+import os, traceback
+from .config import get_python_activity
 ON_ANDROID = False
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
-def get_activity_class_name():
-    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
-    if not ACTIVITY_CLASS_NAME:
-        try:
-            from android import config
-            ACTIVITY_CLASS_NAME = getattr(config, "JAVA_NAMESPACE", None)
-        except (ImportError, AttributeError):
-            ACTIVITY_CLASS_NAME = 'org.kivy.android'
-    return ACTIVITY_CLASS_NAME
 
 try:
 
     from jnius import autoclass # Needs Java to be installed
-    # Get the required Java classes
-    ACTIVITY_CLASS_NAME = get_activity_class_name()
-    PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
+    PythonActivity = get_python_activity()
     context = PythonActivity.mActivity # Get the app's context 
     NotificationChannel = autoclass('android.app.NotificationChannel')
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')    
+    BuildVersion = autoclass('android.os.Build$VERSION')
+    Notification = autoclass("android.app.Notification")
     ON_ANDROID=True
 except Exception as e:
-    print('\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
+    traceback.print_exc()
+    print(e,'\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
 
 if ON_ANDROID:
     try:
-        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
-        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-
+        NotificationManagerCompat = autoclass('android.app.NotificationManager')                                       
         # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
+        NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+        NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
+        NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
+        NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
     except Exception as e:
-        print("""\n
-        Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
-        * android.enable_androidx = True
-        * android.permissions = POST_NOTIFICATIONS\n
-        """)
+        traceback.print_exc()
+        print("Error importing notification styles")
 
 
 def get_app_root_path():
@@ -173,8 +159,8 @@ def send_notification(
     builder.setContentTitle(title)
     builder.setContentText(message)
     insert_app_icon(builder,custom_app_icon_path)
-    builder.setDefaults(NotificationCompat.DEFAULT_ALL)
-    builder.setPriority(NotificationCompat.PRIORITY_HIGH)
+    builder.setDefaults(Notification.DEFAULT_ALL)
+    builder.setPriority(Notification.PRIORITY_HIGH)
 
     if img_path:
         print('android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
