@@ -1,27 +1,16 @@
 """ Non-Advanced Stuff """
 import random
 import os
+from .config import get_python_activity
 ON_ANDROID = False
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
-def get_activity_class_name():
-    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
-    if not ACTIVITY_CLASS_NAME:
-        try:
-            from android import config
-            ACTIVITY_CLASS_NAME = getattr(config, "JAVA_NAMESPACE", None)
-        except (ImportError, AttributeError):
-            ACTIVITY_CLASS_NAME = 'org.kivy.android'
-    return ACTIVITY_CLASS_NAME
-
 try:
 
     from jnius import autoclass # Needs Java to be installed
-    # Get the required Java classes
-    ACTIVITY_CLASS_NAME = get_activity_class_name()
-    PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
+    PythonActivity = get_python_activity()
     context = PythonActivity.mActivity # Get the app's context 
     NotificationChannel = autoclass('android.app.NotificationChannel')
     String = autoclass('java.lang.String')
