@@ -15,9 +15,9 @@ from .config import (Bundle, String, BuildVersion,
                      NotificationChannel,RemoteViews,
                      run_on_ui_thread,
                      )
-from .config import (NotificationCompat, NotificationCompatBuilder,
+from .config import (AndroidNotification, NotificationCompatBuilder,
                      NotificationCompatBigTextStyle,NotificationCompatBigPictureStyle,
-                     NotificationCompatInboxStyle, NotificationCompatDecoratedCustomViewStyle,
+                     NotificationCompatInboxStyle,
                      Color
                      )
 from .styles import NotificationStyles
@@ -657,7 +657,7 @@ class Notification(BaseNotification):
             self.__builder.setContentTitle(str(self.title))
             self.__builder.setContentText(str(self.message))
         self.__insert_app_icon()
-        self.__builder.setDefaults(NotificationCompat.DEFAULT_ALL)
+        self.__builder.setDefaults(AndroidNotification.DEFAULT_ALL)
         self.__builder.setOnlyAlertOnce(True)
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
@@ -800,6 +800,7 @@ class Notification(BaseNotification):
         return get_notification_manager().getNotificationChannels()
 
     def __apply_basic_custom_style(self):
+        NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
 
         # Load layout
         resources = context.getResources()
