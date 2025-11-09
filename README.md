@@ -127,24 +127,41 @@ On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid
 - In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
 - Minimal working example 
 ```py
+# Testing with `https://github.com/Fector101/android_notify/archive/without-androidx.zip` on pydroid
 from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from android_notify import Notification
+from android_notify.core import asks_permission_if_needed
 
 
-class TestApp(App):
+class AndroidNotifyDemoApp(App):
     def build(self):
-        return Button(
+        layout = BoxLayout(orientation='vertical', spacing=10, padding=20)
+        layout.add_widget(Button(
+            text="Ask Notification Permission",
+            on_release=self.request_permission
+        ))
+        layout.add_widget(Button(
             text="Send Notification",
-            on_release=lambda *args: Notification(
-                title="Hello from Kivy",
-                message="This is a basic notification.",
-                channel_id="test_channel",
-            ).send()
-        )
+            on_release=self.send_notification
+        ))
+        return layout
+
+    def request_permission(self, *args):
+        asks_permission_if_needed(no_androidx=True)
+
+    def send_notification(self, *args):
+        Notification(
+            title="Hello from Android Notify",
+            message="This is a basic notification.",
+            channel_id="android_notify_demo",
+            channel_name="Android Notify Demo"
+        ).send()
+
 
 if __name__ == "__main__":
-    TestApp().run()
+    AndroidNotifyDemoApp().run()
 ```
 
 Can be installed via `pip` For testing purposes:
