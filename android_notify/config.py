@@ -40,7 +40,7 @@ try:
     PendingIntent = autoclass('android.app.PendingIntent')
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     BuildVersion = autoclass('android.os.Build$VERSION')
-    NotificationManager = autoclass('android.app.NotificationManager')
+    NotificationManagerClass = autoclass('android.app.NotificationManager')
     NotificationChannel = autoclass('android.app.NotificationChannel')
     RemoteViews = autoclass('android.widget.RemoteViews')
     AndroidNotification = autoclass("android.app.Notification")
@@ -55,7 +55,6 @@ except Exception as e:
 
 if ON_ANDROID:
     try:
-        NotificationManagerCompat = autoclass('android.app.NotificationManager')
         IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
         Color = autoclass('android.graphics.Color')
 
@@ -127,7 +126,7 @@ def get_notification_manager():
     if not ON_ANDROID:
         return None
     notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-    return cast(NotificationManager, notification_service)
+    return cast(NotificationManagerClass, notification_service)
 
 def app_storage_path():
     if on_flet_app():
