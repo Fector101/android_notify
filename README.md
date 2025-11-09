@@ -74,6 +74,12 @@ dependencies = [
 [tool.flet.android.permission]
 "android.permission.POST_NOTIFICATIONS" = true
 ```
+
+### Pydroid 3
+In the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
+- In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
+
+
 ### Testing
 Can be installed via `pip` For testing purposes:
 
@@ -81,7 +87,6 @@ Can be installed via `pip` For testing purposes:
 pip install android_notify
 android-notify -v
 ```
-Or via [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3)
 
 ## Documentation
 For Dev Version use
