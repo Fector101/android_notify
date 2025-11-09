@@ -51,24 +51,22 @@ def get_app_root_path():
             return './'
     return os.path.join(path,'app')
 
-def asks_permission_if_needed():
+def asks_permission_if_needed(no_androidx=False):
     """
     Ask for permission to send notifications if needed.
     """
-    if on_flet_app():
-        ContextCompat = autoclass('androidx.core.content.ContextCompat')
-        # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
-        #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
-        ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
-        Manifest = autoclass('android.Manifest$permission')
+    if on_flet_app() or no_androidx:
+        Activity = autoclass("android.app.Activity")
+        Manifest = autoclass("android.Manifest$permission")
+        PackageManager = autoclass("android.content.pm.PackageManager")
         VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
 
         if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
             permission = Manifest.POST_NOTIFICATIONS
-            granted = ContextCompat.checkSelfPermission(context, permission)
+            granted = context.checkSelfPermission(permission)
 
-            if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
-                ActivityCompat.requestPermissions(context, [permission], 101)
+            if granted != PackageManager.PERMISSION_GRANTED:
+                context.requestPermissions([permission], 101)
     else: # android package is from p4a which is for kivy
         try:
             from android.permissions import request_permissions, Permission,check_permission # type: ignore
@@ -141,7 +139,7 @@ def send_notification(
         print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return
 
-    asks_permission_if_needed()
+    asks_permission_if_needed(no_androidx=True)
     channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
