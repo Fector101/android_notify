@@ -112,6 +112,21 @@ To this:
 > If you change these values `dependencies, name, bundle_id, product, company` in your `pyproject.toml` file, make sure to go through the above steps again to ensure the changes are reflected in the build files.
 [complete flet example](https://github.com/Fector101/android_notify/tree/main/docs/examples/flet-working)
 
+------
+## Installing without Androidx
+How to use without `gradle_dependencies`
+Use `https://github.com/Fector101/android_notify/archive/without-androidx.zip` to install via `pip`
+### In Kivy
+```spec
+# buildozer.spec
+requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip
+```
+
+### On Pydroid 3 
+On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
+- In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
+- 
+
 Can be installed via `pip` For testing purposes:
 
 ```bash
