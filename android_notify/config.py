@@ -48,9 +48,9 @@ try:
     ON_ANDROID = RemoteViews
 except Exception as e:
     from .an_types import *
-    if hasattr(e,'name') and e.name != 'android' :
-        print('Exception: ',e)
-        print(traceback.format_exc())
+    #if hasattr(e,'name') and e.name != 'android' :
+    print('Exception: ',e)
+    print(traceback.format_exc())
 
 
 if ON_ANDROID:
