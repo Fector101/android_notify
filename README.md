@@ -117,7 +117,7 @@ To this:
 How to use without `gradle_dependencies`
 Use `https://github.com/Fector101/android_notify/archive/without-androidx.zip` to install via `pip`
 ### In Kivy
-```spec
+```ini
 # buildozer.spec
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip
 ```
@@ -125,7 +125,27 @@ requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_noti
 ### On Pydroid 3 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
 - In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
-- 
+- Minimal working example 
+```py
+from kivy.app import App
+from kivy.uix.button import Button
+from android_notify import Notification
+
+
+class TestApp(App):
+    def build(self):
+        return Button(
+            text="Send Notification",
+            on_release=lambda *args: Notification(
+                title="Hello from Kivy",
+                message="This is a basic notification.",
+                channel_id="test_channel",
+            ).send()
+        )
+
+if __name__ == "__main__":
+    TestApp().run()
+```
 
 Can be installed via `pip` For testing purposes:
 
