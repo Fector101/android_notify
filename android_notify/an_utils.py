@@ -6,7 +6,7 @@ from .an_types import Importance
 from .config import (
                      get_python_activity_context, app_storage_path,ON_ANDROID,
                      BitmapFactory, BuildVersion, Bundle,
-                     NotificationManagerCompat,AndroidNotification
+                     NotificationManagerClass,AndroidNotification
                     )
 
 if ON_ANDROID:
@@ -37,15 +37,15 @@ def get_android_importance(importance: Importance):
         return None
     value = ''
     if importance == 'urgent':
-        value = AndroidNotification.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_HIGH
+        value = AndroidNotification.PRIORITY_HIGH if BuildVersion.SDK_INT <= 25 else NotificationManagerClass.IMPORTANCE_HIGH
     elif importance == 'high':
-        value = AndroidNotification.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_DEFAULT
+        value = AndroidNotification.PRIORITY_DEFAULT if BuildVersion.SDK_INT <= 25 else NotificationManagerClass.IMPORTANCE_DEFAULT
     elif importance == 'medium':
-        value = AndroidNotification.PRIORITY_LOW if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_LOW
+        value = AndroidNotification.PRIORITY_LOW if BuildVersion.SDK_INT <= 25 else NotificationManagerClass.IMPORTANCE_LOW
     elif importance == 'low':
-        value = AndroidNotification.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_MIN
+        value = AndroidNotification.PRIORITY_MIN if BuildVersion.SDK_INT <= 25 else NotificationManagerClass.IMPORTANCE_MIN
     elif importance == 'none':
-        value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerCompat.IMPORTANCE_NONE
+        value = '' if BuildVersion.SDK_INT <= 25 else NotificationManagerClass.IMPORTANCE_NONE
 
     return value
     # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
