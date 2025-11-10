@@ -11,7 +11,7 @@ from .an_utils import can_accept_arguments, get_python_activity_context, \
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
                      Intent,PendingIntent,
-                     IconCompat,app_storage_path,
+                     app_storage_path,
                      NotificationChannel,RemoteViews,
                      run_on_ui_thread,
                      )
@@ -701,6 +701,8 @@ class Notification(BaseNotification):
 
     def __set_icon_from_bitmap(self, img_path):
         """Path can be a link or relative path"""
+        IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
+        
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap_):
                 if bitmap_:
