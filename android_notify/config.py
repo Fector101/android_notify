@@ -55,7 +55,6 @@ except Exception as e:
 
 if ON_ANDROID:
     try:
-        IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
         Color = autoclass('android.graphics.Color')
 
         # Notification Design
