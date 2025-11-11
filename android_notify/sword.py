@@ -1,7 +1,7 @@
 """This Module Contain Class for creating Notification With Java"""
 import os, time, threading, traceback
 from typing import Any, Callable
-from .config import cast
+from .config import cast, autoclass
 
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
