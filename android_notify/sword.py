@@ -701,12 +701,19 @@ class Notification(BaseNotification):
 
     def __set_icon_from_bitmap(self, img_path):
         """Path can be a link or relative path"""
-        IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
+        try:
+            Icon = autoclass('android.graphics.drawable.Icon')
+        except Exception as autoclass_icon_error:
+            print("Couldn't find class to set custom icon:",autoclass_icon_error)
+            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+            self.__has_small_icon = True
+            return
+        
         
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap_):
                 if bitmap_:
-                    icon_ = IconCompat.createWithBitmap(bitmap_)
+                    icon_ = Icon.createWithBitmap(bitmap_)
                     self.__builder.setSmallIcon(icon_)
                     self.__has_small_icon = True
                 else:
@@ -721,7 +728,7 @@ class Notification(BaseNotification):
         else:
             bitmap = get_img_from_path(img_path)
             if bitmap:
-                icon = IconCompat.createWithBitmap(bitmap)
+                icon = Icon.createWithBitmap(bitmap)
                 self.__builder.setSmallIcon(icon)
             else:
                 if self.logs:
@@ -729,6 +736,7 @@ class Notification(BaseNotification):
                     img_absolute_path = os.path.join(app_folder, img_path)
                     print(f'Failed getting img for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+            self.__has_small_icon = True
 
     @run_on_ui_thread
     def __apply_notification_image(self, bitmap, img_style):
