@@ -232,8 +232,9 @@ class Notification(BaseNotification):
         :return:
         """
         if ON_ANDROID:
+            self.app_icon=path
             self.__insert_app_icon(path)
-        elif self.logs:
+        if self.logs:
             # When on android there are other logs
             print('Done setting small icon')
 
