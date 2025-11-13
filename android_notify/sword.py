@@ -6,7 +6,7 @@ from .config import cast
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -134,13 +134,14 @@ class Notification(BaseNotification):
         return False
         
     @classmethod
-    def createChannel(cls, id, name:str, description='',importance:Importance='urgent'):
+    def createChannel(cls, id, name:str, description='',importance:Importance='urgent',res_sound_name=None):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
         :param id: Used to send other notifications later through same channel.
         :param name: user-visible channel name.
         :param description: user-visible detail about channel (Not required defaults to empty str).
         :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
+        :param res_sound_name: audio file file name (without .wav or .mp3) locate in res/raw/
         :return: boolean if channel created
         """
 
@@ -149,11 +150,14 @@ class Notification(BaseNotification):
 
         notification_manager= get_notification_manager()
         android_importance_value = get_android_importance(importance)
+        sound_uri = get_sound_uri(res_sound_name)
 
         if not cls.channelExists(id):
             channel = NotificationChannel(id, name, android_importance_value)
             if description:
                 channel.setDescription(description)
+            if sound_uri:
+                channel.setSound(sound_uri, None)
             notification_manager.createNotificationChannel(channel)
             return True
         return False
@@ -612,6 +616,21 @@ class Notification(BaseNotification):
 
         if self.logs:
             print('Added Lines: ', lines)
+    def setSound(self,res_sound_name):
+        """
+        Sets sound for devices less than android 8 (For 8+ use createChannel)
+        :param res_sound_name: audio file file name (without .wav or .mp3) locate in res/raw/
+        """
+        
+        if not ON_ANDROID:
+            return
+            
+        if res_sound_name and BuildVersion.SDK_INT < 26:
+            try:
+                self.__builder.setSound(get_sound_uri(res_sound_name))
+            except Exception as failed_adding_sound_device_below_android8:
+                print("failed_adding_sound_device_below_android8:",failed_adding_sound_device_below_android8)
+                traceback.print_exc()
 
     def __dispatch_notification(self):
         # self.passed_check is for self.send_() some devices don't return true when checking for permission when it's actually True in settingsAdd commentMore actions
@@ -650,6 +669,8 @@ class Notification(BaseNotification):
             self.createChannel(self.channel_id, self.channel_name)
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
+
+
 
         # Build the notification
         if self.isUsingCustom():
