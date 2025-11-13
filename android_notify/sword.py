@@ -983,14 +983,13 @@ class NotificationHandler:
             return True
 
         if on_flet_app():
-            from .config import autoclass
-            ContextCompat = autoclass('androidx.core.content.ContextCompat')
             Manifest = autoclass('android.Manifest$permission')
             VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
+            PackageManager = autoclass("android.content.pm.PackageManager")
 
             if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
                 permission = Manifest.POST_NOTIFICATIONS
-                return ContextCompat.checkSelfPermission(context, permission)
+                return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permission)
             else:
                 print("android_notify- On Low android version don't need permission")
                 return True #doesn't need permission
@@ -1023,12 +1022,9 @@ class NotificationHandler:
 
         if not cls.has_permission():
             if on_flet_app():
-                from .config import autoclass
-                ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
                 Manifest = autoclass('android.Manifest$permission')
                 permission = Manifest.POST_NOTIFICATIONS
-                ActivityCompat.requestPermissions(context, [permission], 101)
-                return None
+                context.requestPermissions([permission], 101)
                 # TODO Callback when user answers request question
             else:
                 from android.permissions import request_permissions, Permission
