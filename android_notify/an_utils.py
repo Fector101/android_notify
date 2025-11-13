@@ -127,3 +127,12 @@ def add_data_to_intent(intent, title):
     # bundle.putInt("notify_id", self.__id)
     bundle.putInt("notify_id", 101)
     intent.putExtras(bundle)
+
+
+def __get_sound_uri(res_sound_name):
+  if not res_sound_name:
+    return None
+
+  package_name = context.getPackageName()
+  Uri = autoclass('android.net.Uri')
+  return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
