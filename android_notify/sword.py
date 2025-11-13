@@ -88,7 +88,6 @@ class Notification(BaseNotification):
         self.__format_channel(self.channel_name, self.channel_id)
         self.__builder = None # want to make builder always available for getter
         self.notification_manager = None
-        self.res_sound_name = None
         
         if not ON_ANDROID:
             return
@@ -617,6 +616,21 @@ class Notification(BaseNotification):
 
         if self.logs:
             print('Added Lines: ', lines)
+    def setSound(self,res_sound_name):
+        """
+        Sets sound for devices less than android 8 (For 8+ use createChannel)
+        :param res_sound_name: audio file file name (without .wav or .mp3) locate in res/raw/
+        """
+        
+        if not ON_ANDROID:
+            return
+            
+        if res_sound_name and BuildVersion.SDK_INT < 26:
+            try:
+                self.__builder.setSound(get_sound_uri(res_sound_name))
+            except Exception as failed_adding_sound_device_below_android8:
+                print("failed_adding_sound_device_below_android8:",failed_adding_sound_device_below_android8)
+                traceback.print_exc()
 
     def __dispatch_notification(self):
         # self.passed_check is for self.send_() some devices don't return true when checking for permission when it's actually True in settingsAdd commentMore actions
@@ -656,13 +670,6 @@ class Notification(BaseNotification):
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
 
-
-        if self.res_sound_name and BuildVersion.SDK_INT < 26:
-            try:
-                self.__builder.setSound(get_sound_uri(res_sound_name))
-            except Exception as failed_adding_sound_device_below_android8:
-                print("failed_adding_sound_device_below_android8:",failed_adding_sound_device_below_android8)
-                traceback.print_exc()
 
 
         # Build the notification
