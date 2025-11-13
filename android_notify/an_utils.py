@@ -129,7 +129,7 @@ def add_data_to_intent(intent, title):
     intent.putExtras(bundle)
 
 
-def __get_sound_uri(res_sound_name):
+def get_sound_uri(res_sound_name):
   if not res_sound_name:
     return None
 
