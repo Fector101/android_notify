@@ -157,5 +157,5 @@ def get_bitmap_from_path(img_full_path):
 
 def backup_icon_finder(icon_name):
     """Get the full path to an icon file"""
+  import pkg_resources
     return pkg_resources.resource_filename(__name__, f'fallback-icons/{icon_name}')
-get_flet_fallback_icon_path()
