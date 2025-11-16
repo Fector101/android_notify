@@ -705,10 +705,11 @@ class Notification(BaseNotification):
                 print('using default icon...')
             if on_flet_app():
                 try:
+                    Icon = autoclass('android.graphics.drawable.Icon')
                     fallback_icon_path = get_flet_fallback_icon_path()
                     bitmap = get_bitmap_from_path(fallback_icon_path)
                     if bitmap:
-                        icon = IconCompat.createWithBitmap(bitmap)
+                        icon = Icon.createWithBitmap(bitmap)
                         self.__builder.setSmallIcon(icon)
                         self.__has_small_icon = True
                         return
