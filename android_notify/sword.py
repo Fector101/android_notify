@@ -891,9 +891,6 @@ class Notification(BaseNotification):
     def isUsingCustom(self):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
-    def tell(self):
-        print(get_icon("flet-appicon.png"))
-
     # TODO method to create channel groups
 
 
