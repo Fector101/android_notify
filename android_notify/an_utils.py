@@ -150,7 +150,7 @@ def get_flet_fallback_icon_path():
     package_dir = get_package_path()
     return os.path.join(package_dir, "fallback-icons", "flet-appicon.png")
 
-def get_bitmap_from_path(full_path):
+def get_bitmap_from_path(img_full_path):
   Uri = autoclass('android.net.Uri')
-  uri = Uri.parse(f"file://{output_path}")
+  uri = Uri.parse(f"file://{img_full_path}")
   return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
