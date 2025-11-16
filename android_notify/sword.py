@@ -737,7 +737,7 @@ class Notification(BaseNotification):
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap_):
                 if bitmap_:
-                    self.__set_builder_icon_with_bitmap(bitmap)
+                    self.__set_builder_icon_with_bitmap(bitmap_)
                 else:
                     if self.logs:
                         print('Using Default Icon as fallback......')
