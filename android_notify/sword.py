@@ -878,6 +878,8 @@ class Notification(BaseNotification):
     def isUsingCustom(self):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
+    def tell(self):
+        get_package_path()
 
     # TODO method to create channel groups
 
@@ -1070,3 +1072,37 @@ elif ON_ANDROID:
         print("notification listener bind error:",bind_error)
         traceback.print_exc()
 
+
+import os, sys
+from .core import send_notification
+def get_package_path():
+    """
+    Tries multiple methods to determine the package path on Android.
+    Sends the result to a notification using send_notification().
+    """
+    path = None
+
+    # --- Method 1: Using __file__ ---
+    try:
+        path = os.path.dirname(os.path.abspath(__file__))
+        send_notification(title="__file__ method", message=path)
+    except Exception as e:
+        send_notification(title="__file__ failed", message=str(e))
+
+    # --- Method 2: Using sys.argv[0] ---
+    try:
+        argv0 = os.path.abspath(sys.argv[0])
+        send_notification(title="sys.argv[0] method", message=argv0)
+    except Exception as e:
+        send_notification(title="sys.argv[0] failed", message=str(e))
+
+    # --- Method 3: Searching sys.path for site-packages ---
+    try:
+        site_packages = [p for p in sys.path if 'site-packages' in p]
+        if site_packages:
+            msg = "\n".join(site_packages)
+            send_notification(title="site-packages method", message=msg)
+        else:
+            send_notification(title="site-packages method", message="Not found")
+    except Exception as e:
+        send_notification(title="site-packages failed", message=str(e))
