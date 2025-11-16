@@ -892,8 +892,10 @@ class Notification(BaseNotification):
         return bool(self.__using_custom)
     def tell(self):
         from .core import send_notification
-        send_notification(title="files", message="eyes",big_text=get_files_recursive( get_package_path() ) )
-        get_package_path()
+        t=str(get_package_path())
+        send_notification(title="bool get_package_path()", message=str(os.path.isdir(t) ) )
+        send_notification(title="get_package_path()", message=str(get_package_path()))
+        send_notification(title="files", message="eyes",big_text=get_files_recursive(t))
 
     # TODO method to create channel groups
 
