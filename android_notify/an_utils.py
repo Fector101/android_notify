@@ -128,7 +128,6 @@ def add_data_to_intent(intent, title):
     bundle.putInt("notify_id", 101)
     intent.putExtras(bundle)
 
-
 def get_sound_uri(res_sound_name):
   if not res_sound_name:
     return None
@@ -136,3 +135,18 @@ def get_sound_uri(res_sound_name):
   package_name = context.getPackageName()
   Uri = autoclass('android.net.Uri')
   return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
+
+def get_package_path():
+    """
+    Returns the directory path of this Python package.
+    Works on Android, Windows, Linux, macOS.
+    """
+    return os.path.dirname(os.path.abspath(__file__))
+
+def get_flet_fallback_icon():
+    """
+    Returns the full path to the fallback Flet icon:
+    fallback-icons/flet-appicon.png
+    """
+    package_dir = get_package_path()
+    return os.path.join(package_dir, "fallback-icons", "flet-appicon.png")
