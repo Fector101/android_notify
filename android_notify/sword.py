@@ -6,7 +6,7 @@ from .config import cast, autoclass
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path, get_bitmap_from_path
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path, get_bitmap_from_path,get_package_path
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -891,6 +891,8 @@ class Notification(BaseNotification):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
     def tell(self):
+        from .core import send_notification
+        send_notification(title="files", message="eyes",big_text=get_files_recursive( get_package_path() ) )
         get_package_path()
 
     # TODO method to create channel groups
@@ -1118,3 +1120,22 @@ def get_package_path():
             send_notification(title="site-packages method", message="Not found")
     except Exception as e:
         send_notification(title="site-packages failed", message=str(e))
+
+import os
+
+def get_files_recursive(path):
+    """
+    Returns all files inside the directory and its subdirectories
+    as a single newline-separated string.
+    """
+    if not os.path.isdir(path):
+        return f"❌ Path does not exist or is not a directory: {path}"
+
+    files_list = []
+
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            files_list.append(os.path.join(root, filename))
+
+    # join into one big string
+    return "\n".join(files_list)
