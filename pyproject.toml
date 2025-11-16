@@ -51,8 +51,8 @@ dev = [
 ]
 
 [options.package_data]
-android_notify = fallback-icons/*
-    
+android_notify = ["fallback-icons/*"]
+
 [project.scripts]
 android-notify = "android_notify.__main__:main"
 
