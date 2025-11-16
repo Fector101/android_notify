@@ -705,12 +705,10 @@ class Notification(BaseNotification):
                 print('using default icon...')
             if on_flet_app():
                 try:
-                    Icon = autoclass('android.graphics.drawable.Icon')
                     fallback_icon_path = get_flet_fallback_icon_path()
                     bitmap = get_bitmap_from_path(fallback_icon_path)
                     if bitmap:
-                        icon = Icon.createWithBitmap(bitmap)
-                        self.__builder.setSmallIcon(icon)
+                        self.__set_builder_icon_with_bitmap(bitmap)
                         self.__has_small_icon = True
                         return
                 except Exception as error_using_fallback_appicon:
@@ -735,26 +733,16 @@ class Notification(BaseNotification):
 
     def __set_icon_from_bitmap(self, img_path):
         """Path can be a link or relative path"""
-        try:
-            Icon = autoclass('android.graphics.drawable.Icon')
-        except Exception as autoclass_icon_error:
-            print("Couldn't find class to set custom icon:",autoclass_icon_error)
-            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
-            self.__has_small_icon = True
-            return
-        
         
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap_):
                 if bitmap_:
-                    icon_ = Icon.createWithBitmap(bitmap_)
-                    self.__builder.setSmallIcon(icon_)
-                    self.__has_small_icon = True
+                    self.__set_builder_icon_with_bitmap(bitmap)
                 else:
                     if self.logs:
                         print('Using Default Icon as fallback......')
-                    self.__has_small_icon = True
                     self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+                self.__has_small_icon = True
             threading.Thread(
                 target=get_bitmap_from_url,
                 args=[img_path,callback,self.logs]
@@ -762,15 +750,27 @@ class Notification(BaseNotification):
         else:
             bitmap = get_img_from_path(img_path)
             if bitmap:
-                icon = Icon.createWithBitmap(bitmap)
-                self.__builder.setSmallIcon(icon)
+                self.__set_builder_icon_with_bitmap(bitmap)
             else:
                 if self.logs:
                     app_folder=os.path.join(app_storage_path(),'app')
                     img_absolute_path = os.path.join(app_folder, img_path)
-                    print(f'Failed getting img for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
+                    print(f'Failed getting bitmap for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
             self.__has_small_icon = True
+            
+    def __set_builder_icon_with_bitmap(self,bitmap):
+        try:
+            Icon = autoclass('android.graphics.drawable.Icon')
+        except Exception as autoclass_icon_error:
+            print("Couldn't find class to set custom icon:",autoclass_icon_error)
+            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+            self.__has_small_icon = True
+            return
+
+        Icon = autoclass('android.graphics.drawable.Icon')
+        icon = Icon.createWithBitmap(bitmap)
+        self.__builder.setSmallIcon(icon)
 
     @run_on_ui_thread
     def __apply_notification_image(self, bitmap, img_style):
@@ -892,11 +892,7 @@ class Notification(BaseNotification):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
     def tell(self):
-        from .core import send_notification
-        t=str(get_package_path())
-        send_notification(title="bool get_package_path()", message=str(os.path.isdir(t) ) )
-        send_notification(title="get_package_path()", message=str(get_package_path()))
-        print(get_files_recursive(t))
+        print(get_icon("flet-appicon.png"))
 
     # TODO method to create channel groups
 
@@ -1090,55 +1086,10 @@ elif ON_ANDROID:
         traceback.print_exc()
 
 
-import os, sys
-from .core import send_notification
-def get_package_path1():
-    """
-    Tries multiple methods to determine the package path on Android.
-    Sends the result to a notification using send_notification().
-    """
-    path = None
-
-    # --- Method 1: Using __file__ ---
-    try:
-        path = os.path.dirname(os.path.abspath(__file__))
-        send_notification(title="__file__ method", message=path)
-    except Exception as e:
-        send_notification(title="__file__ failed", message=str(e))
-
-    # --- Method 2: Using sys.argv[0] ---
-    try:
-        argv0 = os.path.abspath(sys.argv[0])
-        send_notification(title="sys.argv[0] method", message=argv0)
-    except Exception as e:
-        send_notification(title="sys.argv[0] failed", message=str(e))
-
-    # --- Method 3: Searching sys.path for site-packages ---
-    try:
-        site_packages = [p for p in sys.path if 'site-packages' in p]
-        if site_packages:
-            msg = "\n".join(site_packages)
-            send_notification(title="site-packages method", message=msg)
-        else:
-            send_notification(title="site-packages method", message="Not found")
-    except Exception as e:
-        send_notification(title="site-packages failed", message=str(e))
-
 import os
+import pkg_resources
 
-def get_files_recursive(path):
-    """
-    Returns all files inside the directory and its subdirectories
-    as a single newline-separated string.
-    """
-    if not os.path.isdir(path):
-        return f"❌ Path does not exist or is not a directory: {path}"
+def get_icon(icon_name):
+    """Get the full path to an icon file"""
+    return pkg_resources.resource_filename(__name__, f'fallback-icons/{icon_name}')
 
-    files_list = []
-
-    for root, dirs, files in os.walk(path):
-        for filename in files:
-            files_list.append(os.path.join(root, filename))
-
-    # join into one big string
-    return "\n".join(files_list)
