@@ -1085,11 +1085,3 @@ elif ON_ANDROID:
         print("notification listener bind error:",bind_error)
         traceback.print_exc()
 
-
-import os
-import pkg_resources
-
-def get_icon(icon_name):
-    """Get the full path to an icon file"""
-    return pkg_resources.resource_filename(__name__, f'fallback-icons/{icon_name}')
-
