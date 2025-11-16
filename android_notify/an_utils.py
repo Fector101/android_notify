@@ -154,3 +154,8 @@ def get_bitmap_from_path(img_full_path):
   Uri = autoclass('android.net.Uri')
   uri = Uri.parse(f"file://{img_full_path}")
   return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+
+def backup_icon_finder(icon_name):
+    """Get the full path to an icon file"""
+    return pkg_resources.resource_filename(__name__, f'fallback-icons/{icon_name}')
+get_flet_fallback_icon_path()
