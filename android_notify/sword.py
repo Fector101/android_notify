@@ -6,7 +6,7 @@ from .config import cast, autoclass
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path, get_bitmap_from_path
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -706,7 +706,7 @@ class Notification(BaseNotification):
             if on_flet_app():
                 try:
                     fallback_icon_path = get_flet_fallback_icon_path()
-                    bitmap = get_img_from_path(fallback_icon_path)
+                    bitmap = get_bitmap_from_path(fallback_icon_path)
                     if bitmap:
                         icon = IconCompat.createWithBitmap(bitmap)
                         self.__builder.setSmallIcon(icon)
