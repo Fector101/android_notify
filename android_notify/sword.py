@@ -6,7 +6,7 @@ from .config import cast, autoclass
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent, get_sound_uri
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path, get_bitmap_from_path
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -703,6 +703,17 @@ class Notification(BaseNotification):
         else:
             if self.logs:
                 print('using default icon...')
+            if on_flet_app():
+                try:
+                    fallback_icon_path = get_flet_fallback_icon_path()
+                    bitmap = get_bitmap_from_path(fallback_icon_path)
+                    if bitmap:
+                        self.__set_builder_icon_with_bitmap(bitmap)
+                        self.__has_small_icon = True
+                        return
+                except Exception as error_using_fallback_appicon:
+                    print("error_using_fallback_appicon :",error_using_fallback_appicon) 
+                    traceback.print_exc()
             self.__has_small_icon = True
             self.__builder.setSmallIcon(context.getApplicationInfo().icon)
 
@@ -722,26 +733,16 @@ class Notification(BaseNotification):
 
     def __set_icon_from_bitmap(self, img_path):
         """Path can be a link or relative path"""
-        try:
-            Icon = autoclass('android.graphics.drawable.Icon')
-        except Exception as autoclass_icon_error:
-            print("Couldn't find class to set custom icon:",autoclass_icon_error)
-            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
-            self.__has_small_icon = True
-            return
-        
         
         if img_path.startswith('http://') or img_path.startswith('https://'):
             def callback(bitmap_):
                 if bitmap_:
-                    icon_ = Icon.createWithBitmap(bitmap_)
-                    self.__builder.setSmallIcon(icon_)
-                    self.__has_small_icon = True
+                    self.__set_builder_icon_with_bitmap(bitmap_)
                 else:
                     if self.logs:
                         print('Using Default Icon as fallback......')
-                    self.__has_small_icon = True
                     self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+                self.__has_small_icon = True
             threading.Thread(
                 target=get_bitmap_from_url,
                 args=[img_path,callback,self.logs]
@@ -749,15 +750,27 @@ class Notification(BaseNotification):
         else:
             bitmap = get_img_from_path(img_path)
             if bitmap:
-                icon = Icon.createWithBitmap(bitmap)
-                self.__builder.setSmallIcon(icon)
+                self.__set_builder_icon_with_bitmap(bitmap)
             else:
                 if self.logs:
                     app_folder=os.path.join(app_storage_path(),'app')
                     img_absolute_path = os.path.join(app_folder, img_path)
-                    print(f'Failed getting img for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
+                    print(f'Failed getting bitmap for custom notification icon defaulting to app icon\n absolute path {img_absolute_path}')
                 self.__builder.setSmallIcon(context.getApplicationInfo().icon)
             self.__has_small_icon = True
+            
+    def __set_builder_icon_with_bitmap(self,bitmap):
+        try:
+            Icon = autoclass('android.graphics.drawable.Icon')
+        except Exception as autoclass_icon_error:
+            print("Couldn't find class to set custom icon:",autoclass_icon_error)
+            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+            self.__has_small_icon = True
+            return
+
+        Icon = autoclass('android.graphics.drawable.Icon')
+        icon = Icon.createWithBitmap(bitmap)
+        self.__builder.setSmallIcon(icon)
 
     @run_on_ui_thread
     def __apply_notification_image(self, bitmap, img_style):
@@ -878,7 +891,6 @@ class Notification(BaseNotification):
     def isUsingCustom(self):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
-
     # TODO method to create channel groups
 
 

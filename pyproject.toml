@@ -50,6 +50,9 @@ dev = [
     "kivy>=2.0.0"
 ]
 
+[tool.setuptools.package-data]
+"android_notify" = ["fallback-icons/*.png"]
+
 [project.scripts]
 android-notify = "android_notify.__main__:main"
 
