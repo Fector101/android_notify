@@ -69,10 +69,11 @@ def generate_channel_id(channel_name: str) -> str:
     return channel_id[:50]
 
 def get_img_from_path(relative_path):
-    app_folder = os.path.join(app_storage_path(), 'app')
-    output_path = os.path.join(app_folder, relative_path)
+    app_folder = os.path.join(app_storage_path(), 'app')  
+    img_full_path = os.path.join(app_folder, relative_path)
+    img_name = os.path.basename(img_full_path)
     if not os.path.exists(output_path):
-        print(f"\nImage not found at path: {app_folder}, (Local images gotten from App Path)")
+        print(f"\nImage - {img_name} not found at path: {app_folder}, (Local images gotten from App Path)")
         try:
             print("- These are the existing files in your app Folder:")
             print('[' + ', '.join(os.listdir(app_folder)) + ']')
@@ -80,10 +81,8 @@ def get_img_from_path(relative_path):
             print('Exception: ', could_not_get_files_in_path_error)
             print("Couldn't get Files in App Folder")
         return None
+    return get_bitmap_from_path(img_full_path)
     # TODO test with a badly written Image and catch error
-    Uri = autoclass('android.net.Uri')
-    uri = Uri.parse(f"file://{output_path}")
-    return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
 def setLayoutText(layout, id, text, color):
     # checked if self.title_color available before entering method
@@ -150,3 +149,8 @@ def get_flet_fallback_icon_path():
     """
     package_dir = get_package_path()
     return os.path.join(package_dir, "fallback-icons", "flet-appicon.png")
+
+def get_bitmap_from_path(full_path):
+  Uri = autoclass('android.net.Uri')
+  uri = Uri.parse(f"file://{output_path}")
+  return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
