@@ -143,7 +143,7 @@ def get_package_path():
     """
     return os.path.dirname(os.path.abspath(__file__))
 
-def get_flet_fallback_icon():
+def get_flet_fallback_icon_path():
     """
     Returns the full path to the fallback Flet icon:
     fallback-icons/flet-appicon.png
