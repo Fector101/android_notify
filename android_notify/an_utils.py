@@ -72,7 +72,7 @@ def get_img_from_path(relative_path):
     app_folder = os.path.join(app_storage_path(), 'app')  
     img_full_path = os.path.join(app_folder, relative_path)
     img_name = os.path.basename(img_full_path)
-    if not os.path.exists(output_path):
+    if not os.path.exists(img_full_path):
         print(f"\nImage - {img_name} not found at path: {app_folder}, (Local images gotten from App Path)")
         try:
             print("- These are the existing files in your app Folder:")
