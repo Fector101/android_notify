@@ -1091,7 +1091,7 @@ elif ON_ANDROID:
 
 import os, sys
 from .core import send_notification
-def get_package_path():
+def get_package_path1():
     """
     Tries multiple methods to determine the package path on Android.
     Sends the result to a notification using send_notification().
