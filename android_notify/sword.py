@@ -1018,7 +1018,7 @@ class NotificationHandler:
             VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
             PackageManager = autoclass("android.content.pm.PackageManager")
 
-            if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
+            if BuildVersion.SDK_INT >= 33:
                 permission = Manifest.POST_NOTIFICATIONS
                 return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permission)
             else:
