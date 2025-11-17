@@ -66,7 +66,7 @@ def asks_permission_if_needed():
         Manifest = autoclass('android.Manifest$permission')
         VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
 
-        if BuildVersion.SDK_INT >= VERSION_CODES.TIRAMISU:
+        if BuildVersion.SDK_INT >= 33:
             permission = Manifest.POST_NOTIFICATIONS
             granted = ContextCompat.checkSelfPermission(context, permission)
 
