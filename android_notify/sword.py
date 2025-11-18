@@ -6,7 +6,7 @@ from .config import cast, autoclass
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent, get_sound_uri, get_flet_fallback_icon_path, get_bitmap_from_path
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri, icon_finder, get_bitmap_from_path
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -701,21 +701,38 @@ class Notification(BaseNotification):
                 print('getting custom icon...')
             self.__set_icon_from_bitmap(path or self.app_icon)
         else:
-            if self.logs:
-                print('using default icon...')
+            def set_default_icon():
+                if self.logs:
+                    print('using default icon...')
+                self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+
+            fallback_icon_path = None
             if on_flet_app():
-                try:
-                    fallback_icon_path = get_flet_fallback_icon_path()
-                    bitmap = get_bitmap_from_path(fallback_icon_path)
-                    if bitmap:
-                        self.__set_builder_icon_with_bitmap(bitmap)
-                        self.__has_small_icon = True
-                        return
-                except Exception as error_using_fallback_appicon:
-                    print("error_using_fallback_appicon :",error_using_fallback_appicon) 
-                    traceback.print_exc()
+                fallback_icon_path=icon_finder("flet-appicon.png")
+            elif "ru.iiec.pydroid3" in os.path.dirname(os.path.abspath(__file__)):
+                fallback_icon_path=icon_finder("pydroid3-appicon.png")
+            else:
+                set_default_icon()
+
+            if fallback_icon_path:
+                success = self.__set_smallicon_with_bitmap_from_path(fallback_icon_path)
+                if not success:
+                    print("error_using_fallback_appicon")
+                    set_default_icon()
+                    
             self.__has_small_icon = True
-            self.__builder.setSmallIcon(context.getApplicationInfo().icon)
+            
+
+    def __set_smallicon_with_bitmap_from_path(self,fullpath):
+        try:
+            bitmap = get_bitmap_from_path(fullpath)
+            if bitmap:
+                self.__set_builder_icon_with_bitmap(bitmap)
+                return True
+        except Exception as error_using_bitmap_for_appicon:
+            print("error_using_bitmap_for_appicon :",error_using_bitmap_for_appicon) 
+            traceback.print_exc()
+        return False
 
     def __build_img(self, user_img, img_style):
         if user_img.startswith('http://') or user_img.startswith('https://'):
@@ -748,7 +765,7 @@ class Notification(BaseNotification):
                 args=[img_path,callback,self.logs]
                 ).start()
         else:
-            bitmap = get_img_from_path(img_path)
+            bitmap = get_img_from_path(img_path) #get_img_from_path is different from get_bitmap_from_path because it those some logging for user
             if bitmap:
                 self.__set_builder_icon_with_bitmap(bitmap)
             else:
