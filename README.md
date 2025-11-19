@@ -147,6 +147,30 @@ To use colored text in your notifications:
 Lastly in your `buildozer.spec` file
 - Add `source.include_exts = xml` and `android.add_resources = ./res`
 
+To use Custom Sounds
+- Put audio files in `res/raw` folder,
+- Then from `buildozer.spec` point to res folder `android.add_resources = res`
+- and includes it's format `source.include_exts = wav`.
+
+Lastly From the code 
+```py
+# Create a custom notification channel with a unique sound resource for android 8+
+Notification.createChannel(
+    id="weird_sound_tester",
+    name="Weird Sound Tester",
+    description="A test channel used to verify custom notification sounds from the res/raw folder.",
+    res_sound_name="sneeze" # file name without .wav or .mp3
+)
+
+# Send a notification through the created channel
+n=Notification(
+    title="Custom Sound Notification",
+    message="This tests playback of a custom sound (sneeze.wav) stored in res/raw.",
+    channel_id="weird_sound_tester" # important tells notification to use right channel
+)
+n.setSound("sneeze")# for android 7 below 
+n.send()
+```
 For full documentation, examples, and advanced usage, API reference visit the
 [documentation](https://android-notify.vercel.app)
 
