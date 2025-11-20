@@ -176,8 +176,5 @@ For full documentation, examples, and advanced usage, API reference visit the
 
 ## ☕ Support the Project
 
-If you find this project helpful, consider buying me a coffee! 😊 Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify/) Your support helps maintain and improve the project.
-
-<a href="https://www.buymeacoffee.com/fector101" target="_blank">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">
-</a>
+If you find this project helpful, any support would help me continue working on open-source projects. I’m currently saving for a laptop to keep developing and improving my skills.
+[donate](https://www.buymeacoffee.com/fector101)
