@@ -304,9 +304,13 @@ class Notification(BaseNotification):
         -----
         - Android expects the `when` timestamp in **milliseconds** since the Unix epoch.
         """
-        ms=int((time.time() - secs_ago) * 1000)
-        self.__builder.setWhen(ms)
-        self.__builder.setShowWhen(True)
+        
+        if ON_ANDROID:
+            ms=int((time.time() - secs_ago) * 1000)
+            self.__builder.setWhen(ms)
+            self.__builder.setShowWhen(True)
+        if self.logs:
+            print(f"Done setting secs ago {secs_ago}")
 
     def showInfiniteProgressBar(self):
         """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
