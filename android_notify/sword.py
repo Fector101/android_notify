@@ -290,6 +290,28 @@ class Notification(BaseNotification):
         if ON_ANDROID:
             self.__builder.setColor(Color.parseColor(color))
 
+    def setWhen(self, secs_ago):
+        """
+        Sets the notification's timestamp to a specified number of seconds in the past.
+
+        Parameters
+        ----------
+        secs_ago : int or float
+            The number of seconds ago the notification should appear to have been posted.
+            For example, `60` means "1 minute ago", `3600` means "1 hour ago".
+
+        Notes
+        -----
+        - Android expects the `when` timestamp in **milliseconds** since the Unix epoch.
+        """
+        
+        if ON_ANDROID:
+            ms=int((time.time() - secs_ago) * 1000)
+            self.__builder.setWhen(ms)
+            self.__builder.setShowWhen(True)
+        if self.logs:
+            print(f"Done setting secs ago {secs_ago}")
+
     def showInfiniteProgressBar(self):
         """Displays an (Infinite) progress Bar in Notification, that continues loading indefinitely.
         Can be Removed By `removeProgressBar` Method
