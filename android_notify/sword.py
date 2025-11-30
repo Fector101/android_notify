@@ -460,6 +460,7 @@ class Notification(BaseNotification):
         self.silent = silent or self.silent
         if ON_ANDROID:
             self.__start_notification_build(persistent, close_on_click)
+        return self.__builder
             
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
