@@ -263,8 +263,11 @@ class Notification(BaseNotification):
         """
         if ON_ANDROID:
             big_text_style = NotificationCompatBigTextStyle()
-            big_text_style.setSummaryText(summary)
-            big_text_style.setBigContentTitle(title)
+            if title:
+                big_text_style.setBigContentTitle(str(title))
+            if summary:
+                big_text_style.setSummaryText(str(summary))
+            
             big_text_style.bigText(str(body))
             self.__builder.setStyle(big_text_style)
         elif self.logs:
