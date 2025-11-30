@@ -254,13 +254,17 @@ class Notification(BaseNotification):
             #When on android there are other logs
             print('Done setting large icon')
 
-    def setBigText(self,body):
+    def setBigText(self,body,title="",summary=""):
         """Sets a big text for when drop down button is pressed
 
         :param body: The big text that will be displayed
+        :param title: The big text title
+        :param summary: The big text summary
         """
         if ON_ANDROID:
             big_text_style = NotificationCompatBigTextStyle()
+            big_text_style.setSummaryText(summary)
+            big_text_style.setBigContentTitle(title)
             big_text_style.bigText(str(body))
             self.__builder.setStyle(big_text_style)
         elif self.logs:
