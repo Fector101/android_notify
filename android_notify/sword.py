@@ -506,6 +506,7 @@ class Notification(BaseNotification):
         string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
         print(string_to_display)
         
+    @property
     def builder(self):
         return self.__builder
         
