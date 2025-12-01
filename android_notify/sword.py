@@ -80,7 +80,6 @@ class Notification(BaseNotification):
 
         self.__built_parameter_filled=False
         self.__using_set_priority_method=False
-        self.from_foreground_service=False
 
         # For components
         self.__lines = []
@@ -641,9 +640,6 @@ class Notification(BaseNotification):
                 traceback.print_exc()
 
     def __dispatch_notification(self):
-        if self.from_foreground_service:
-            print("Can't Call 'self.notification_manager.notify' From Foreground Service")
-            return
         # self.passed_check is for self.send_() some devices don't return true when checking for permission when it's actually True in settingsAdd commentMore actions
         # And so users can do Notification.passed_check = True at top of their file and use regular .send()
         
