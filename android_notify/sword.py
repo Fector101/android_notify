@@ -781,7 +781,11 @@ class Notification(BaseNotification):
         intent.setAction(action)
         add_data_to_intent(intent,self.title)
         self.main_functions[action]=self.callback
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        intent.setFlags(
+            Intent.FLAG_ACTIVITY_CLEAR_TOP | # Makes Sure tapping notification always brings the existing instance of app forward.
+            Intent.FLAG_ACTIVITY_SINGLE_TOP | # If the activity is already at the top, reuse it instead of creating a new instance.
+            Intent.FLAG_ACTIVITY_NEW_TASK #  Required when starting an Activity from a Service; ignored when starting from another Activity.
+        )
 
         pending_intent = PendingIntent.getActivity(
                             context, 0,
