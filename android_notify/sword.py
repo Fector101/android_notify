@@ -783,6 +783,9 @@ class Notification(BaseNotification):
             Intent.FLAG_ACTIVITY_SINGLE_TOP | # If the activity is already at the top, reuse it instead of creating a new instance.
             Intent.FLAG_ACTIVITY_NEW_TASK #  Required when starting an Activity from a Service; ignored when starting from another Activity.
         )
+        intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
+
 
         pending_intent = PendingIntent.getActivity(
                             context, 0,
