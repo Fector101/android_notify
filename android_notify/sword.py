@@ -773,11 +773,23 @@ class Notification(BaseNotification):
             print('could not get Img traceback: ',traceback.format_exc())
 
     def __add_intent_to_open_app(self):
+        import jnius
+        Intent = jnius.autoclass('android.content.Intent')
+        PythonActivity = jnius.autoclass('org.kivy.android.PythonActivity')
+        PythonService = jnius.autoclass('org.kivy.android.PythonService')
+        service = PythonService.mService
+        app_context = service.getApplication().getApplicationContext()
+        notification_intent = Intent(app_context, PythonActivity)
+        notification_intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK)
+        notification_intent.setAction(Intent.ACTION_MAIN)
+        notification_intent.addCategory(Intent.CATEGORY_LAUNCHER)
+
+        PendingIntentFlags = jnius.autoclass("android.app.PendingIntent")
+        FLAG_IMMUTABLE = PendingIntentFlags.FLAG_IMMUTABLE
+        intent = PendingIntent.getActivity(service, 0, notification_intent, FLAG_IMMUTABLE)
+        self.__builder.setContentIntent(intent)
+        return 
         intent = Intent(context, PythonActivity)
-        #action = str(self.name or self.__id)
-        #intent.setAction(action)
-        #add_data_to_intent(intent,self.title)
-        #self.main_functions[action]=self.callback
         intent.setFlags(
             Intent.FLAG_ACTIVITY_CLEAR_TOP | # Makes Sure tapping notification always brings the existing instance of app forward.
             Intent.FLAG_ACTIVITY_SINGLE_TOP | # If the activity is already at the top, reuse it instead of creating a new instance.
