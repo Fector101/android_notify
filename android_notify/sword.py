@@ -691,14 +691,11 @@ class Notification(BaseNotification):
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
 
-        if not from_service_file():
-            try:
-                self.__add_intent_to_open_app()
-            except Exception as failed_to_add_intent_to_open_app:
-                #if self.logs:
-                #TODO remove this check and print error logs always
-                print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
-                traceback.print_exc()
+        try:
+            self.__add_intent_to_open_app()
+        except Exception as failed_to_add_intent_to_open_app:
+            print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
+            traceback.print_exc()
 
         self.__built_parameter_filled = True
 
