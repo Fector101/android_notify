@@ -44,7 +44,7 @@ try:
     NotificationChannel = autoclass('android.app.NotificationChannel')
     RemoteViews = autoclass('android.widget.RemoteViews')
 
-    ON_ANDROID = RemoteViews
+    ON_ANDROID = bool(RemoteViews)
 except Exception as e:
     from .an_types import *
     if hasattr(e,'name') and e.name != 'android' :
