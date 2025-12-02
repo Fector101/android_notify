@@ -110,7 +110,7 @@ def get_python_service():
     if not ON_ANDROID:
         return None
     PythonService = autoclass(get_activity_class_name() + '.PythonService')
-    return PythonService.PythonService
+    return PythonService.mService
         
 def get_python_activity_context():
     if not ON_ANDROID:
