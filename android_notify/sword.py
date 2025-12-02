@@ -22,7 +22,7 @@ from .config import (NotificationCompat, NotificationCompatBuilder,
                      )
 from .styles import NotificationStyles
 from .base import BaseNotification
-DEV=0
+DEV=1
 PythonActivity = get_python_activity()
 context = get_python_activity_context()
 
@@ -65,7 +65,7 @@ class Notification(BaseNotification):
     passed_check=False
 
     # During Development (When running on PC)
-    BaseNotification.logs=not ON_ANDROID
+    BaseNotification.logs=True #not ON_ANDROID
     def __init__(self,**kwargs): #@dataclass already does work
         super().__init__(**kwargs)
 
@@ -773,30 +773,17 @@ class Notification(BaseNotification):
             print('could not get Img traceback: ',traceback.format_exc())
 
     def __add_intent_to_open_app(self):
-        #import jnius
-        #Intent = jnius.autoclass('android.content.Intent')
-        #PythonActivity = jnius.autoclass('org.kivy.android.PythonActivity')
-        #PythonService = jnius.autoclass('org.kivy.android.PythonService')
-        #service = PythonService.mService
-        #app_context = service.getApplication().getApplicationContext()
-        #notification_intent = Intent(app_context, PythonActivity)
-        #notification_intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK)
-        #notification_intent.setAction(Intent.ACTION_MAIN)
-        #notification_intent.addCategory(Intent.CATEGORY_LAUNCHER)
-
-        #PendingIntentFlags = jnius.autoclass("android.app.PendingIntent")
-        #FLAG_IMMUTABLE = PendingIntentFlags.FLAG_IMMUTABLE
-        #intent = PendingIntent.getActivity(service, 0, notification_intent, FLAG_IMMUTABLE)
-        #self.__builder.setContentIntent(intent)
-        #return 
         intent = Intent(context, PythonActivity)
         intent.setFlags(
             Intent.FLAG_ACTIVITY_CLEAR_TOP | # Makes Sure tapping notification always brings the existing instance of app forward.
             Intent.FLAG_ACTIVITY_SINGLE_TOP | # If the activity is already at the top, reuse it instead of creating a new instance.
             Intent.FLAG_ACTIVITY_NEW_TASK #  Required when starting an Activity from a Service; ignored when starting from another Activity.
         )
-        intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
+        action = str(self.name or self.__id)
+        intent.setAction(action)
+        add_data_to_intent(intent,self.title)
+        #intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
+        #intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
         pending_intent = PendingIntent.getActivity(
                             context, 0,
@@ -937,6 +924,7 @@ class NotificationHandler:
         """
         if not cls.is_on_android():
             return "Not on Android"
+        print('intent.getStringExtra("title")',intent.getStringExtra("title"))
         buttons_object=Notification.btns_box
         notifty_functions=Notification.main_functions
         if DEV:
@@ -946,12 +934,12 @@ class NotificationHandler:
             action = intent.getAction()
             cls.__name = action
 
-            # print("The Action --> ",action)
+            print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
                 cls.__name = None
                 return 'Not notification'
 
-            print(intent.getStringExtra("title"))
+            
             try:
                 if action in notifty_functions and notifty_functions[action]:
                     notifty_functions[action]()
