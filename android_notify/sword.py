@@ -537,13 +537,13 @@ class Notification(BaseNotification):
         bundle.putString("title", self.title or 'Title Placeholder')
         bundle.putInt("key_int", 123)
         action_intent.putExtras(bundle)
-        action_intent.putExtra("button_id", btn_id)
+        action_intent.putExtra("button_id", 68)
 
         self.btns_box[action] = on_release
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         if self.logs:
-            print('Button id: ',btn_id)
+            print('Button action: ', action)
         pending_action_intent = PendingIntent.getActivity(
             context,
             0,
