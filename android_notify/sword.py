@@ -453,13 +453,7 @@ class Notification(BaseNotification):
             android_importance_value = get_android_importance(importance)
             if not isinstance(android_importance_value, str):  # Can be an empty str if importance='none'
                 self.__builder.setPriority(android_importance_value)
-
-    def fill_args(self,silent:bool=False,persistent=False,close_on_click=True):
-        self.silent = silent or self.silent
-        if ON_ANDROID:
-            self.__start_notification_build(persistent, close_on_click)
-        return self.__builder
-            
+    
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
 
@@ -470,7 +464,7 @@ class Notification(BaseNotification):
         """
         self.silent = silent or self.silent
         if ON_ANDROID:
-            self.__start_notification_build(persistent, close_on_click)
+            self.start_building(persistent, close_on_click)
             self.__dispatch_notification()
 
         self.__send_logs()
@@ -658,11 +652,15 @@ class Notification(BaseNotification):
             # Not asking for permission too frequently, This makes dialog popup to stop showing
             # NotificationHandler.asks_permission()
 
-    def __start_notification_build(self, persistent, close_on_click):
+    def start_building(self, persistent=False,close_on_click=True,silent:bool=False):
+        # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        self.silent = silent or self.silent
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
             self.addNotificationStyle(self.style)
         self.__applyNewLinesIfAny()
+        
+        return self.__builder
 
     def __applyNewLinesIfAny(self):
         if self.__lines:
