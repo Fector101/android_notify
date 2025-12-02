@@ -59,7 +59,6 @@ class Notification(BaseNotification):
     """
 
     notification_ids = [0]
-    button_ids=[0]
     btns_box={}
     main_functions={}
     passed_check=False
@@ -529,8 +528,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        btn_id= self.__get_id_for_button()
-        action = f"BTN_ACTION_{btn_id}"
+        action = f"{str}_{self.id}" # tagging with id so i can find specified notification in my object
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
@@ -790,11 +788,6 @@ class Notification(BaseNotification):
                             intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
                         )
         self.__builder.setContentIntent(pending_intent)
-
-    def __get_id_for_button(self):
-        btn_id = self.button_ids[-1] + 1
-        self.button_ids.append(btn_id)
-        return btn_id
 
     def __format_channel(self, channel_name:str='Default Channel',channel_id:str='default_channel'):
         """
