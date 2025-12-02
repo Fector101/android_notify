@@ -22,7 +22,7 @@ from .config import (NotificationCompat, NotificationCompatBuilder,
                      )
 from .styles import NotificationStyles
 from .base import BaseNotification
-DEV=1
+DEV=0
 PythonActivity = get_python_activity()
 context = get_python_activity_context()
 
@@ -64,7 +64,7 @@ class Notification(BaseNotification):
     passed_check=False
 
     # During Development (When running on PC)
-    BaseNotification.logs=True #not ON_ANDROID
+    BaseNotification.logs=not ON_ANDROID
     def __init__(self,**kwargs): #@dataclass already does work
         super().__init__(**kwargs)
 
@@ -780,6 +780,7 @@ class Notification(BaseNotification):
         action = str(self.name or self.__id)
         intent.setAction(action)
         add_data_to_intent(intent,self.title)
+        self.main_functions[action]=self.callback
         #intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
         #intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
@@ -917,7 +918,7 @@ class NotificationHandler:
         """
         if not cls.is_on_android():
             return "Not on Android"
-        print('intent.getStringExtra("title")',intent.getStringExtra("title"))
+        #print('intent.getStringExtra("title")',intent.getStringExtra("title"))
         buttons_object=Notification.btns_box
         notifty_functions=Notification.main_functions
         if DEV:
@@ -927,7 +928,7 @@ class NotificationHandler:
             action = intent.getAction()
             cls.__name = action
 
-            print("The Action --> ",action)
+            #print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
                 cls.__name = None
                 return 'Not notification'
