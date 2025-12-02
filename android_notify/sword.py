@@ -528,7 +528,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        action = f"{str}_{self.id}" # tagging with id so i can find specified notification in my object
+        action = f"{text}_{self.id}" # tagging with id so i can find specified notification in my object
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
