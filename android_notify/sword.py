@@ -560,7 +560,7 @@ class Notification(BaseNotification):
         bundle.putString("title", self.title or 'Title Placeholder')
         bundle.putInt("key_int", 68)
         action_intent.putExtras(bundle)
-        action_intent.putExtra("button_id", btn_id)
+        action_intent.putExtra("button_id", action)
 
         self.btns_box[action] = on_release
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
