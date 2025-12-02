@@ -45,7 +45,7 @@ try:
     RemoteViews = autoclass('android.widget.RemoteViews')
     AndroidNotification = autoclass("android.app.Notification")
     
-    ON_ANDROID = RemoteViews
+    ON_ANDROID = bool(RemoteViews)
 except Exception as e:
     from .an_types import *
     #if hasattr(e,'name') and e.name != 'android' :
@@ -93,13 +93,16 @@ def get_python_activity():
         from .an_types import PythonActivity
         return PythonActivity
     ACTIVITY_CLASS_NAME = get_activity_class_name()
-    if from_service_file():
-        PythonActivity = autoclass(ACTIVITY_CLASS_NAME + '.PythonService')
-    elif on_flet_app():
+    if on_flet_app():
         PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
     else:
         PythonActivity = autoclass(ACTIVITY_CLASS_NAME + '.PythonActivity')
     return PythonActivity
+def get_python_service():
+    if not ON_ANDROID:
+        return None
+    PythonService = autoclass(get_activity_class_name() + '.PythonService')
+    return PythonService.mService
 
 def get_python_activity_context():
     if not ON_ANDROID:
@@ -108,9 +111,8 @@ def get_python_activity_context():
 
     PythonActivity = get_python_activity()
     if from_service_file():
-        service = PythonActivity.mService
+        service = get_python_service()
         context = service.getApplication().getApplicationContext()
-        # context = PythonActivity.mService
     else:
         context = PythonActivity.mActivity
     return context
