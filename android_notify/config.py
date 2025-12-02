@@ -1,7 +1,7 @@
 import os, traceback
 
 ON_ANDROID = False
-__version__ = "1.60.0"
+__version__ = "1.60.3"
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
