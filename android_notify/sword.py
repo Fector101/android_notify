@@ -59,7 +59,6 @@ class Notification(BaseNotification):
     """
 
     notification_ids = [0]
-    button_ids=[0]
     btns_box={}
     main_functions={}
     passed_check=False
@@ -454,7 +453,7 @@ class Notification(BaseNotification):
             android_importance_value = get_android_importance(importance)
             if not isinstance(android_importance_value, str):  # Can be an empty str if importance='none'
                 self.__builder.setPriority(android_importance_value)
-
+    
     def send(self,silent:bool=False,persistent=False,close_on_click=True):
         """Sends notification
 
@@ -465,7 +464,7 @@ class Notification(BaseNotification):
         """
         self.silent = silent or self.silent
         if ON_ANDROID:
-            self.__start_notification_build(persistent, close_on_click)
+            self.start_building(persistent, close_on_click)
             self.__dispatch_notification()
 
         self.__send_logs()
@@ -506,6 +505,7 @@ class Notification(BaseNotification):
         string_to_display +="\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
         print(string_to_display)
         
+    @property
     def builder(self):
         return self.__builder
         
@@ -522,8 +522,7 @@ class Notification(BaseNotification):
         if not ON_ANDROID:
             return
 
-        btn_id= self.__get_id_for_button()
-        action = f"BTN_ACTION_{btn_id}"
+        action = f"{text}_{self.id}" # tagging with id so i can find specified notification in my object
 
         action_intent = Intent(context, PythonActivity)
         action_intent.setAction(action)
@@ -532,13 +531,13 @@ class Notification(BaseNotification):
         bundle.putString("title", self.title or 'Title Placeholder')
         bundle.putInt("key_int", 123)
         action_intent.putExtras(bundle)
-        action_intent.putExtra("button_id", btn_id)
+        action_intent.putExtra("button_id", 68)
 
         self.btns_box[action] = on_release
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         if self.logs:
-            print('Button id: ',btn_id)
+            print('Button action: ', action)
         pending_action_intent = PendingIntent.getActivity(
             context,
             0,
@@ -653,11 +652,17 @@ class Notification(BaseNotification):
             # Not asking for permission too frequently, This makes dialog popup to stop showing
             # NotificationHandler.asks_permission()
 
-    def __start_notification_build(self, persistent, close_on_click):
+    def start_building(self, persistent=False,close_on_click=True,silent:bool=False):
+        # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        if not ON_ANDROID:
+            return NotificationCompatBuilder # this is just a facade
+        self.silent = silent or self.silent
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
             self.addNotificationStyle(self.style)
         self.__applyNewLinesIfAny()
+        
+        return self.__builder
 
     def __applyNewLinesIfAny(self):
         if self.__lines:
@@ -684,14 +689,11 @@ class Notification(BaseNotification):
         self.__builder.setOngoing(persistent)
         self.__builder.setAutoCancel(close_on_click)
 
-        if not from_service_file():
-            try:
-                self.__add_intent_to_open_app()
-            except Exception as failed_to_add_intent_to_open_app:
-                #if self.logs:
-                #TODO remove this check and print error logs always
-                print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
-                traceback.print_exc()
+        try:
+            self.__add_intent_to_open_app()
+        except Exception as failed_to_add_intent_to_open_app:
+            print('failed_to_add_intent_to_open_app Error: ',failed_to_add_intent_to_open_app)
+            traceback.print_exc()
 
         self.__built_parameter_filled = True
 
@@ -770,22 +772,23 @@ class Notification(BaseNotification):
 
     def __add_intent_to_open_app(self):
         intent = Intent(context, PythonActivity)
+        intent.setFlags(
+            Intent.FLAG_ACTIVITY_CLEAR_TOP | # Makes Sure tapping notification always brings the existing instance of app forward.
+            Intent.FLAG_ACTIVITY_SINGLE_TOP | # If the activity is already at the top, reuse it instead of creating a new instance.
+            Intent.FLAG_ACTIVITY_NEW_TASK #  Required when starting an Activity from a Service; ignored when starting from another Activity.
+        )
         action = str(self.name or self.__id)
         intent.setAction(action)
         add_data_to_intent(intent,self.title)
         self.main_functions[action]=self.callback
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        #intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
+        #intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
         pending_intent = PendingIntent.getActivity(
                             context, 0,
-                            intent, PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 31 else PendingIntent.FLAG_UPDATE_CURRENT
+                            intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
                         )
         self.__builder.setContentIntent(pending_intent)
-
-    def __get_id_for_button(self):
-        btn_id = self.button_ids[-1] + 1
-        self.button_ids.append(btn_id)
-        return btn_id
 
     def __format_channel(self, channel_name:str='Default Channel',channel_id:str='default_channel'):
         """
@@ -915,6 +918,7 @@ class NotificationHandler:
         """
         if not cls.is_on_android():
             return "Not on Android"
+        #print('intent.getStringExtra("title")',intent.getStringExtra("title"))
         buttons_object=Notification.btns_box
         notifty_functions=Notification.main_functions
         if DEV:
@@ -924,12 +928,12 @@ class NotificationHandler:
             action = intent.getAction()
             cls.__name = action
 
-            # print("The Action --> ",action)
+            #print("The Action --> ",action)
             if action == "android.intent.action.MAIN": # Not Open From Notification
                 cls.__name = None
                 return 'Not notification'
 
-            print(intent.getStringExtra("title"))
+            
             try:
                 if action in notifty_functions and notifty_functions[action]:
                     notifty_functions[action]()
