@@ -654,6 +654,8 @@ class Notification(BaseNotification):
 
     def start_building(self, persistent=False,close_on_click=True,silent:bool=False):
         # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        if not ON_ANDROID:
+            return NotificationCompatBuilder # this is just a facade
         self.silent = silent or self.silent
         self.__create_basic_notification(persistent, close_on_click)
         if self.style not in ['simple','']:
