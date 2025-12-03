@@ -995,18 +995,17 @@ class NotificationHandler:
         if not ON_ANDROID:
             return True
 
+        if BuildVersion.SDK_INT < 33: # Android 12 below
+            return True
+
         if on_flet_app():
             from .config import autoclass
             ContextCompat = autoclass('androidx.core.content.ContextCompat')
             Manifest = autoclass('android.Manifest$permission')
             VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
 
-            if BuildVersion.SDK_INT >= 33:
-                permission = Manifest.POST_NOTIFICATIONS
-                return ContextCompat.checkSelfPermission(context, permission)
-            else:
-                print("android_notify- On Low android version don't need permission")
-                return True #doesn't need permission
+            permission = Manifest.POST_NOTIFICATIONS
+            return ContextCompat.checkSelfPermission(context, permission)
         else:
             from android.permissions import Permission, check_permission
             return check_permission(Permission.POST_NOTIFICATIONS)
@@ -1019,6 +1018,12 @@ class NotificationHandler:
         Passes True to callback if access granted
         """
         if cls.__requesting_permission or not ON_ANDROID:
+            return True
+
+        if BuildVersion.SDK_INT < 33: # Android 12 below
+            if callback:
+                callback(True)
+            print("android_notify- On android 12 or less don't need permission")
             return True
 
         def on_permissions_result(permissions, grants):
