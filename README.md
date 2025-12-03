@@ -71,7 +71,7 @@ android.api = 35
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","https://github.com/Fector101/android_notify/archive/without-androidx.zip"
+  "pyjnius","android-notify==1.60.4.dev0"
 ]
 
 [tool.flet.android.permission]
@@ -81,11 +81,11 @@ dependencies = [
 ------
 ## Installing without Androidx
 How to use without `gradle_dependencies`
-Use `https://github.com/Fector101/android_notify/archive/without-androidx.zip` to install via `pip`
+Use `android-notify==1.60.4.dev0` to install via `pip`
 ### In Kivy
 ```ini
 # buildozer.spec
-requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip
+requirements = python3, kivy, pyjnius, android-notify==1.60.4.dev0
 ```
 
 ### On Pydroid 3 
@@ -93,7 +93,7 @@ On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid
 - In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
 - Minimal working example 
 ```py
-# Testing with `https://github.com/Fector101/android_notify/archive/without-androidx.zip` on pydroid
+# Testing with `android-notify==1.60.4.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -176,5 +176,5 @@ For full documentation, examples, and advanced usage, API reference visit the
 
 ## ☕ Support the Project
 
-If you find this project helpful, any support would help me continue working on open-source projects. I’m currently saving for a laptop to keep developing and improving my skills.
+If you find this project helpful, any support would help me continue working on open-source projects. I’m currently saving for a laptop to keep developing.
 [donate](https://www.buymeacoffee.com/fector101)
