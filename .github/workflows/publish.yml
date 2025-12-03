@@ -1,0 +1,33 @@
+name: Publish android_notify to PyPI(Connected to PyPi)
+
+on:
+  workflow_dispatch:      # manual trigger
+  #push:
+    #tags:
+      #- "v*"              # publish when you push a version tag
+
+permissions:
+  id-token: write         # REQUIRED for PyPI Trusted Publishing
+  contents: read
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build backend
+        run: pip install build
+
+      - name: Build the package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
