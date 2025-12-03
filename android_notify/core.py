@@ -58,6 +58,8 @@ def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
+    if BuildVersion.SDK_INT < 33:
+        return True
     if on_flet_app():
         ContextCompat = autoclass('androidx.core.content.ContextCompat')
         # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
@@ -65,13 +67,11 @@ def asks_permission_if_needed():
         ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
         Manifest = autoclass('android.Manifest$permission')
         VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
-
-        if BuildVersion.SDK_INT >= 33:
-            permission = Manifest.POST_NOTIFICATIONS
-            granted = ContextCompat.checkSelfPermission(context, permission)
-
-            if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
-                ActivityCompat.requestPermissions(context, [permission], 101)
+        
+        permission = Manifest.POST_NOTIFICATIONS
+        granted = ContextCompat.checkSelfPermission(context, permission)
+        if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
+            ActivityCompat.requestPermissions(context, [permission], 101)
     else: # android package is from p4a which is for kivy
         try:
             from android.permissions import request_permissions, Permission,check_permission # type: ignore
