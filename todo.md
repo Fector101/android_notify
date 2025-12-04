@@ -1,6 +1,9 @@
 warning:
 remove fallback icon for Flet and pydroid on android 14 below they don't enforce monochrome small icons 
 
+fit: 
+Intent listener for service now right pythactivity is getting returned 
+
 1.60 
 - Version code name: sounds, colours, services.
  
