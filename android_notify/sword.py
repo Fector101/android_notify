@@ -972,7 +972,7 @@ class NotificationHandler:
             return "Not on Android"
 
         #Beta TODO use BroadcastReceiver
-        if on_flet_app() or from_service_file():
+        if on_flet_app():# or from_service_file():
             return False # error 'NoneType' object has no attribute 'registerNewIntentListener'
         try:
             cls.android_activity.unbind(on_new_intent=cls.__notification_handler)
@@ -1063,7 +1063,7 @@ class NotificationHandler:
             return None
 
 
-if not on_flet_app() and from_service_file():
+if False:# not on_flet_app() and from_service_file():
     print("didn't bind listener, In service file")
 elif ON_ANDROID:
     try:
