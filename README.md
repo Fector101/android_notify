@@ -90,7 +90,7 @@ requirements = python3, kivy, pyjnius, android-notify==1.60.4.dev0
 
 ### On Pydroid 3 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `https://github.com/Fector101/android_notify/archive/without-androidx.zip`
+- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.4.dev0`
 - Minimal working example 
 ```py
 # Testing with `android-notify==1.60.4.dev0` on pydroid
