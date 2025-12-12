@@ -1,10 +1,4 @@
-// import { useEffect, useState } from 'react';
-// import {dracula} from 'react-syntax-highlighter/dist/esm/styles/prism';
-// import {
-//     gradientDark
-// } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-// import { code } from "./data/mainpage";
-// import { Prism } from 'react-syntax-highlighter'
+
 import { ScrollToSection } from '../ui/ScrollAssist';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
@@ -19,7 +13,6 @@ import onlineBigPicImg from "../assets/imgs/online-img.jpg"
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
-// import { appiconcode, bigimgcode, bigtextcode, buttons_code, inboxcode, largeiconcode, progressbarcode } from './versions-data/componentspage';
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
@@ -43,9 +36,10 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
     const [data, setData] = useState<IComponentPage>()
 
     async function changeVersionData(version: Iversion) {
-
+        const v1 = await import(`./versions-data/1.58.tsx`);
+        const v2 = await import(`./versions-data/1.59.tsx`);
         const data = await import(`./versions-data/${version}.tsx`);
-        setData(data.component_page)
+        setData({...v1.component_page,...v2.component_page,...data.component_page})
         // data.default; // if exported as default
     }
     useEffect(() => {

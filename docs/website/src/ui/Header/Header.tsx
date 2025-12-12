@@ -5,7 +5,7 @@ import {
 import './header.css'
 import { Link, useLocation } from 'react-router'
 import { toTitleCase } from '../../assets/js/helper';
-import pages_dict from '../../pages/versions-data/general';
+import {pages_dict} from '../../pages/versions-data/general';
 import { useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 import { Iversion } from '../../assets/js/mytypes';

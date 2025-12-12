@@ -7,15 +7,13 @@ notification = Notification(
 notification.setBigPicture("assets/imgs/photo.png")
 notification.send()`
 
-const progressbarcode = `from android_notify import NotificationStyles
-from kivy.clock import Clock
+const progressbarcode = `from kivy.clock import Clock
 
 progress = 0
 
 notification = Notification(
     title="Downloading...",
     message="0% downloaded",
-    style=NotificationStyles.PROGRESS,
     progress_current_value=0,progress_max_value=100
     )
 notification.send()
@@ -38,8 +36,7 @@ notification = Notification(
 )
 notification.setLargeIcon("assets/imgs/profile.png")
 notification.send()`
-const inboxcode = `from android_notify import NotificationStyles
-notification = Notification(
+const inboxcode = `notification = Notification(
     title="5 New mails from Frank",
     message="Check them out",
 )
@@ -56,23 +53,7 @@ const bigtextcode = `notification = Notification(
 )
 notification.setBigText("Lorem Ipsum is simply dummy text of the printing and ...")
 notification.send()`
-const buttons_code = `notification = Notification(
-    title="Jane Dough",
-    message="How to use android-notify #coding #purepython"
-)
-def playVideo():
-    print('Playing Video')
 
-def turnOffNoti():
-    print('Please Turn Off Updates')
-
-def watchLater():
-    print('Add to Watch Later')
-
-notification.addButton(text="Play",on_release=playVideo)
-notification.addButton(text="Turn Off",on_release=turnOffNoti)
-notification.addButton(text="Watch Later",on_release=watchLater)
-notification.send()`
 const appiconcode = `notification = Notification(
     title="custom icon notification",
     message="using .setSmallIcon to set notification icon"
@@ -84,25 +65,7 @@ notification.send(persistent=True) # how to persistent notification`
 
 // Advanced Methods Page
 
-export const title_and_message_update = `notification = Notification(title="Initial Title")
-notification.send()
 
-# Update title
-notification.updateTitle("New Title")
-
-# Update message
-notification.updateMessage("New Message")`
-
-export const progress_bar_update = `# Changes progress-bar values
-notification.updateProgressBar(
-    current_value=30,
-    message="30KB/100KB",
-    title='Download update... 30%'
-)
-# Remove progress bar
-# show_on_update to notification briefly after removed progressbar
-notification.removeProgressBar("Download Complete",show_on_update=True)
-`
 export const adding_image_code = `from kivy.clock import Clock
 
 notification = Notification(
@@ -160,193 +123,58 @@ class Myapp(MDApp):
 
 
 // Reference Page
-const NOTIFICATION_METHODS = [
-    {
-        id: 'init',
-        signature: `init
-	title: str = ''
-	message: str = ''
-
-	app_icon: str = ''
-	callback: Callable=None
-
-    \t# Progress-Bar
-	progress_max_value: int = 100
-	progress_current_value: int = 0
-
-    \t# Style related
-	style: str = 'simple'
-	big_picture_path: str = ''
-	large_icon_path: str = ''
-	body: str = ''
-	lines_txt: str = ''
-
-    \t# Channel related
-	channel_name: str = ''
-	channel_id: str = ''
-
-	logs: bool = True
-`,
-        description: 'Initializes the notification instance.',
+const NOTIFICATION_METHODS = {
+    init: {
         args: [
-            { name: 'title', desc: 'string containing notification title' },
-            { name: 'message', desc: 'string containing notification message' },
-            { name: 'progress_current_value', desc: "integer to set progress bar current value (for `PROGRESS` style)." },
-            { name: 'progress_max_value', desc: "integer for max range for progress value." },
-            { name: 'style', desc: "can be ['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]" },
-            { name: 'big_picture_path', desc: "path or url to big image (for `BIG_PICTURE` style)" },
-            { name: 'large_icon_path', desc: "path or url to image (for `LARGE_ICON` style)" },
-            { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },
+            { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },            
             { name: 'lines_txt -- use addLine() instead', desc: "Lines of text for (for `INBOX` style) each line should be separated by '\\n'." },
-            { name: 'callback', desc: "Function executed on notification tap." },
-            { name: 'channel_name', desc: "Human-readable channel name." },
-            { name: 'channel_id', desc: "Used to later reference Channel when sending each notification (extracted from channel name if provided or defaults to 'default_channel')." },
-            { name: 'app_icon', desc: 'If not specified, defaults to the app icon. To change it, use a PNG—otherwise it will render as a black box.' },
-            { name: 'logs', desc: 'Enable debug logs when not on Android.' },
-
         ]
     },
-    {
-        id: 'addLine',
+    
+    addLine:{
         signature: 'addLine(text)',
         description: 'sets text for new line for inbox-style notification',
         args: [
             { name: 'text', desc: 'String for new line of text.' }
         ]
     },
-    {
-        id: 'updateTitle',
-        signature: 'updateTitle(new_title)',
-        description: 'Updates the notification title.',
-        args: [
-            { name: 'new_title', desc: 'String for the new title.' }
-        ]
-    },
-    {
-        id: 'updateMessage',
-        signature: 'updateMessage(new_message)',
-        description: 'Updates the notification message.',
-        args: [
-            { name: 'new_message', desc: 'String for the new message.' }
-        ]
-    },
-    {
-        id: 'setBigPicture',
+    setBigPicture: {
         signature: 'setBigPicture(path)',
         description: 'set a Big Picture at the bottom.',
         args: [
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    {
-        id: 'setLargeIcon',
+    setLargeIcon:{
         signature: 'setLargeIcon(path)',
         description: 'sets Large icon to the right.',
         args: [
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    {
-        id: 'setSmallIcon',
+    setSmallIcon:{
         signature: 'setSmallIcon(path)',
         description: 'sets small icon to the top left.',
         args: [
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    {
-        id: 'setBigText',
+    setBigText:{
         signature: 'setBigText(body)',
         description: 'Sets a big text for when drop down button is pressed.',
         args: [
             { name: 'body', desc: 'The big text that will be displayed.' }
         ]
     },
-    {
-        id: 'setLines',
+    setLines:{
         signature: 'setLines(lines)',
         description: 'Sets a inbox lines texts for when drop down button is pressed, each string will be in a new line',
         args: [
             { name: 'lines', desc: "The List of texts that'll be used to create new lines." }
         ]
     },
-    {
-        id: 'addButton',
-        signature: 'addButton(text, on_release)',
-        description: 'Adds an action button to the notification.',
-        args: [
-            { name: 'text', desc: 'Label for the button.' },
-            { name: 'on_release', desc: 'Callback invoked when the button is tapped.' }
-        ]
-    },
-    {
-        id: 'removeButtons',
-        signature: 'removeButtons()',
-        description: 'Removes all action buttons from the notification.'
-    },
-    {
-        id: 'removeProgressBar',
-        signature: 'removeProgressBar(message?, show_on_update?, title?)',
-        description:
-            'Removes the progress bar and (optionally) updates the title/message.',
-        args: [
-            { name: 'message', desc: '(Optional) New message; defaults to last.' },
-            {
-                name: 'show_on_update',
-                desc: 'If true, briefly shows the updated notification. Defaults to true.'
-            },
-            { name: 'title', desc: '(Optional) New title; defaults to last.' }
-        ]
-    },
-    {
-        id: 'send',
-        signature: 'send(silent?, persistent?, close_on_click?)',
-        description: 'Dispatches the notification.',
-        args: [
-            { name: 'silent', desc: 'If true, suppresses the heads-up alert.' },
-            { name: 'persistent', desc: 'If true, the notification survives “Clear All.”' },
-            { name: 'close_on_click', desc: 'If true, tapping the notification dismisses it.' }
-        ]
-    },
-    {
-        id: 'showInfiniteProgressBar',
-        signature: 'showInfiniteProgressBar()',
-        description:
-            'Shows an indeterminate progress bar. Remove with `removeProgressBar()` or update with `updateProgressBar()`.'
-    },
 
-    {
-        id: 'addNotificationStyle',
-        signature: 'addNotificationStyle(style, already_sent?)',
-        description:
-            'Applies or updates a notification style (big_text, inbox, images, etc.).',
-        args: [
-            {
-                name: 'style',
-                desc:
-                    "One of ['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs']"
-            },
-            {
-                name: 'already_sent',
-                desc: 'If true, re-dispatches the notification so style changes appear immediately.'
-            }
-        ]
-    },
-    {
-        id: 'updateProgressBar',
-        signature: 'updateProgressBar(current_value, message?, title?, cooldown?)',
-        description:
-            'Updates a determinate progress bar (0 – max). Internally throttled to 0.5 s.',
-        args: [
-            { name: 'current_value', desc: 'Current progress (number).' },
-            { name: 'message', desc: '(Optional) New message; defaults to last.' },
-            { name: 'title', desc: '(Optional) New title; defaults to last.' },
-            { name: 'cooldown', desc: "Defaults to 0.5secs,buffer time for when changes happen too fast, shouldn't be changed unless tested on specific device" }
-        ]
-    },
-
-    {
-        id: 'createChannel(cls, ):',
+    createChannel:{
         signature: 'createChannel(id, name:str, description?,importance:Importance?)',
         description: 'Creates a user visible toggle button for specific notifications, Required For Android 8.0+',
         args: [
@@ -357,43 +185,38 @@ const NOTIFICATION_METHODS = [
         ]
     },
 
-    {
-        id: 'deleteChannel',
+    deleteChannel:{
         signature: 'deleteChannel(channel_id)',
         description: 'Uses channel_id to delete notification channel',
         args: [
             { name: 'channel_id', desc: "id for specific channel" }
         ]
     },
-    {
-        id: 'deleteAllChannel',
+    deleteAllChannel:{
         signature: 'deleteAllChannel()',
         description: 'Delete All notification channels',
         args: []
     },
-    {
-        id: 'cancel',
+    cancel:{
         signature: 'cancel(_id)',
         description: 'Removes Notification instance from tray.',
         args: [
             { name: '_id', desc: "Not required uses instance id as default" }
         ]
     },
-    {
-        id: 'cancelAll',
+    cancelAll:{
         signature: 'cancelAll()',
         description: 'Removes App Notifications from tray.',
         args: []
     },
-    {
-        id: 'setPriority',
+    setPriority:{
         signature: 'setPriority(importance)',
         description: 'Sets <div className="reference">Importance</div> For devices less than android 8.',
         args: [
             { name: 'importance', desc: "['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly." }
         ]
     },
-];
+};
 
 const HANDLER_METHODS = [
     {
@@ -469,15 +292,12 @@ const component_page = {
     large_icon_code: largeiconcode,
     how_to_add_both_imgs: <p className="paragraph">For Both Images use <span className="code">Notification.setBigPicture</span> and <span className="code">Notification.setLargeIcon</span> together</p>,
     small_icon_code: appiconcode,
-    buttons_code,
     progressbar_code: progressbarcode,
     inbox_style_code: inboxcode,
     big_text_style_code: bigtextcode
 }
 
 const advanced_methods_page = {
-    title_and_message_update_code: title_and_message_update,
-    progress_bar_update_code: progress_bar_update,
     adding_image_code,
     channel_management_code,
     getting_identifier_code: getting_identifer,
@@ -544,4 +364,3 @@ export const Sidebar = [
 ]
 
 export { component_page, advanced_methods_page, reference_page }
-// export {bigimgcode,buttons_code,progressbarcode,largeiconcode,inboxcode,bigtextcode,appiconcode}

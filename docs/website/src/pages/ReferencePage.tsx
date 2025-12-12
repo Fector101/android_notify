@@ -11,20 +11,65 @@ type object_list = {
 	id: string;
 	signature: string;
 	description: string;
-	args: arg[]
+	args?: arg[]
 }
 interface IReferencePage {
-	NOTIFICATION_METHODS: object_list[];
+	NOTIFICATION_METHODS: NotificationMethods;
 	HANDLER_METHODS: object_list[];
 	STYLE_ATTRIBUTES: object_list[];
 }
+type MethodArg = {
+    name: string;
+    desc: string;
+};
+
+type Method = {
+    signature?: string;
+    description?: string;
+    args?: MethodArg[];
+};
+
+export type NotificationMethods = Record<string, Method>;
+
+const mergeMethods = (a:NotificationMethods, b:NotificationMethods) => {
+    const result = { ...a };
+
+    for (const key in b) {
+        if (result[key]) {
+            // merge inner properties
+            result[key] = {
+                ...result[key],
+                ...b[key],
+                args: [
+                    ...(result[key].args || []),
+                    ...(b[key].args || [])
+                ]
+            };
+        } else {
+            result[key] = b[key];
+        }
+    }
+    return result;
+};
+
+
+
 export default function ReferencePage({ version }: { version: Iversion }) {
 	const [data, setData] = useState<IReferencePage>()
+	const [NOTIFICATION_METHODS, setNOTIFICATION_METHODS] = useState<NotificationMethods>()
 
 	async function changeVersionData(version: Iversion) {
+		const v1 = await import(`./versions-data/1.58.tsx`);
 
+		if (version == 1.58){
+			setData(v1.reference_page)
+			setNOTIFICATION_METHODS(v1.reference_page.NOTIFICATION_METHODS)
+			return
+		}
+        const v2 = await import(`./versions-data/1.59.tsx`);
 		const data = await import(`./versions-data/${version}.tsx`);
-		setData(data.reference_page)
+		setNOTIFICATION_METHODS(mergeMethods(v1.reference_page.NOTIFICATION_METHODS,v2.reference_page.NOTIFICATION_METHODS))
+		setData({...v1.reference_page,...v2.reference_page,...data.reference_page})
 	}
 	useEffect(() => {
 		changeVersionData(version)
@@ -55,7 +100,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 					</li>
 				</ul>
 			</nav>
-			{version > 1.58 &&
+			{version == 1.59 &&
 				<section className='side-note'>
 					<h2>For v1.59</h2>
 					<p className='paragraph'>Add methods working to free up __init__ kwargs [parsing out `style` attribute] </p>
@@ -69,16 +114,21 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 			{/* Instance Methods Section */}
 			<section id="notification-class" className="space-y-6 page-section" tabIndex={0}>
 				<h2 className="text-xl font-bold">Notification Attributes and Methods</h2>
-				{data?.NOTIFICATION_METHODS.map((m) => (
+				{/* {Object.entries(NOTIFICATION_METHODS || {}).map(([key, m]) => (
+					<p>{key}</p>
+				))} */}
+				{Object.entries(NOTIFICATION_METHODS || {}).map(([key, m]) => (
+					
 					<div
 						key={nanoid()}
 						className="bg-gray-50 p-4 rounded-lg shadow-sm transition"
 					>
-						<p className={m.id + ' ref-code'} >
-							{m.signature.replace(/\t/g, '\u00A0\u00A0\u00A0\u00A0')}
+						<p className={key + ' ref-code'}>
+							{m.signature || key}
 						</p>
 
 						<p className="paragraph mb-2 text-gray-700">{m.description}</p>
+
 						{m.args && (
 							<dl className="pl-4 space-y-1">
 								{m.args.map(({ name, desc }) => (
@@ -91,6 +141,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 						)}
 					</div>
 				))}
+
 			</section>
 
 			<section id="notificationhandler-class" className="space-y-6 page-section" tabIndex={0}>

@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Iversion } from '../assets/js/mytypes';
 import { isLegacyVersion } from '../assets/js/helper';
 
+
 interface IAdvancedMethodsPage {
     title_and_message_update_code: string;
     progress_bar_update_code: string;
@@ -22,8 +23,10 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
 
     async function changeVersionData(version: Iversion) {
 
+        const v1 = await import(`./versions-data/1.58.tsx`);
+        const v2 = await import(`./versions-data/1.59.tsx`);
         const data = await import(`./versions-data/${version}.tsx`);
-        setData(data.advanced_methods_page)
+        setData({...v1.advanced_methods_page,...v2.advanced_methods_page,...data.advanced_methods_page})
     }
     useEffect(() => {
         changeVersionData(version)

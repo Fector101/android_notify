@@ -29,4 +29,4 @@ const pages_dict: IPageDict = {
     //     <div className='page-content'>
 };
 
-export default pages_dict;
+export {pages_dict};

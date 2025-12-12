@@ -31,6 +31,7 @@ def update_progress(dt):
 
 Clock.schedule_interval(update_progress, 3)
 `
+
 const largeiconcode = `from android_notify import NotificationStyles
 notification = Notification(
     title="FabianDev_",
@@ -38,6 +39,7 @@ notification = Notification(
     style=NotificationStyles.LARGE_ICON,
     large_icon_path="assets/imgs/profile.png"
 )`
+
 const inboxcode = `from android_notify import NotificationStyles
 notification = Notification(
     title='Inbox Notification',
@@ -55,6 +57,7 @@ notification = Notification(
     body="Lorem Ipsum is simply dummy text of the printing and ...",
     style=NotificationStyles.BIG_TEXT
 )`
+
 const buttons_code = `notification = Notification(
     title="Jane Dough",
     message="How to use android-notify #coding #purepython"
@@ -158,33 +161,18 @@ class Myapp(MDApp):
 
 
 // Reference Page
-const NOTIFICATION_METHODS = [
-    {
-        id: 'init',
-        signature: `init
-	title: str = ''
-	message: str = ''
-	style: str = 'simple'
-	big_picture_path: str = ''
-	large_icon_path: str = ''
-	progress_current_value: int = 0
-	progress_max_value: int = 100
-	body: str = ''
-	callback: Callable=None
-	channel_name: str = ''
-	channel_id: str = ''
-	app_icon: str = ''
-	logs: bool = True
-`,
+const NOTIFICATION_METHODS = {
+    init: {
+        signature: `init`,
         description: 'Initializes the notification instance.',
         args: [
             { name: 'title', desc: 'string containing notification title' },
             { name: 'message', desc: 'string containing notification message' },
+            { name: 'progress_current_value', desc: "integer to set progress bar current value (for `PROGRESS` style)." },
+            { name: 'progress_max_value', desc: "integer for max range for progress value." },
             { name: 'style', desc: "can be ['simple','progress','inbox','big_text','large_icon','big_picture','both_imgs]" },
             { name: 'big_picture_path', desc: "path or url to big image (for `BIG_PICTURE` style)" },
             { name: 'large_icon_path', desc: "path or url to image (for `LARGE_ICON` style)" },
-            { name: 'progress_current_value', desc: "integer to set progress bar current value (for `PROGRESS` style)." },
-            { name: 'progress_max_value', desc: "integer for max range for progress value." },
             { name: 'body', desc: "Detailed text (for `BIG_TEXT` style)." },
             { name: 'callback', desc: "Function executed on notification tap." },
             { name: 'channel_name', desc: "Human-readable channel name." },
@@ -194,8 +182,7 @@ const NOTIFICATION_METHODS = [
 
         ]
     },
-    {
-        id: 'addButton',
+    addButton:{
         signature: 'addButton(text, on_release)',
         description: 'Adds an action button to the notification.',
         args: [
@@ -203,13 +190,11 @@ const NOTIFICATION_METHODS = [
             { name: 'on_release', desc: 'Callback invoked when the button is tapped.' }
         ]
     },
-    {
-        id: 'removeButtons',
+    removeButtons:{
         signature: 'removeButtons()',
         description: 'Removes all action buttons from the notification.'
     },
-    {
-        id: 'removeProgressBar',
+    removeProgressBar:{
         signature: 'removeProgressBar(message?, show_on_update?, title?)',
         description:
             'Removes the progress bar and (optionally) updates the title/message.',
@@ -222,8 +207,7 @@ const NOTIFICATION_METHODS = [
             { name: 'title', desc: '(Optional) New title; defaults to last.' }
         ]
     },
-    {
-        id: 'send',
+    send:{
         signature: 'send(silent?, persistent?, close_on_click?)',
         description: 'Dispatches the notification.',
         args: [
@@ -232,14 +216,12 @@ const NOTIFICATION_METHODS = [
             { name: 'close_on_click', desc: 'If true, tapping the notification dismisses it.' }
         ]
     },
-    {
-        id: 'showInfiniteProgressBar',
+    showInfiniteProgressBar:{
         signature: 'showInfiniteProgressBar()',
         description:
             'Shows an indeterminate progress bar. Remove with `removeProgressBar()` or update with `updateProgressBar()`.'
     },
-    {
-        id: 'updateMessage',
+    updateMessage:{
         signature: 'updateMessage(new_message)',
         description: 'Updates the notification message.',
         args: [
@@ -247,8 +229,7 @@ const NOTIFICATION_METHODS = [
         ]
     },
 
-    {
-        id: 'addNotificationStyle',
+    addNotificationStyle:{
         signature: 'addNotificationStyle(style, already_sent?)',
         description:
             'Applies or updates a notification style (big_text, inbox, images, etc.).',
@@ -264,8 +245,7 @@ const NOTIFICATION_METHODS = [
             }
         ]
     },
-    {
-        id: 'updateProgressBar',
+    updateProgressBar:{
         signature: 'updateProgressBar(current_value, message?, title?, cooldown?)',
         description:
             'Updates a determinate progress bar (0 – max). Internally throttled to 0.5 s.',
@@ -276,15 +256,14 @@ const NOTIFICATION_METHODS = [
             { name: 'cooldown', desc: "Defaults to 0.5secs,buffer time for when changes happen too fast, shouldn't be changed unless tested on specific device" }
         ]
     },
-    {
-        id: 'updateTitle',
+    updateTitle:{
         signature: 'updateTitle(new_title)',
         description: 'Updates the notification title.',
         args: [
             { name: 'new_title', desc: 'String for the new title.' }
         ]
     }
-];
+};
 
 const HANDLER_METHODS = [
     {
@@ -403,7 +382,7 @@ export const Sidebar= [
         title: 'Advanced Methods',
         route: '/advanced-methods',
         sections: {
-            'Updating Notification':title_and_message_update,
+            'Updating Notification':'ww',
             'Adding Image':adding_image_code,
             'Channel Management':channel_management_code,
             'Getting Identifer':getting_identifer
