@@ -1,26 +1,32 @@
 """ Non-Advanced Stuff """
 import random
-import os
+import os, traceback
 from .config import get_python_activity, Manifest
+
 ON_ANDROID = False
+
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
+
 try:
 
-    from jnius import autoclass # Needs Java to be installed
+    from jnius import autoclass  # Needs Java to be installed
+
     PythonActivity = get_python_activity()
-    context = PythonActivity.mActivity # Get the app's context 
+    context = PythonActivity.mActivity  # Get the app's context
     NotificationChannel = autoclass('android.app.NotificationChannel')
     String = autoclass('java.lang.String')
     Intent = autoclass('android.content.Intent')
     PendingIntent = autoclass('android.app.PendingIntent')
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')    
-    ON_ANDROID=True
+    BuildVersion = autoclass('android.os.Build$VERSION')
+    ON_ANDROID = True
 except Exception as e:
-    print('\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
+    traceback.print_exc()
+    print(e,
+          '\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
 
 if ON_ANDROID:
     try:
@@ -42,18 +48,19 @@ if ON_ANDROID:
 
 from .an_utils import can_show_permission_request_popup, open_settings_screen
 
+
 def get_app_root_path():
     path = ''
     if on_flet_app():
-        path= os.path.join(context.getFilesDir().getAbsolutePath(),'flet')
+        path = os.path.join(context.getFilesDir().getAbsolutePath(), 'flet')
     else:
         try:
-            from android.storage import app_storage_path # type: ignore
+            from android.storage import app_storage_path  # type: ignore
             path = app_storage_path()
         except Exception as e:
-            print('android-notify- Error getting apk main file path: ',e)
+            print('android-notify- Error getting apk main file path: ', e)
             return './'
-    return os.path.join(path,'app')
+    return os.path.join(path, 'app')
 
 def asks_permission_if_needed():
     """
@@ -80,20 +87,20 @@ Opening notification settings...
         # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
         #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
         ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
-        
-        
+
         permission = Manifest.POST_NOTIFICATIONS
         granted = ContextCompat.checkSelfPermission(context, permission)
         if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
             ActivityCompat.requestPermissions(context, [permission], 101)
-    else: # android package is from p4a which is for kivy
+    else:  # android package is from p4a which is for kivy
         try:
-            from android.permissions import request_permissions, Permission,check_permission # type: ignore
-            permissions=[Permission.POST_NOTIFICATIONS]
+            from android.permissions import request_permissions, Permission, check_permission  # type: ignore
+            permissions = [Permission.POST_NOTIFICATIONS]
             if not all(check_permission(p) for p in permissions):
                 request_permissions(permissions)
         except Exception as e:
             print("android_notify- error trying to request notification access: ", e)
+
 
 def get_image_uri(relative_path):
     """
@@ -101,50 +108,53 @@ def get_image_uri(relative_path):
     :param relative_path: The relative path to the image (e.g., 'assets/imgs/icon.png').
     :return: Absolute URI java Object (e.g., 'file:///path/to/file.png').
     """
-    app_root_path = get_app_root_path() 
+    app_root_path = get_app_root_path()
     output_path = os.path.join(app_root_path, relative_path)
     # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
-    
+
     if not os.path.exists(output_path):
         raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
-    
+
     Uri = autoclass('android.net.Uri')
     return Uri.parse(f"file://{output_path}")
+
 
 def get_icon_object(uri):
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
     IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
 
-    bitmap= BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+    bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
     return IconCompat.createWithBitmap(bitmap)
 
-def insert_app_icon(builder,custom_icon_path):
+
+def insert_app_icon(builder, custom_icon_path):
     if custom_icon_path:
         try:
             uri = get_image_uri(custom_icon_path)
             icon = get_icon_object(uri)
             builder.setSmallIcon(icon)
         except Exception as e:
-            print('android_notify- error: ',e)
+            print('android_notify- error: ', e)
             builder.setSmallIcon(context.getApplicationInfo().icon)
     else:
         # print('Found res icon -->',context.getApplicationInfo().icon,'<--')
         builder.setSmallIcon(context.getApplicationInfo().icon)
 
-def send_notification(
-    title:str,
-    message:str,
-    style=None,
-    img_path=None,
-    channel_name="Default Channel",
-    channel_id:str="default_channel",
-    custom_app_icon_path="",
 
-    big_picture_path='',
-    large_icon_path='',
-    big_text="",
-    lines=""
-    ):
+def send_notification(
+        title: str,
+        message: str,
+        style=None,
+        img_path=None,
+        channel_name="Default Channel",
+        channel_id: str = "default_channel",
+        custom_app_icon_path="",
+
+        big_picture_path='',
+        large_icon_path='',
+        big_text="",
+        lines=""
+):
     """
     Send a notification on Android.
 
@@ -155,49 +165,52 @@ def send_notification(
     :param channel_id: Notification channel ID.(Default is lowercase channel name arg in lowercase)
     """
     if not ON_ANDROID:
-        print('This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
-        return
+        print(
+            'This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
+        return None
 
     asks_permission_if_needed()
-    channel_id=channel_name.replace(' ','_').lower().lower() if not channel_id else channel_id
+
+    channel_id = channel_name.replace(' ', '_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
 
     # importance= autoclass('android.app.NotificationManager').IMPORTANCE_HIGH # also works #NotificationManager.IMPORTANCE_DEFAULT
-    importance= NotificationManagerCompat.IMPORTANCE_HIGH #autoclass('android.app.NotificationManager').IMPORTANCE_HIGH also works #NotificationManager.IMPORTANCE_DEFAULT
+    importance = NotificationManagerCompat.IMPORTANCE_HIGH  # autoclass('android.app.NotificationManager').IMPORTANCE_HIGH also works #NotificationManager.IMPORTANCE_DEFAULT
 
     # Notification Channel (Required for Android 8.0+)
     if BuildVersion.SDK_INT >= 26:
-        channel = NotificationChannel(channel_id, channel_name,importance)
+        channel = NotificationChannel(channel_id, channel_name, importance)
         notification_manager.createNotificationChannel(channel)
 
     # Build the notification
     builder = NotificationCompatBuilder(context, channel_id)
     builder.setContentTitle(title)
     builder.setContentText(message)
-    insert_app_icon(builder,custom_app_icon_path)
+    insert_app_icon(builder, custom_app_icon_path)
     builder.setDefaults(NotificationCompat.DEFAULT_ALL)
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
 
     if img_path:
-        print('android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
+        print(
+            'android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
     if style:
-        print('android_notify- "style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
+        print(
+            'android_notify- "style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
 
     big_picture = None
     if big_picture_path:
         try:
             big_picture = get_image_uri(big_picture_path)
         except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for big_picture_path: ',e)
+            print('android_notify- Error Getting Uri for big_picture_path: ', e)
 
     large_icon = None
     if large_icon_path:
         try:
             large_icon = get_image_uri(large_icon_path)
         except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for large_icon_path: ',e)
-
+            print('android_notify- Error Getting Uri for large_icon_path: ', e)
 
     # Apply notification styles
     try:
@@ -222,9 +235,8 @@ def send_notification(
             builder.setStyle(big_picture_style)
 
     except Exception as e:
-        print('android_notify- Error Failed Adding Style: ',e)
+        print('android_notify- Error Failed Adding Style: ', e)
     # Display the notification
     notification_id = random.randint(0, 100)
     notification_manager.notify(notification_id, builder.build())
     return notification_id
-
