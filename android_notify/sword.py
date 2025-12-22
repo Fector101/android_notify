@@ -1018,6 +1018,7 @@ class NotificationHandler:
         Passes True to callback if access granted
         """
         if cls.__requesting_permission:
+            print("android_notify- still requesting permission ")
             return True
 
         if BuildVersion.SDK_INT < 33: # Android 12 below
