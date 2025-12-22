@@ -6,7 +6,7 @@ from .an_types import Importance
 from .config import (
                      get_python_activity_context, app_storage_path,ON_ANDROID,
                      BitmapFactory, BuildVersion, Bundle,
-                     NotificationManagerClass,AndroidNotification
+                     NotificationManagerClass,AndroidNotification,Intent, Settings, Uri, String, Manifest
                     )
 
 if ON_ANDROID:
@@ -143,7 +143,6 @@ def get_package_path():
     return os.path.dirname(os.path.abspath(__file__))
 
 def get_bitmap_from_path(img_full_path):
-  Uri = autoclass('android.net.Uri')
   uri = Uri.parse(f"file://{img_full_path}")
   return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
@@ -156,3 +155,26 @@ def icon_finder(icon_name):
         # Fallback if pkg_resources not available
         package_dir = get_package_path()
         return os.path.join(package_dir, "fallback-icons", icon_name)
+
+
+def open_settings_screen():
+    intent = Intent()
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    package_name = String(context.getPackageName())    # String() is very important else fails silently with a toast
+    # saying "The app wasn't found in the list of installed apps" - Xiaomi or "unable to find application to perform this action" - Samsung and Techno
+
+    if BuildVersion.SDK_INT >= 26:    # Android 8.0 - android.os.Build.VERSION_CODES.O
+        intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE, package_name)
+    elif BuildVersion.SDK_INT >= 22:    # Android 5.0 - Build.VERSION_CODES.LOLLIPOP
+        intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS")
+        intent.putExtra("app_package", package_name)
+        intent.putExtra("app_uid", context.getApplicationInfo().uid)
+    else:    # Last Retort is to open App Settings Screen
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        intent.addCategory(Intent.CATEGORY_DEFAULT)
+        intent.setData(Uri.parse("package:" + package_name))
+
+    context.startActivity(intent)
+
+    # https://stackoverflow.com/a/45192258/19961621
