@@ -28,6 +28,9 @@ class String(str):
 
 
 class Intent:
+    FLAG_ACTIVITY_NEW_TASK = 'FACADE_FLAG_ACTIVITY_NEW_TASK'
+    CATEGORY_DEFAULT = 'FACADE_FLAG_CATEGORY_DEFAULT'
+
     def __init__(self,context='',activity=''):
         self.obj={}
         pass
@@ -77,6 +80,18 @@ class BitmapFactory:
 
 class BuildVersion:
     SDK_INT=0
+
+class Manifest:
+    POST_NOTIFICATIONS = 'FACADE_IMPORT'
+
+class Settings:
+    ACTION_APP_NOTIFICATION_SETTINGS = 'FACADE_IMPORT_ACTION_APP_NOTIFICATION_SETTINGS'
+    EXTRA_APP_PACKAGE = 'FACADE_IMPORT_EXTRA_APP_PACKAGE'
+    ACTION_APPLICATION_DETAILS_SETTINGS = 'FACADE_IMPORT_ACTION_APPLICATION_DETAILS_SETTINGS'
+
+class Uri:
+    def __init__(self,package_name):
+        print("FACADE_URI")
 
 class NotificationManager:
     pass
