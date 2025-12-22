@@ -1020,7 +1020,10 @@ class NotificationHandler:
         if cls.__requesting_permission:
             return True
 
-        if not ON_ANDROID:
+        if BuildVersion.SDK_INT < 33: # Android 12 below
+            print("android_notify- On android 12 or less don't need permission")
+
+        if not ON_ANDROID or BuildVersion.SDK_INT < 33: # Android 12 below
             try:
                 if callback:
                     if can_accept_arguments(callback, True):
@@ -1033,13 +1036,6 @@ class NotificationHandler:
 
             return
 
-        if BuildVersion.SDK_INT < 33: # Android 12 below
-            if callback:
-                callback(True)
-            print("android_notify- On android 12 or less don't need permission")
-            return True
-
-            
 
         if not can_show_permission_request_popup():
             print("""android_notify- Permission to send notifications has been denied permanently. Please enable it from settings.
