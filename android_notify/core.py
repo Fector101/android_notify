@@ -1,7 +1,7 @@
 """ Non-Advanced Stuff """
 import random
 import os
-from .config import get_python_activity
+from .config import get_python_activity, Manifest
 ON_ANDROID = False
 
 def on_flet_app():
@@ -40,6 +40,7 @@ if ON_ANDROID:
         * android.permissions = POST_NOTIFICATIONS\n
         """)
 
+from .an_utils import can_show_permission_request_popup, open_settings_screen
 
 def get_app_root_path():
     path = ''
@@ -58,15 +59,28 @@ def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
+    if not ON_ANDROID:
+        print("android_notify- Can't ask permission when not on android")
+        return None
+
     if BuildVersion.SDK_INT < 33:
+        print("android_notify- On android 12 or less don't need permission")
         return True
+
+    if not can_show_permission_request_popup():
+        print("""android_notify- Permission to send notifications has been denied permanently.
+This happens when the user denies permission twice from the popup.
+Opening notification settings...
+""")
+        open_settings_screen()
+        return None
+
     if on_flet_app():
         ContextCompat = autoclass('androidx.core.content.ContextCompat')
         # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
         #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
         ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
-        Manifest = autoclass('android.Manifest$permission')
-        VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
+        
         
         permission = Manifest.POST_NOTIFICATIONS
         granted = ContextCompat.checkSelfPermission(context, permission)
