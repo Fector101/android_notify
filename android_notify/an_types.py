@@ -28,7 +28,7 @@ class String(str):
 
 
 class Intent:
-    def __init__(self,context,activity):
+    def __init__(self,context='',activity=''):
         self.obj={}
         pass
 
@@ -36,8 +36,20 @@ class Intent:
         print(action)
         return self
 
+    def addFlags(self,*flags):
+        print(flags)
+        return self
+
+    def setData(self, uri):
+        print(uri)
+        return self
+
     def setFlags(self,intent_flag):
         print(intent_flag)
+        return self
+
+    def addCategory(self,intent_category):
+        print(intent_category)
         return self
 
     def getAction(self):
