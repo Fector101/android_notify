@@ -46,7 +46,7 @@ try:
     AndroidNotification = autoclass("android.app.Notification")
     Settings = autoclass("android.provider.Settings")
     Uri = autoclass("android.net.Uri")
-    Settings = autoclass("android.provider.Settings")
+    Manifest = autoclass('android.Manifest$permission')
     
     ON_ANDROID = bool(RemoteViews)
 except Exception as e:
