@@ -15,6 +15,7 @@ if ON_ANDROID:
 else:
     from .an_types import Color
 
+
 def can_accept_arguments(func, *args, **kwargs):
     try:
         sig = inspect.signature(func)
@@ -23,10 +24,12 @@ def can_accept_arguments(func, *args, **kwargs):
     except TypeError:
         return False
 
+
 if ON_ANDROID:
     context = get_python_activity_context()
 else:
     context = None
+
 
 def get_android_importance(importance: Importance):
     """
@@ -51,6 +54,7 @@ def get_android_importance(importance: Importance):
     return value
     # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
 
+
 def generate_channel_id(channel_name: str) -> str:
     """
     Generate a readable and consistent channel ID from a channel name.
@@ -69,11 +73,12 @@ def generate_channel_id(channel_name: str) -> str:
     channel_id = channel_id.strip('_')
     return channel_id[:50]
 
+
 def get_img_from_path(relative_path):
     app_folder = os.path.join(app_storage_path(), 'app')
-    output_path = os.path.join(app_folder, relative_path)
-    if not os.path.exists(output_path):
-        print(f"\nImage not found at path: {app_folder}, (Local images gotten from App Path)")
+    img_full_path = os.path.join(app_folder, relative_path)
+    if not os.path.exists(img_full_path):
+        print(f'Image: "{img_full_path}" Not Found, (Local images gotten from App Path)')
         try:
             print("- These are the existing files in your app Folder:")
             print('[' + ', '.join(os.listdir(app_folder)) + ']')
@@ -81,9 +86,9 @@ def get_img_from_path(relative_path):
             print('Exception: ', could_not_get_files_in_path_error)
             print("Couldn't get Files in App Folder")
         return None
+    return get_bitmap_from_path(img_full_path)
     # TODO test with a badly written Image and catch error
-    uri = Uri.parse(f"file://{output_path}")
-    return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+
 
 def setLayoutText(layout, id, text, color):
     # checked if self.title_color available before entering method
@@ -91,6 +96,7 @@ def setLayoutText(layout, id, text, color):
         layout.setTextViewText(id, text)
         if color:
             layout.setTextColor(id, Color.parseColor(color))
+
 
 def get_bitmap_from_url(url, callback, logs):
     """Gets Bitmap from url
@@ -120,6 +126,7 @@ def get_bitmap_from_url(url, callback, logs):
         print('Error Type ', extracting_bitmap_frm_URL_error)
         print('Failed to get Bitmap from URL ', traceback.format_exc())
 
+
 def add_data_to_intent(intent, title):
     """Persist Some data to notification object for later use"""
     bundle = Bundle()
@@ -130,11 +137,36 @@ def add_data_to_intent(intent, title):
 
 
 def get_sound_uri(res_sound_name):
-  if not res_sound_name: # Incase it's None
-    return None
+    if not res_sound_name:  # Incase it's None
+        return None
 
-  package_name = context.getPackageName()
-  return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
+    package_name = context.getPackageName()
+    return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
+
+
+def get_package_path():
+    """
+    Returns the directory path of this Python package.
+    Works on Android, Windows, Linux, macOS.
+    """
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def get_bitmap_from_path(img_full_path):
+    uri = Uri.parse(f"file://{img_full_path}")
+    return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
+
+
+def icon_finder(icon_name):
+    """Get the full path to an icon file."""
+    try:
+        import pkg_resources
+        return pkg_resources.resource_filename(__name__, f"fallback-icons/{icon_name}")
+    except Exception:
+        # Fallback if pkg_resources not available
+        package_dir = get_package_path()
+        return os.path.join(package_dir, "fallback-icons", icon_name)
+
 
 def can_show_permission_request_popup():
     """
@@ -143,7 +175,7 @@ def can_show_permission_request_popup():
     """
     if not ON_ANDROID:
         return False
-    
+
     if BuildVersion.SDK_INT < 33:
         return False
 
@@ -156,17 +188,17 @@ def open_settings_screen():
         return None
     intent = Intent()
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    package_name = String(context.getPackageName())    # String() is very important else fails silently with a toast
+    package_name = String(context.getPackageName())  # String() is very important else fails silently with a toast
     # saying "The app wasn't found in the list of installed apps" - Xiaomi or "unable to find application to perform this action" - Samsung and Techno
 
-    if BuildVersion.SDK_INT >= 26:    # Android 8.0 - android.os.Build.VERSION_CODES.O
+    if BuildVersion.SDK_INT >= 26:  # Android 8.0 - android.os.Build.VERSION_CODES.O
         intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, package_name)
-    elif BuildVersion.SDK_INT >= 22:    # Android 5.0 - Build.VERSION_CODES.LOLLIPOP
+    elif BuildVersion.SDK_INT >= 22:  # Android 5.0 - Build.VERSION_CODES.LOLLIPOP
         intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS")
         intent.putExtra("app_package", package_name)
         intent.putExtra("app_uid", context.getApplicationInfo().uid)
-    else:    # Last Retort is to open App Settings Screen
+    else:  # Last Retort is to open App Settings Screen
         intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         intent.addCategory(Intent.CATEGORY_DEFAULT)
         intent.setData(Uri.parse("package:" + package_name))
