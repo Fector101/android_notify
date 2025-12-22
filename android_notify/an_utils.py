@@ -156,7 +156,16 @@ def icon_finder(icon_name):
         package_dir = get_package_path()
         return os.path.join(package_dir, "fallback-icons", icon_name)
 
+def can_show_permission_request_popup():
+    """
+    Check if we can show permission request popup for POST_NOTIFICATIONS
+    :return: bool
+    """
+    if not ON_ANDROID or BuildVersion.SDK_INT < 33:
+        return False
 
+    return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
+  
 def open_settings_screen():
     intent = Intent()
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
