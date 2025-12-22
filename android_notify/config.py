@@ -3,11 +3,13 @@ import os, traceback
 ON_ANDROID = False
 __version__ = "1.60.4.dev0"
 
+
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
+
 def get_activity_class_name():
-    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME") # flet python
+    ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")  # flet python
     if not ACTIVITY_CLASS_NAME:
         try:
             from android import config
@@ -22,7 +24,7 @@ if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
 else:
     # print('Not on Flet android env...\n')
     try:
-        import kivy #TODO find var for kivy
+        import kivy  # TODO find var for kivy
         from jnius import cast, autoclass
     except Exception as e:
         print('android-notify: No pjnius, not on android')
@@ -47,14 +49,14 @@ try:
     Settings = autoclass("android.provider.Settings")
     Uri = autoclass("android.net.Uri")
     Manifest = autoclass('android.Manifest$permission')
-    
+
     ON_ANDROID = bool(RemoteViews)
 except Exception as e:
     from .an_types import *
-    #if hasattr(e,'name') and e.name != 'android' :
-    print('Exception: ',e)
-    print(traceback.format_exc())
 
+    if hasattr(e, 'name') and e.name != 'android':
+        print('Exception: ', e)
+        print(traceback.format_exc())
 
 if ON_ANDROID:
     try:
@@ -65,18 +67,19 @@ if ON_ANDROID:
         NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
         NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
-        #NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+        # NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
 
     except Exception as styles_import_error:
-        print('styles_import_error: ',styles_import_error)
-        
+        print('styles_import_error: ', styles_import_error)
 
         from .an_types import *
 else:
     from .an_types import *
 
+
 def from_service_file():
     return 'PYTHON_SERVICE_ARGUMENT' in os.environ
+
 
 run_on_ui_thread = None
 if on_flet_app() or from_service_file() or not ON_ANDROID:
@@ -88,8 +91,9 @@ if on_flet_app() or from_service_file() or not ON_ANDROID:
             return func(*args, **kwargs)
 
         return wrapper
-else:# TODO find var for kivy
+else:  # TODO find var for kivy
     from android.runnable import run_on_ui_thread
+
 
 def get_python_activity():
     if not ON_ANDROID:
@@ -101,11 +105,14 @@ def get_python_activity():
     else:
         PythonActivity = autoclass(ACTIVITY_CLASS_NAME + '.PythonActivity')
     return PythonActivity
+
+
 def get_python_service():
     if not ON_ANDROID:
         return None
     PythonService = autoclass(get_activity_class_name() + '.PythonService')
     return PythonService.mService
+
 
 def get_python_activity_context():
     if not ON_ANDROID:
@@ -126,11 +133,13 @@ if ON_ANDROID:
 else:
     context = None
 
+
 def get_notification_manager():
     if not ON_ANDROID:
         return None
     notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
     return cast(NotificationManagerClass, notification_service)
+
 
 def app_storage_path():
     if on_flet_app():
