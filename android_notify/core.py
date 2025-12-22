@@ -59,14 +59,20 @@ def asks_permission_if_needed():
     """
     Ask for permission to send notifications if needed.
     """
-    if BuildVersion.SDK_INT < 33 or ON_ANDROID:
+    if not ON_ANDROID:
+        print("android_notify- Can't ask permission when not on android")
+        return None
+
+    if BuildVersion.SDK_INT < 33:
         return True
 
     if not can_show_permission_request_popup():
-        print("""android_notify- Permission to send notifications has been denied permanently. Please enable it from settings.
-                This happens when the user denies permission twice from the popup.""")
+        print("""android_notify- Permission to send notifications has been denied permanently.
+This happens when the user denies permission twice from the popup.
+Opening notification settings...
+""")
         open_settings_screen()
-        return
+        return None
 
     if on_flet_app():
         ContextCompat = autoclass('androidx.core.content.ContextCompat')

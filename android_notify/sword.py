@@ -1017,6 +1017,10 @@ class NotificationHandler:
         Ask for permission to send notifications if needed.
         Passes True to callback if access granted
         """
+        if not ON_ANDROID:
+            print("android_notify- Can't ask permission when not on android")
+            return None
+
         if cls.__requesting_permission:
             print("android_notify- still requesting permission ")
             return True
@@ -1035,14 +1039,15 @@ class NotificationHandler:
                 print('Exception: ',request_permission_error)
                 print('Permission response callback error: ',traceback.format_exc())
 
-            return
+            return None
 
 
         if not can_show_permission_request_popup():
-            print("""android_notify- Permission to send notifications has been denied permanently. Please enable it from settings.
-                    This happens when the user denies permission twice from the popup.""")
+            print("""android_notify- Permission to send notifications has been denied permanently.
+This happens when the user denies permission twice from the popup.
+Opening notification settings...""")
             open_settings_screen()
-            return
+            return None
 
         def on_permissions_result(permissions, grants):
             try:

@@ -82,7 +82,6 @@ def get_img_from_path(relative_path):
             print("Couldn't get Files in App Folder")
         return None
     # TODO test with a badly written Image and catch error
-    Uri = autoclass('android.net.Uri')
     uri = Uri.parse(f"file://{output_path}")
     return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
 
@@ -142,13 +141,19 @@ def can_show_permission_request_popup():
     Check if we can show permission request popup for POST_NOTIFICATIONS
     :return: bool
     """
-    if not ON_ANDROID or BuildVersion.SDK_INT < 33:
+    if not ON_ANDROID:
+        return False
+    
+    if BuildVersion.SDK_INT < 33:
         return False
 
     return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
 
 
 def open_settings_screen():
+    if not context:
+        print("android_notify - Can't open settings screen, No context [not On Android]")
+        return None
     intent = Intent()
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     package_name = String(context.getPackageName())    # String() is very important else fails silently with a toast
@@ -167,5 +172,6 @@ def open_settings_screen():
         intent.setData(Uri.parse("package:" + package_name))
 
     context.startActivity(intent)
+    return None
 
     # https://stackoverflow.com/a/45192258/19961621
