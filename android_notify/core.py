@@ -64,6 +64,7 @@ def asks_permission_if_needed():
         return None
 
     if BuildVersion.SDK_INT < 33:
+        print("android_notify- On android 12 or less don't need permission")
         return True
 
     if not can_show_permission_request_popup():
