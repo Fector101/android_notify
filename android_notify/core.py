@@ -1,7 +1,7 @@
 """ Non-Advanced Stuff """
 import random
 import os, traceback
-from .config import get_python_activity
+from .config import get_python_activity, Manifest
 ON_ANDROID = False
 
 def on_flet_app():
@@ -37,6 +37,8 @@ if ON_ANDROID:
         traceback.print_exc()
         print("Error importing notification styles")
 
+from .an_utils import can_show_permission_request_popup, open_settings_screen
+
 
 def get_app_root_path():
     path = ''
@@ -55,18 +57,25 @@ def asks_permission_if_needed(no_androidx=False):
     """
     Ask for permission to send notifications if needed.
     """
+    if BuildVersion.SDK_INT < 33 or not ON_ANDROID:
+        return True
+        
+    if not can_show_permission_request_popup():
+        print("""android_notify- Permission to send notifications has been denied permanently. Please enable it from settings.
+                This happens when the user denies permission twice from the popup.""")
+        open_settings_screen()
+        return
+        
+        
     if on_flet_app() or no_androidx:
         Activity = autoclass("android.app.Activity")
-        Manifest = autoclass("android.Manifest$permission")
         PackageManager = autoclass("android.content.pm.PackageManager")
-        VERSION_CODES = autoclass('android.os.Build$VERSION_CODES')
+        
+        permission = Manifest.POST_NOTIFICATIONS
+        granted = context.checkSelfPermission(permission)
 
-        if BuildVersion.SDK_INT >= 33:
-            permission = Manifest.POST_NOTIFICATIONS
-            granted = context.checkSelfPermission(permission)
-
-            if granted != PackageManager.PERMISSION_GRANTED:
-                context.requestPermissions([permission], 101)
+        if granted != PackageManager.PERMISSION_GRANTED:
+            context.requestPermissions([permission], 101)
     else: # android package is from p4a which is for kivy
         try:
             from android.permissions import request_permissions, Permission,check_permission # type: ignore

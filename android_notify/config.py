@@ -44,6 +44,9 @@ try:
     NotificationChannel = autoclass('android.app.NotificationChannel')
     RemoteViews = autoclass('android.widget.RemoteViews')
     AndroidNotification = autoclass("android.app.Notification")
+    Settings = autoclass("android.provider.Settings")
+    Uri = autoclass("android.net.Uri")
+    Manifest = autoclass('android.Manifest$permission')
     
     ON_ANDROID = bool(RemoteViews)
 except Exception as e:

@@ -6,7 +6,8 @@ from .config import cast, autoclass
 from .an_types import Importance
 from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_android_importance, generate_channel_id, get_img_from_path, setLayoutText, \
-    get_bitmap_from_url, add_data_to_intent, get_sound_uri, icon_finder, get_bitmap_from_path
+    get_bitmap_from_url, add_data_to_intent, get_sound_uri, icon_finder, get_bitmap_from_path, can_show_permission_request_popup, open_settings_screen
+
 
 from .config import from_service_file, get_python_activity,get_notification_manager,ON_ANDROID,on_flet_app
 from .config import (Bundle, String, BuildVersion,
@@ -18,7 +19,7 @@ from .config import (Bundle, String, BuildVersion,
 from .config import (AndroidNotification, NotificationCompatBuilder,
                      NotificationCompatBigTextStyle,NotificationCompatBigPictureStyle,
                      NotificationCompatInboxStyle,
-                     Color
+                     Color, Manifest
                      )
 from .styles import NotificationStyles
 from .base import BaseNotification
@@ -1081,13 +1082,29 @@ class NotificationHandler:
         Ask for permission to send notifications if needed.
         Passes True to callback if access granted
         """
-        if cls.__requesting_permission or not ON_ANDROID:
+        if cls.__requesting_permission:
             return True
-            
+
         if BuildVersion.SDK_INT < 33: # Android 12 below
             print("android_notify- On android 12 or less don't need permission")
-            if callback:
-                callback(True)
+        
+        if not ON_ANDROID or BuildVersion.SDK_INT < 33: # Android 12 below:
+            try:
+                if callback:
+                    if can_accept_arguments(callback, True):
+                        callback(True)
+                    else:
+                        callback()
+            except Exception as request_permission_error:
+                print('Exception: ',request_permission_error)
+                print('Permission response callback error: ',traceback.format_exc())
+
+            return
+
+        if not can_show_permission_request_popup():
+            print("""android_notify- Permission to send notifications has been denied permanently. Please enable it from settings.
+                    This happens when the user denies permission twice from the popup.""")
+            open_settings_screen()
             return
 
         def on_permissions_result(permissions, grants):
