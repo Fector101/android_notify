@@ -1,7 +1,7 @@
 import os, traceback
 
 ON_ANDROID = False
-__version__ = "1.60.4.dev0"
+__version__ = "1.60.5.dev0"
 
 def is_platform_android():
     if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
