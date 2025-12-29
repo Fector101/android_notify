@@ -1,7 +1,7 @@
 import os, traceback
 
 ON_ANDROID = False
-__version__ = "1.60.4"
+__version__ = "1.60.5"
 
 
 def is_platform_android():
