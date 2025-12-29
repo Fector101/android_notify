@@ -292,6 +292,7 @@ class AndroidActivity:
 
 
 class PythonActivity:
+    mActivity = "[MOCK] mActivity used"
     def __init__(self):
         print("[MOCK] PythonActivity initialized")
 

@@ -1,7 +1,7 @@
 """ Non-Advanced Stuff """
 import random
 import os, traceback
-from .config import get_python_activity, Manifest
+from .config import get_python_activity, Manifest, is_platform_android
 
 ON_ANDROID = False
 
@@ -10,23 +10,22 @@ def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
 
-try:
+if is_platform_android():
+    try:
+        from jnius import autoclass  # Needs Java to be installed
+        PythonActivity = get_python_activity()
+        context = PythonActivity.mActivity  # Get the app's context
+        NotificationChannel = autoclass('android.app.NotificationChannel')
+        String = autoclass('java.lang.String')
+        Intent = autoclass('android.content.Intent')
+        PendingIntent = autoclass('android.app.PendingIntent')
+        BitmapFactory = autoclass('android.graphics.BitmapFactory')
+        BuildVersion = autoclass('android.os.Build$VERSION')
+        ON_ANDROID = True
+    except Exception as e:
+        print("android-notify: Error importing Java Classes-",e)
+        traceback.print_exc()
 
-    from jnius import autoclass  # Needs Java to be installed
-
-    PythonActivity = get_python_activity()
-    context = PythonActivity.mActivity  # Get the app's context
-    NotificationChannel = autoclass('android.app.NotificationChannel')
-    String = autoclass('java.lang.String')
-    Intent = autoclass('android.content.Intent')
-    PendingIntent = autoclass('android.app.PendingIntent')
-    BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')
-    ON_ANDROID = True
-except Exception as e:
-    traceback.print_exc()
-    print(e,
-          '\nThis Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" to see design patterns and more info.\n')
 
 if ON_ANDROID:
     try:
@@ -42,8 +41,7 @@ if ON_ANDROID:
         print("""\n
         Dependency Error: Add the following in buildozer.spec:
         * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
-        * android.enable_androidx = True
-        * android.permissions = POST_NOTIFICATIONS\n
+        * android.enable_androidx = True\n
         """)
 
 from .an_utils import can_show_permission_request_popup, open_settings_screen
