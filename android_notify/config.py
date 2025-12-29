@@ -3,6 +3,19 @@ import os, traceback
 ON_ANDROID = False
 __version__ = "1.60.4.dev0"
 
+def is_platform_android():
+    if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
+        return True
+    kivy_build = os.environ.get('KIVY_BUILD', '')
+    if kivy_build in {'android'}:
+        return True
+    elif 'P4A_BOOTSTRAP' in os.environ:
+        return True
+    elif 'ANDROID_ARGUMENT' in os.environ:
+        return True
+
+    return False
+
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
@@ -12,51 +25,49 @@ def get_activity_class_name():
     ACTIVITY_CLASS_NAME = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")  # flet python
     if not ACTIVITY_CLASS_NAME:
         try:
-            from android import config
+            from android import config  # type: ignore
             ACTIVITY_CLASS_NAME = config.JAVA_NAMESPACE
         except (ImportError, AttributeError):
             ACTIVITY_CLASS_NAME = 'org.kivy.android'
     return ACTIVITY_CLASS_NAME
 
 
-if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
-    from jnius import cast, autoclass
-else:
-    # print('Not on Flet android env...\n')
+if is_platform_android():
     try:
-        import kivy  # TODO find var for kivy
         from jnius import cast, autoclass
-    except Exception as e:
-        print('android-notify: No pjnius, not on android')
+    except Exception as error_importing_frm_jnius:
+        print('android-notify: No pjnius, not on android? Error-',error_importing_frm_jnius)
         # So commandline still works if java isn't installed and get pyjinus import error
-        # print('Exception occured in __init__.py: ',e)
         cast = lambda x: x
         autoclass = lambda x: None
-try:
-    # Android Imports
 
-    # Get the required Java classes needs to on android to import
-    Bundle = autoclass('android.os.Bundle')
-    String = autoclass('java.lang.String')
-    Intent = autoclass('android.content.Intent')
-    PendingIntent = autoclass('android.app.PendingIntent')
-    BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    BuildVersion = autoclass('android.os.Build$VERSION')
-    NotificationManagerClass = autoclass('android.app.NotificationManager')
-    NotificationChannel = autoclass('android.app.NotificationChannel')
-    RemoteViews = autoclass('android.widget.RemoteViews')
-    AndroidNotification = autoclass("android.app.Notification")
-    Settings = autoclass("android.provider.Settings")
-    Uri = autoclass("android.net.Uri")
-    Manifest = autoclass('android.Manifest$permission')
+    try:
+        # Android Imports
 
-    ON_ANDROID = bool(RemoteViews)
-except Exception as e:
-    from .an_types import *
+        # Get the required Java classes needs to on android to import
+        Bundle = autoclass('android.os.Bundle')
+        String = autoclass('java.lang.String')
+        Intent = autoclass('android.content.Intent')
+        PendingIntent = autoclass('android.app.PendingIntent')
+        BitmapFactory = autoclass('android.graphics.BitmapFactory')
+        BuildVersion = autoclass('android.os.Build$VERSION')
+        NotificationManagerClass = autoclass('android.app.NotificationManager')
+        NotificationChannel = autoclass('android.app.NotificationChannel')
+        RemoteViews = autoclass('android.widget.RemoteViews')
+        AndroidNotification = autoclass("android.app.Notification")
+        Settings = autoclass("android.provider.Settings")
+        Uri = autoclass("android.net.Uri")
+        Manifest = autoclass('android.Manifest$permission')
 
-    if hasattr(e, 'name') and e.name != 'android':
+        ON_ANDROID = bool(RemoteViews)
+    except Exception as e:
+        from .an_types import *
         print('Exception: ', e)
         print(traceback.format_exc())
+else:
+    from .an_types import *
+    cast = lambda x: x
+    autoclass = lambda x: None
 
 if ON_ANDROID:
     try:

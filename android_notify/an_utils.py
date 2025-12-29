@@ -77,12 +77,11 @@ def generate_channel_id(channel_name: str) -> str:
 def get_img_from_path(relative_path):
     app_folder = os.path.join(app_storage_path(), 'app')
     img_full_path = os.path.join(app_folder, relative_path)
-    img_name = os.path.basename(img_full_path)
     if not os.path.exists(img_full_path):
-        print(f"\nImage - {img_name} not found at path: {app_folder}, (Local images gotten from App Path)")
+        print(f'\nImage: "{img_full_path}" Not Found, (Local images gotten from App Path)')
         try:
             print("- These are the existing files in your app Folder:")
-            print('[' + ', '.join(os.listdir(app_folder)) + ']')
+            print('[' + ', '.join(os.listdir(app_folder)) + ']\n')
         except Exception as could_not_get_files_in_path_error:
             print('Exception: ', could_not_get_files_in_path_error)
             print("Couldn't get Files in App Folder")

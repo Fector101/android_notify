@@ -45,7 +45,6 @@ class Intent:
 
     def addFlags(self, *flags):
         print(f"[MOCK] Intent.addFlags called with: {flags}")
-        print(flags)
         return self
 
     def setData(self, uri):
@@ -58,7 +57,6 @@ class Intent:
 
     def addCategory(self, intent_category):
         print(f"[MOCK] Intent.addCategory called with: {intent_category}")
-        print(intent_category)
         return self
 
     def getAction(self):
@@ -108,6 +106,9 @@ class Uri:
         print("FACADE_URI")
 
 class NotificationManager:
+    pass
+
+class NotificationManagerClass:
     pass
 
 
@@ -171,6 +172,12 @@ class NotificationManagerCompat:
     IMPORTANCE_MIN = ''
     IMPORTANCE_NONE = ''
 
+class AndroidNotification:
+    DEFAULT_ALL = 3
+    PRIORITY_HIGH = 4
+    PRIORITY_DEFAULT = ''
+    PRIORITY_LOW = ''
+    PRIORITY_MIN = ''
 
 class NotificationCompat:
     DEFAULT_ALL = 3
@@ -298,6 +305,7 @@ class AndroidActivity:
 
 
 class PythonActivity:
+    mActivity = "[MOCK] mActivity used"
     def __init__(self):
         print("[MOCK] PythonActivity initialized")
 
