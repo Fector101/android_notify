@@ -50,7 +50,9 @@ Notification(
 
 ## Installation
 
-### Kivy apps:  
+<details>
+<summary><b>Kivy apps:</b></summary>
+<br/>
 
 In your **`buildozer.spec`** file, ensure you include the following:
 
@@ -66,8 +68,16 @@ android.enable_androidx = True
 android.api = 35
 ```
 
-### Flet apps:  
+</details>
+
+
+<details>
+<summary><b>Flet apps:</b></summary>
+<br/>
+
  In your `pyproject.toml` file, ensure you include the following:
+
+
 ```toml
 [tool.flet.android]
 dependencies = [
@@ -78,17 +88,44 @@ dependencies = [
 "android.permission.POST_NOTIFICATIONS" = true
 ```
 - example of [complete flet pyproject.toml](https://github.com/Fector101/flet-app/blob/main/pyproject.toml)
+
+</details>
+
+<details>
+
+<summary><b>Desktop</b></summary>
+<br/>
+
+For IDE IntelliSense Can be installed via `pip install`:
+
+```bash
+pip install android_notify
+android-notify -v
+```
+
+</details>
+
 ------
 ## Installing without Androidx
 How to use without `gradle_dependencies`
 Use `android-notify==1.60.5.dev0` to install via `pip`
-### In Kivy
+
+<details>
+<summary><b>In Kivy</b></summary>
+<br/>
+
 ```ini
 # buildozer.spec
 requirements = python3, kivy, pyjnius, android-notify==1.60.5.dev0
 ```
 
-### On Pydroid 3 
+</details>
+
+<details>
+
+<summary><b>On Pydroid 3</b></summary>
+<br/>
+
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
 - In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.5.dev0`
 - Minimal working example 
@@ -130,12 +167,9 @@ if __name__ == "__main__":
     AndroidNotifyDemoApp().run()
 ```
 
-For IDE IntelliSense Can be installed via `pip install`:
+</details>
 
-```bash
-pip install android_notify
-android-notify -v
-```
+
 
 ## Documentation
 For Dev Version use
