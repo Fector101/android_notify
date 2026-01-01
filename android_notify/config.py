@@ -161,3 +161,7 @@ def app_storage_path():
             return kivy_app_storage_path()
         except Exception as e:
             return './'  # TODO return file main.py path (not android)
+
+
+def get_package_name():
+    return context.getPackageName()  # package.domain + "." + package.name
