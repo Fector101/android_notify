@@ -81,7 +81,7 @@ android.api = 35
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.60.5.dev0"
+  "pyjnius","android-notify>=1.60.6.dev0"
 ]
 
 [tool.flet.android.permission]
@@ -108,7 +108,7 @@ android-notify -v
 ------
 ## Installing without Androidx
 How to use without `gradle_dependencies`
-Use `android-notify==1.60.5.dev0` to install via `pip`
+Use `android-notify>=1.60.6.dev0` to install via `pip`
 
 <details>
 <summary><b>In Kivy</b></summary>
@@ -116,7 +116,7 @@ Use `android-notify==1.60.5.dev0` to install via `pip`
 
 ```ini
 # buildozer.spec
-requirements = python3, kivy, pyjnius, android-notify==1.60.5.dev0
+requirements = python3, kivy, pyjnius, android-notify>=1.60.6.dev0
 ```
 
 </details>
@@ -127,10 +127,10 @@ requirements = python3, kivy, pyjnius, android-notify==1.60.5.dev0
 <br/>
 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.5.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify>=1.60.6.dev0`
 - Minimal working example 
 ```py
-# Testing with `android-notify==1.60.5.dev0` on pydroid
+# Testing with `android-notify>=1.60.6.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -175,13 +175,26 @@ if __name__ == "__main__":
 For Dev Version use
 ```requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip```
 
+### To talk to BroadCast Listener From Buttons
 
-To use colored text in your notifications:
+- Make things happen without being in your app
+```python
+
+from android_notify import Notification
+notification = Notification(title="Reciver Notification")
+notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
+notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
+```
+You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to#use-with-broadcast-listener-in-kivy) as a guide create a broadcast listener
+
+### To use colored text in your notifications
+
 - Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
-Lastly in your `buildozer.spec` file
-- Add `source.include_exts = xml` and `android.add_resources = ./res`
+- Lastly in your `buildozer.spec` file  
+Add `source.include_exts = xml` and `android.add_resources = # path you pasted`
 
-To use Custom Sounds
+### To use Custom Sounds
+
 - Put audio files in `res/raw` folder,
 - Then from `buildozer.spec` point to res folder `android.add_resources = res`
 - and includes it's format `source.include_exts = wav`.
@@ -205,8 +218,8 @@ n=Notification(
 n.setSound("sneeze")# for android 7 below 
 n.send()
 ```
-For full documentation, examples, and advanced usage, API reference visit the
-[documentation](https://android-notify.vercel.app)
+
+### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
 
