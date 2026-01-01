@@ -1,7 +1,7 @@
 import os, traceback
 
 ON_ANDROID = False
-__version__ = "1.60.5.dev0"
+__version__ = "1.60.6.dev0"
 
 def is_platform_android():
     if os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME"):
@@ -161,3 +161,7 @@ def app_storage_path():
             return kivy_app_storage_path()
         except Exception as e:
             return './'  # TODO return file main.py path (not android)
+
+
+def get_package_name():
+    return context.getPackageName()  # package.domain + "." + package.name

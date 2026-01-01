@@ -56,7 +56,7 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add pyjnius so ensure it's packaged with the build
-requirements = python3, kivy, pyjnius, android-notify==1.60.5.dev0
+requirements = python3, kivy, pyjnius, android-notify>=1.60.6.dev0
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
 ```
@@ -68,7 +68,7 @@ In your `pyproject.toml` file, ensure you include the following:
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.60.5.dev0"
+  "pyjnius","android-notify>=1.60.6.dev0"
 ]
 
 [tool.flet.android.permission]
@@ -77,7 +77,7 @@ dependencies = [
 
 ### Pydroid 3
 In the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.5.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify>=1.60.6.dev0`
 
 
 ### Testing
@@ -92,14 +92,52 @@ android-notify -v
 For Dev Version use
 ```requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip```
 
+### To talk to BroadCast Listener From Buttons
 
-To use colored text in your notifications:
+- Make things happen without being in your app
+```python
+
+from android_notify import Notification
+notification = Notification(title="Reciver Notification")
+notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
+notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
+```
+You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to#use-with-broadcast-listener-in-kivy) as a guide create a broadcast listener
+
+### To use colored text in your notifications
+
 - Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
 Lastly in your `buildozer.spec` file
 - Add `source.include_exts = xml` and `android.add_resources = ./res`
 
-For full documentation, examples, and advanced usage, API reference visit the
-[documentation](https://android-notify.vercel.app)
+
+### To use Custom Sounds
+
+- Put audio files in `res/raw` folder,
+- Then from `buildozer.spec` point to res folder `android.add_resources = res`
+- and includes it's format `source.include_exts = wav`.
+
+Lastly From the code 
+```py
+# Create a custom notification channel with a unique sound resource for android 8+
+Notification.createChannel(
+    id="weird_sound_tester",
+    name="Weird Sound Tester",
+    description="A test channel used to verify custom notification sounds from the res/raw folder.",
+    res_sound_name="sneeze" # file name without .wav or .mp3
+)
+
+# Send a notification through the created channel
+n=Notification(
+    title="Custom Sound Notification",
+    message="This tests playback of a custom sound (sneeze.wav) stored in res/raw.",
+    channel_id="weird_sound_tester" # important tells notification to use right channel
+)
+n.setSound("sneeze")# for android 7 below 
+n.send()
+```
+
+### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
 

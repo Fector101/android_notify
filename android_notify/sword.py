@@ -9,7 +9,7 @@ from .an_utils import can_accept_arguments, get_python_activity_context, \
     get_bitmap_from_url, add_data_to_intent, get_sound_uri, icon_finder, get_bitmap_from_path, \
     can_show_permission_request_popup, open_settings_screen
 
-from .config import from_service_file, get_python_activity, get_notification_manager, ON_ANDROID, on_flet_app
+from .config import from_service_file, get_python_activity, get_notification_manager, ON_ANDROID, on_flet_app, get_package_name
 from .config import (Bundle, String, BuildVersion,
                      Intent, PendingIntent,
                      app_storage_path,
@@ -89,7 +89,8 @@ class Notification(BaseNotification):
         self.__has_small_icon = False  # important notification can't send without
         self.__using_custom = self.message_color or self.title_color
         self.__format_channel(self.channel_name, self.channel_id)
-        self.__builder = None  # want to make builder always available for getter
+        self.__builder = None  # available through getter `self.builder`
+        self.__no_of_buttons = 0
         self.notification_manager = None
 
         if not ON_ANDROID:
@@ -542,52 +543,69 @@ class Notification(BaseNotification):
     def builder(self):
         return self.__builder
 
-    def addButton(self, text: str, on_release):
+    def addButton(self, text: str, on_release=None, receiver_name=None, action=None):
         """For adding action buttons
 
-        Args:
-            text (str): Text For Button
-            on_release: function to be called when button is clicked
+        :param text: Text For Button
+        :param on_release: function to be called when button is clicked
+        :param receiver_name:  receiver class name
+        :param action: action for receiver
         """
-        if self.logs:
-            print('Added Button: ', text)
 
         if not ON_ANDROID:
+            self.__no_of_buttons += 1
             return
 
-        action = f"{text}_{self.id}"  # tagging with id so i can find specified notification in my object
+        # Convert text to CharSequence
+        action_text = cast('java.lang.CharSequence', String(text))
+        action = action or f"{text}_{self.id}"  # tagging with id so it can found notification handle object
 
-        action_intent = Intent(context, PythonActivity)
-        action_intent.setAction(action)
-        action_intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        bundle = Bundle()
-        bundle.putString("title", self.title or 'Title Placeholder')
-        bundle.putInt("key_int", 68)
-        action_intent.putExtras(bundle)
-        action_intent.putExtra("button_id", action)
+        def set_action(action_intent__):
+            action_intent__.setAction(action)
+            action_intent__.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            bundle = Bundle()
+            bundle.putString("title", self.title or 'Title Placeholder')
+            bundle.putInt("key_int", self.__no_of_buttons or 1)
+            action_intent__.putExtras(bundle)
+            action_intent__.putExtra("button_id", action)
+
+        def set_default_action_intent():
+            action_intent__ = Intent(context, PythonActivity)
+            set_action(action_intent__)
+            pending_action_intent__ = PendingIntent.getActivity(
+                context, self.__no_of_buttons or 1, action_intent__,
+                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            )
+            return pending_action_intent__
+
+        if receiver_name:
+            try:
+                receiverClass = autoclass(f"{get_package_name()}.{receiver_name}")
+                action_intent = Intent(context, receiverClass)
+                set_action(action_intent)
+                pending_action_intent = PendingIntent.getBroadcast(
+                    context, self.__no_of_buttons or 1, action_intent,
+                             PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                )
+
+            except Exception as error_getting_broadcast_receiver:
+                print("android_notify- error_getting_broadcast_receiver:", error_getting_broadcast_receiver)
+                pending_action_intent = set_default_action_intent()
+
+        else:
+            pending_action_intent = set_default_action_intent()
+
+
+        self.__builder.addAction(int(context.getApplicationInfo().icon), action_text, pending_action_intent)
+        self.__builder.setContentIntent(pending_action_intent)  # Set content intent for notification tap
 
         self.btns_box[action] = on_release
+        self.__no_of_buttons += 1
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         if self.logs:
+            print('Added Button: ', text)
             print('Button action: ', action)
-        pending_action_intent = PendingIntent.getActivity(
-            context,
-            0,
-            action_intent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        )
-        # Convert text to CharSequence
-        action_text = cast('java.lang.CharSequence', String(text))
-
-        # Add action with proper types
-        self.__builder.addAction(
-            int(context.getApplicationInfo().icon),  # Cast icon to int
-            action_text,  # CharSequence text
-            pending_action_intent  # PendingIntent
-        )
-        # Set content intent for notification tap
-        self.__builder.setContentIntent(pending_action_intent)
 
     def removeButtons(self):
         """Removes all notification buttons
@@ -1001,7 +1019,7 @@ class NotificationHandler:
         buttons_object = Notification.btns_box
         notifty_functions = Notification.main_functions
         if DEV:
-            print("notifty_functions ", notifty_functions)
+            print("notify_functions ", notifty_functions)
             print("buttons_object", buttons_object)
         try:
             action = intent.getAction()
@@ -1017,7 +1035,10 @@ class NotificationHandler:
                 if action in notifty_functions and notifty_functions[action]:
                     notifty_functions[action]()
                 elif action in buttons_object:
-                    buttons_object[action]()
+                    if buttons_object[action]:
+                        buttons_object[action]()
+                    else:
+                        print("android_notify- Notification button function not found got:", buttons_object[action])
             except Exception as notification_handler_function_error:
                 print("Error Type ", notification_handler_function_error)
                 print('Failed to run function: ', traceback.format_exc())
@@ -1085,7 +1106,7 @@ class NotificationHandler:
             permission = Manifest.POST_NOTIFICATIONS
             return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permission)
         else:
-            from android.permissions import Permission, check_permission
+            from android.permissions import Permission, check_permission    # type: ignore
             return check_permission(Permission.POST_NOTIFICATIONS)
 
     @classmethod
@@ -1146,7 +1167,7 @@ Opening notification settings...""")
                 context.requestPermissions([permission], 101)
                 # TODO Callback when user answers request question
             else:
-                from android.permissions import request_permissions, Permission
+                from android.permissions import request_permissions, Permission # type: ignore
                 cls.__requesting_permission = True
                 request_permissions([Permission.POST_NOTIFICATIONS], on_permissions_result)
                 return None
