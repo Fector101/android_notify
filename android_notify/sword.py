@@ -19,7 +19,7 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
     delete_all_channels, get_channels
 # Intents
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
-    get_broadcast_pending_intent_for_btn
+    get_broadcast_pending_intent_for_btn, get_intent_used_to_open_app
 # All Needed Java Classes
 from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder,NotificationCompatBigPictureStyle
 # Logger
@@ -724,9 +724,6 @@ class NotificationHandler:
         cls.__name = None  # so value won't be set when opening app not from notification
         # print('saved_intent ',saved_intent)
         # if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
-        # All other notifications are not None after First notification opens app
-        # NOTE these notifications are also from Last time app was opened and they Still Give Value after first one opens App
-        # TODO Find a way to get intent when App if Swiped From recents
         # Below action is always None
         # __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
         # __mActivity = __PythonActivity.mActivity
@@ -737,7 +734,8 @@ class NotificationHandler:
         # print('Start up Intent ----', action)
         # print('start Up Title --->',__intent.getStringExtra("title"))
 
-        return saved_intent
+        # TODO action Doesn't change even not opened from notification from `get_intent_used_to_open_app`
+        return saved_intent or get_intent_used_to_open_app()
 
     @classmethod
     def __notification_handler(cls, intent):
@@ -748,6 +746,7 @@ class NotificationHandler:
         """
         if not on_android_platform():
             return "Not on Android"
+
         # print('intent.getStringExtra("title")',intent.getStringExtra("title"))
         buttons_object = Notification.btns_box
         notify_functions = Notification.main_functions

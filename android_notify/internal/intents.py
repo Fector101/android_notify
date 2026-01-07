@@ -3,7 +3,8 @@ For Intent related blocks
 """
 
 from .java_classes import Bundle, Intent, PendingIntent, String
-from ..config import get_python_activity, get_python_activity_context
+from android_notify.config import get_python_activity, get_python_activity_context
+from android_notify.internal.logger import logger
 
 
 def set_action(action_intent, action, title, key_int):
@@ -58,6 +59,10 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
     )
     action = String(action_name)
     intent.setAction(action)
+    bundle = Bundle()
+    bundle.putString("title", notification_title)
+    bundle.putInt("notification_id", notification_id)
+    intent.putExtras(bundle)
     add_data_to_intent(intent, notification_title, notification_id)
 
     # intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
@@ -68,3 +73,55 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
         intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
     )
     builder.setContentIntent(pending_intent)
+
+
+
+def get_intent_used_to_open_app():
+    action = None
+
+    # ALL WORKED
+    # try:
+    #     PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    #     activity = PythonActivity.mActivity
+    #     intent = activity.getIntent()
+    #     try:
+    #         extras = intent.getExtras()
+    #         print(extras, 11)
+    #         if extras:
+    #             for key in extras.keySet().toArray():
+    #                 value = extras.get(key)
+    #                 print(key, value)
+    #     except Exception as error_in_loop:
+    #         print(error_in_loop)
+    #
+    #
+    #     try:
+    #         action = intent.getAction()
+    #         print('Start up Intent ----', action)
+    #     except Exception as error_getting_action:
+    #         print("error_getting_action",error_getting_action)
+    #
+    #
+    #     try:
+    #         extras = intent.getExtras()
+    #         if extras:
+    #             value = extras.getString(String("title"))
+    #             print('title', value)
+    #     except Exception as error_in_last:
+    #         print("error_getting_title",error_in_last)
+    #         pass
+    #
+    #     print('start Up Title --->', intent.getStringExtra("title"))
+    # except Exception as error_getting_notify_name:
+    #     print("Error getting xxxxx name:", error_getting_notify_name)
+
+
+    # TODO action Doesn't change even not opened from notification
+    try:
+        context = get_python_activity_context()
+        intent = context.getIntent()
+        action = intent.getAction()
+    except Exception as error_getting_notification_name:
+        logger.exception(error_getting_notification_name)
+
+    return action
