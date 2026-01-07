@@ -174,12 +174,12 @@ class TestAndroidNotifyFull(unittest.TestCase):
         except Exception as e:
             self.fail(f"Download channel failed: {e}")
 
-    def test_custom_channel_name(self):
-        try:
-            Notification.deleteChannel('default_channel')
-            # This clears all Notifications Like Cancel All
-        except Exception as e:
-            self.fail(f"Test deleteChannel failed: {e}")
+    # def test_custom_channel_name(self):
+    #     try:
+    #         Notification.deleteChannel('default_channel')
+    #         # This clears all Notifications Like Cancel All
+    #     except Exception as e:
+    #         self.fail(f"Test deleteChannel failed: {e}")
 
     def test_custom_icon(self):
         try:

@@ -3,18 +3,19 @@ For autocomplete Storing and Safely Running on PC
 Also For Reference of Available Methods
 """
 
+from android_notify.internal.logger import logger
 
 class Bundle:
     def putString(self, key, value):
-        print(f"[MOCK] Bundle.putString called with key={key}, value={value}")
+        logger.debug(f"[MOCK] Bundle.putString called with key={key}, value={value}")
 
     def putInt(self, key, value):
-        print(f"[MOCK] Bundle.putInt called with key={key}, value={value}")
+        logger.debug(f"[MOCK] Bundle.putInt called with key={key}, value={value}")
 
 
 class String(str):
     def __new__(cls, value):
-        print(f"[MOCK] String created with value={value}")
+        logger.debug(f"[MOCK] String created with value={value}")
         return str.__new__(cls, value)
 
 
@@ -24,43 +25,43 @@ class Intent:
 
     def __init__(self, context='', activity=''):
         self.obj = {}
-        print(f"[MOCK] Intent initialized with context={context}, activity={activity}")
+        logger.debug(f"[MOCK] Intent initialized with context={context}, activity={activity}")
 
     def setAction(self, action):
-        print(f"[MOCK] Intent.setAction called with: {action}")
+        logger.debug(f"[MOCK] Intent.setAction called with: {action}")
         return self
 
     def addFlags(self, *flags):
-        print(f"[MOCK] Intent.addFlags called with: {flags}")
+        logger.debug(f"[MOCK] Intent.addFlags called with: {flags}")
         return self
 
     def setData(self, uri):
-        print(f"[MOCK] Intent.setData called with: {uri}")
+        logger.debug(f"[MOCK] Intent.setData called with: {uri}")
         return self
 
     def setFlags(self, intent_flag):
-        print(f"[MOCK] Intent.setFlags called with: {intent_flag}")
+        logger.debug(f"[MOCK] Intent.setFlags called with: {intent_flag}")
         return self
 
     def addCategory(self, intent_category):
-        print(f"[MOCK] Intent.addCategory called with: {intent_category}")
+        logger.debug(f"[MOCK] Intent.addCategory called with: {intent_category}")
         return self
 
     def getAction(self):
-        print("[MOCK] Intent.getAction called")
+        logger.debug("[MOCK] Intent.getAction called")
         return self
 
     def getStringExtra(self, key):
-        print(f"[MOCK] Intent.getStringExtra called with key={key}")
+        logger.debug(f"[MOCK] Intent.getStringExtra called with key={key}")
         return self
 
     def putExtra(self, key, value):
         self.obj[key] = value
-        print(f"[MOCK] Intent.putExtra called with key={key}, value={value}")
+        logger.debug(f"[MOCK] Intent.putExtra called with key={key}, value={value}")
 
     def putExtras(self, bundle: Bundle):
         self.obj['bundle'] = bundle
-        print(f"[MOCK] Intent.putExtras called with bundle={bundle}")
+        logger.debug(f"[MOCK] Intent.putExtras called with bundle={bundle}")
 
 
 class PendingIntent:
@@ -69,14 +70,15 @@ class PendingIntent:
 
     @classmethod
     def getActivity(cls, context, value, action_intent, pending_intent_type):
-        print(
-            f"[MOCK] PendingIntent.getActivity called with context={context}, value={value}, action_intent={action_intent}, type={pending_intent_type}")
+        logger.debug(
+            f"[MOCK] PendingIntent.getActivity called with context={context}, value={value}, action_intent={action_intent}, type={pending_intent_type}"
+        )
 
 
 class BitmapFactory:
     @classmethod
     def decodeStream(cls, stream):
-        print(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
+        logger.debug(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
 
 
 class BuildVersion:
@@ -95,7 +97,7 @@ class Settings:
 
 class Uri:
     def __init__(self, package_name):
-        print("FACADE_URI")
+        logger.debug("FACADE_URI")
 
 
 class NotificationManager:
@@ -107,23 +109,24 @@ class NotificationChannel:
         self.description = None
         self.channel_id = channel_id
         self.channel = None
-        print(
-            f"[MOCK] NotificationChannel initialized with id={channel_id}, name={channel_name}, importance={importance}")
+        logger.debug(
+            f"[MOCK] NotificationChannel initialized with id={channel_id}, name={channel_name}, importance={importance}"
+        )
 
     def createNotificationChannel(self, channel):
         self.channel = channel
-        print(f"[MOCK] NotificationChannel.createNotificationChannel called with channel={channel}")
+        logger.debug(f"[MOCK] NotificationChannel.createNotificationChannel called with channel={channel}")
 
     def getNotificationChannel(self, channel_id):
         self.channel_id = channel_id
-        print(f"[MOCK] NotificationChannel.getNotificationChannel called with id={channel_id}")
+        logger.debug(f"[MOCK] NotificationChannel.getNotificationChannel called with id={channel_id}")
 
     def setDescription(self, description):
         self.description = description
-        print(f"[MOCK] NotificationChannel.setDescription called with description={description}")
+        logger.debug(f"[MOCK] NotificationChannel.setDescription called with description={description}")
 
     def getId(self):
-        print(f"[MOCK] NotificationChannel.getId called, returning {self.channel_id}")
+        logger.debug(f"[MOCK] NotificationChannel.getId called, returning {self.channel_id}")
         return self.channel_id
 
     def setSound(self, sound_uri, _):
@@ -133,31 +136,31 @@ class NotificationChannel:
 class IconCompat:
     @classmethod
     def createWithBitmap(cls, bitmap):
-        print(f"[MOCK] IconCompat.createWithBitmap called with bitmap={bitmap}")
+        logger.debug(f"[MOCK] IconCompat.createWithBitmap called with bitmap={bitmap}")
 
 
 class Color:
     def __init__(self):
-        print("[MOCK] Color initialized")
+        logger.debug("[MOCK] Color initialized")
 
     @classmethod
     def parseColor(cls, color: str):
-        print(f"[MOCK] Color.parseColor called with color={color}")
+        logger.debug(f"[MOCK] Color.parseColor called with color={color}")
         return cls
 
 
 class RemoteViews:
     def __init__(self, package_name, small_layout_id):
-        print(f"[MOCK] RemoteViews initialized with package_name={package_name}, layout_id={small_layout_id}")
+        logger.debug(f"[MOCK] RemoteViews initialized with package_name={package_name}, layout_id={small_layout_id}")
 
     def createWithBitmap(self, bitmap):
-        print(f"[MOCK] RemoteViews.createWithBitmap called with bitmap={bitmap}")
+        logger.debug(f"[MOCK] RemoteViews.createWithBitmap called with bitmap={bitmap}")
 
     def setTextViewText(self, id, text):
-        print(f"[MOCK] RemoteViews.setTextViewText called with id={id}, text={text}")
+        logger.debug(f"[MOCK] RemoteViews.setTextViewText called with id={id}, text={text}")
 
     def setTextColor(self, id, color: Color):
-        print(f"[MOCK] RemoteViews.setTextColor called with id={id}, color={color}")
+        logger.debug(f"[MOCK] RemoteViews.setTextColor called with id={id}, color={color}")
 
 
 class NotificationManagerCompat:
@@ -179,7 +182,7 @@ class NotificationCompat:
 class MActions:
     def clear(self):
         """This Removes all buttons"""
-        print('[MOCK] MActions.clear called')
+        logger.debug('[MOCK] MActions.clear called')
 
 
 class NotificationCompatBuilder:
@@ -200,147 +203,151 @@ class NotificationCompatBuilder:
         pass
 
     def setSmallIcon(self, icon):
-        print(f"[MOCK] setSmallIcon called with icon={icon}")
+        logger.debug(f"[MOCK] setSmallIcon called with icon={icon}")
 
     def setLargeIcon(self, icon):
-        print(f"[MOCK] setLargeIcon called with icon={icon}")
+        logger.debug(f"[MOCK] setLargeIcon called with icon={icon}")
 
     def setAutoCancel(self, auto_cancel: bool):
-        print(f"[MOCK] setAutoCancel called with auto_cancel={auto_cancel}")
+        logger.debug(f"[MOCK] setAutoCancel called with auto_cancel={auto_cancel}")
 
     def setPriority(self, priority):
-        print(f"[MOCK] setPriority called with priority={priority}")
+        logger.debug(f"[MOCK] setPriority called with priority={priority}")
 
     def setDefaults(self, defaults):
-        print(f"[MOCK] setDefaults called with defaults={defaults}")
+        logger.debug(f"[MOCK] setDefaults called with defaults={defaults}")
 
     def setOngoing(self, persistent: bool):
-        print(f"[MOCK] setOngoing called with persistent={persistent}")
+        logger.debug(f"[MOCK] setOngoing called with persistent={persistent}")
 
     def setOnlyAlertOnce(self, state):
-        print(f"[MOCK] setOnlyAlertOnce called with state={state}")
+        logger.debug(f"[MOCK] setOnlyAlertOnce called with state={state}")
 
     def build(self):
-        print("[MOCK] build called")
+        logger.debug("[MOCK] build called")
 
     def setContentIntent(self, pending_action_intent: PendingIntent):
-        print(f"[MOCK] setContentIntent called with {pending_action_intent}")
+        logger.debug(f"[MOCK] setContentIntent called with {pending_action_intent}")
 
     def addAction(self, icon_int, action_text, pending_action_intent):
-        print(f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}")
+        logger.debug(
+            f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}"
+        )
 
     def setShowWhen(self, state):
-        print(f"[MOCK] setShowWhen called with state={state}")
+        logger.debug(f"[MOCK] setShowWhen called with state={state}")
 
     def setWhen(self, time_ms):
-        print(f"[MOCK] setWhen called with time_ms={time_ms}")
+        logger.debug(f"[MOCK] setWhen called with time_ms={time_ms}")
 
     def setCustomContentView(self, layout):
-        print(f"[MOCK] setCustomContentView called with layout={layout}")
+        logger.debug(f"[MOCK] setCustomContentView called with layout={layout}")
 
     def setCustomBigContentView(self, layout):
-        print(f"[MOCK] setCustomBigContentView called with layout={layout}")
+        logger.debug(f"[MOCK] setCustomBigContentView called with layout={layout}")
 
     def setSubText(self, text):
-        print(f"[MOCK] setSubText called with text={text}")
+        logger.debug(f"[MOCK] setSubText called with text={text}")
 
     def setColor(self, color: Color) -> None:
-        print(f"[MOCK] setColor called with color={color}")
+        logger.debug(f"[MOCK] setColor called with color={color}")
 
 
 class NotificationCompatBigTextStyle:
     def bigText(self, body):
-        print(f"[MOCK] NotificationCompatBigTextStyle.bigText called with body={body}")
+        logger.debug(f"[MOCK] NotificationCompatBigTextStyle.bigText called with body={body}")
         return self
 
     def setBigContentTitle(self, title):
-        print(f"[MOCK] NotificationCompatBigTextStyle.setBigContentTitle called with title={title}")
+        logger.debug(f"[MOCK] NotificationCompatBigTextStyle.setBigContentTitle called with title={title}")
         return self
 
     def setSummaryText(self, summary):
-        print(f"[MOCK] NotificationCompatBigTextStyle.setSummaryText called with summary={summary}")
+        logger.debug(f"[MOCK] NotificationCompatBigTextStyle.setSummaryText called with summary={summary}")
 
 
 class NotificationCompatBigPictureStyle:
     def bigPicture(self, bitmap):
-        print(f"[MOCK] NotificationCompatBigPictureStyle.bigPicture called with bitmap={bitmap}")
+        logger.debug(f"[MOCK] NotificationCompatBigPictureStyle.bigPicture called with bitmap={bitmap}")
         return self
 
 
 class NotificationCompatInboxStyle:
     def addLine(self, line):
-        print(f"[MOCK] NotificationCompatInboxStyle.addLine called with line={line}")
+        logger.debug(f"[MOCK] NotificationCompatInboxStyle.addLine called with line={line}")
         return self
 
 
 class NotificationCompatDecoratedCustomViewStyle:
     def __init__(self):
-        print("[MOCK] NotificationCompatDecoratedCustomViewStyle initialized")
+        logger.debug("[MOCK] NotificationCompatDecoratedCustomViewStyle initialized")
 
 
 class Permission:
     POST_NOTIFICATIONS = ''
 
 
-def check_permission(permission: Permission.POST_NOTIFICATIONS):
-    print(f"[MOCK] check_permission called with {permission}")
-    print(permission)
+def check_permission(permission):
+    logger.debug(f"[MOCK] check_permission called with {permission}")
+    logger.debug(permission)
 
 
-def request_permissions(_list: [], _callback):
-    print(f"[MOCK] request_permissions called with {_list}")
+def request_permissions(_list, _callback):
+    logger.debug(f"[MOCK] request_permissions called with {_list}")
     _callback()
 
 
 class AndroidActivity:
     def bind(self, on_new_intent):
-        print(f"[MOCK] AndroidActivity.bind called with {on_new_intent}")
+        logger.debug(f"[MOCK] AndroidActivity.bind called with {on_new_intent}")
 
     def unbind(self, on_new_intent):
-        print(f"[MOCK] AndroidActivity.unbind called with {on_new_intent}")
+        logger.debug(f"[MOCK] AndroidActivity.unbind called with {on_new_intent}")
 
 
 class MActivity:
     def getSystemService(self):
-        print("[MOCK] mActivity.getSystemService called")
+        logger.debug("[MOCK] mActivity.getSystemService called")
         return self
 
-class PythonActivity:
 
+class PythonActivity:
     def __init__(self):
-        print("[MOCK] PythonActivity initialized")
+        logger.debug("[MOCK] PythonActivity initialized")
 
     @staticmethod
     def mActivity():
-        print("[MOCK] mActivity used")
+        logger.debug("[MOCK] mActivity used")
         return MActivity()
+
 
 class DummyIcon:
     icon = 101
 
     def __init__(self):
-        print("[MOCK] DummyIcon initialized")
+        logger.debug("[MOCK] DummyIcon initialized")
 
 
 class Context:
     def __init__(self):
-        print("[MOCK] Context initialized")
+        logger.debug("[MOCK] Context initialized")
         pass
 
     @staticmethod
     def getApplicationInfo():
-        print("[MOCK] Context.getApplicationInfo called")
+        logger.debug("[MOCK] Context.getApplicationInfo called")
         return DummyIcon
 
     @staticmethod
     def getResources():
-        print("[MOCK] Context.getResources called")
+        logger.debug("[MOCK] Context.getResources called")
         return None
 
     @staticmethod
     def getPackageName():
-        print("[MOCK] Context.getPackageName called")
+        logger.debug("[MOCK] Context.getPackageName called")
         return None  # TODO get package name from buildozer.spec file
+
 
 # Now writing Knowledge from errors
 # notify.(int, Builder.build()) # must be int

@@ -128,7 +128,6 @@ def set_small_icon_with_bitmap(bitmap, builder):
         logger.warning("Bitmap Insert as Icon Not available below Android 6")
         return False
     try:
-        # Icon = autoclass('android.graphics.drawable.Icon') # Invalid instance of 'android/graphics/drawable/Icon' passed for a 'androidx/core/graphics/drawable/IconCompat'
         icon = IconCompat.createWithBitmap(bitmap)
         builder.setSmallIcon(icon)
         return True

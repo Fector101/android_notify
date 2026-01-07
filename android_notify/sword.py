@@ -4,8 +4,9 @@ from typing import Any, Callable
 
 from .base import BaseNotification
 from .styles import NotificationStyles
-from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, get_python_activity_context
 from .internal.helper import generate_channel_id
+from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
+    get_python_activity_context
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
     set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance
 
@@ -14,22 +15,21 @@ from .internal.an_types import Importance
 # Permissions
 from .internal.permissions import has_notification_permission, ask_notification_permission
 # Channels
-from .internal.channels import does_channel_exist, do_channels_exist, create_channel, delete_channel, delete_all_channels, get_channels
+from .internal.channels import does_channel_exist, do_channels_exist, create_channel, delete_channel, \
+    delete_all_channels, get_channels
 # Intents
-from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, get_broadcast_pending_intent_for_btn
+from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
+    get_broadcast_pending_intent_for_btn
 # All Needed Java Classes
 from .internal.java_classes import *
 # Logger
 from .internal.logger import logger
 
-
 from .widgets.images import set_default_small_icon, get_bitmap_from_path, get_bitmap_from_url, \
     set_small_icon_with_bitmap, get_img_absolute_path, find_and_set_default_icon, set_small_icon_color
 from .widgets.texts import set_big_text, set_sub_text, set_title, set_message, set_lines, set_custom_colors
 
-
 DEV = 0
-
 
 
 class Notification(BaseNotification):
@@ -252,7 +252,10 @@ class Notification(BaseNotification):
             new_title (str): New Notification Title
         """
         self.title = str(new_title)
-        set_title(builder=self.builder, title=self.title, using_layout=self.isUsingCustom())
+        if self.isUsingCustom():
+            self.__apply_basic_custom_style()
+        else:
+            set_title(builder=self.builder, title=self.title, using_layout=self.isUsingCustom())
         self.refresh()
 
     def updateMessage(self, new_message):
@@ -262,10 +265,14 @@ class Notification(BaseNotification):
             new_message (str): New Notification Message
         """
         self.message = str(new_message)
-        set_message(builder=self.builder, message=self.message, using_layout=self.isUsingCustom())
+        if self.isUsingCustom():
+            self.__apply_basic_custom_style()
+        else:
+            set_message(builder=self.builder, message=self.message, using_layout=self.isUsingCustom())
         self.refresh()
 
-    def updateProgressBar(self, current_value: int, message: str = '', title: str = '', cooldown=0.5, _callback: Callable = None):
+    def updateProgressBar(self, current_value: int, message: str = '', title: str = '', cooldown=0.5,
+                          _callback: Callable = None):
         """Updates progress bar current value
 
         Args:
@@ -321,7 +328,8 @@ class Notification(BaseNotification):
         self.__update_timer = threading.Timer(cooldown, delayed_update)
         self.__update_timer.start()
 
-    def removeProgressBar(self, message='', show_on_update=True, title: str = '', cooldown=0.5, _callback: Callable = None):
+    def removeProgressBar(self, message='', show_on_update=True, title: str = '', cooldown=0.5,
+                          _callback: Callable = None):
         """Removes Progress Bar from Notification
 
         Args:
@@ -445,7 +453,6 @@ class Notification(BaseNotification):
         if not on_android_platform():
             return
 
-
         action = action or f"{text}_{self.id}"  # tagging with id so it can found notification handle object
 
         # for bundle data
@@ -458,8 +465,8 @@ class Notification(BaseNotification):
             try:
                 receiver_class_name = f"{get_package_name()}.{receiver_name}"
                 receiverClass = autoclass(receiver_class_name)
-                print("receiverClass",receiverClass)
-                pending_action_intent = get_broadcast_pending_intent_for_btn(receiver_class=receiverClass, action=action, title=title, btn_no=btn_no)
+                pending_action_intent = get_broadcast_pending_intent_for_btn(receiver_class=receiverClass,
+                                                                             action=action, title=title, btn_no=btn_no)
             except Exception as error_getting_broadcast_receiver:
                 logger.exception(error_getting_broadcast_receiver)
 
@@ -499,7 +506,7 @@ class Notification(BaseNotification):
         """
 
         if not on_android_platform():
-            # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and print
+            # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and log
             return False
 
         if self.body:
@@ -572,7 +579,8 @@ class Notification(BaseNotification):
 
         try:
             action_name = str(self.name or self.__id)
-            add_intent_to_open_app(builder=self.builder,action_name=action_name,notification_title=str(self.title),notification_id=self.__id)
+            add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
+                                   notification_id=self.__id)
             self.main_functions[action_name] = self.callback
         except Exception as failed_to_add_intent_to_open_app:
             logger.exception(failed_to_add_intent_to_open_app)
@@ -687,7 +695,8 @@ class Notification(BaseNotification):
             self.builder.setWhen(current_time_mills)
             self.builder.setShowWhen(True)
 
-        set_custom_colors(builder=self.builder,title=self.title,message=self.message,title_color=self.title_color,message_color=self.message_color)
+        set_custom_colors(builder=self.builder, title=self.title, message=self.message, title_color=self.title_color,
+                          message_color=self.message_color)
 
     def isUsingCustom(self):
         self.__using_custom = self.title_color or self.message_color

@@ -87,11 +87,12 @@ logger._configured = True
 
 env_level = os.getenv("ANDROID_NOTIFY_LOGLEVEL")
 if env_level:
+    # noinspection PyBroadException
     try:
         logging.getLogger("android_notify").setLevel(
             getattr(logging, env_level.upper())
         )
-    except Exception:
+    except:
         pass
 
 
