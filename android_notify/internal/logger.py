@@ -2,21 +2,6 @@ import logging
 import sys
 import os
 
-# -------------------------
-# Detect Android
-# -------------------------
-try:
-    from jnius import autoclass, JavaException
-    ANDROID = True
-    Log = autoclass("android.util.Log")
-except (ImportError,JavaException):
-    ANDROID = False
-    Log = None
-
-
-# -------------------------
-# Kivy-style colored formatter (desktop)
-# -------------------------
 class KivyColorFormatter(logging.Formatter):
     COLORS = {
         'DEBUG': '\x1b[36m',    # cyan
@@ -36,44 +21,14 @@ class KivyColorFormatter(logging.Formatter):
             level = f"{color}{level}{self.RESET}"
         return f"[{level}] [{name}] {msg}"
 
-# -------------------------
-# Android Logcat Handler
-# -------------------------
-if ANDROID:
-    class LogcatHandler(logging.Handler):
-        LEVEL_MAP = {
-            logging.DEBUG:    Log.DEBUG,
-            logging.INFO:     Log.INFO,
-            logging.WARNING:  Log.WARN,
-            logging.ERROR:    Log.ERROR,
-            logging.CRITICAL: Log.ASSERT,
-        }
 
-        def emit(self, record):
-            tag = record.name
-            msg = self.format(record)
-            level = self.LEVEL_MAP.get(record.levelno, Log.INFO)
-            Log.println(level, tag, msg)
-else:
-    LogcatHandler = None  # safe fallback for desktop
-
-# -------------------------
-# Logger setup
-# -------------------------
 logger = logging.getLogger("android_notify")
 
-# Default to NOTSET so users can control level with setLevel()
 logger.setLevel(logging.NOTSET)
 logger.propagate = False
 
-# Choose handler
-if ANDROID and LogcatHandler is not None:
-    handler = LogcatHandler()
-    formatter = logging.Formatter("%(levelname)s: [%(name)s] %(message)s")
-else:
-    handler = logging.StreamHandler()
-    formatter = KivyColorFormatter()
-
+handler = logging.StreamHandler()
+formatter = KivyColorFormatter()
 handler.setFormatter(formatter)
 handler.setLevel(logging.NOTSET)  # respect logger level
 
