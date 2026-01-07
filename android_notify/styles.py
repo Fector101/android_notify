@@ -1,4 +1,8 @@
-"""Contains Safe way to call Styles"""
+"""
+Deprecated: v1.59
+---
+Contains Safe way to call Styles
+"""
 
 class NotificationStyles:
     """ Safely Adding Styles"""

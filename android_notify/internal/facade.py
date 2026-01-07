@@ -1,22 +1,9 @@
-"""For autocomplete Storing Reference to Available Methods"""
-from typing import Literal
-
-Importance = Literal['urgent', 'high', 'medium', 'low', 'none']
 """
-    :argument urgent - Makes a sound and appears as a heads-up notification.
-    
-    :argument high - Makes a sound.
-    
-    :argument urgent - Makes no sound.
-    
-    :argument urgent - Makes no sound and doesn't appear in the status bar.
-    
-    :argument urgent - Makes no sound and doesn't in the status bar or shade.
+For autocomplete Storing and Safely Running on PC
+Also For Reference of Available Methods
 """
 
 
-# For Dev
-# Idea for typing autocompletion and reference
 class Bundle:
     def putString(self, key, value):
         print(f"[MOCK] Bundle.putString called with key={key}, value={value}")
@@ -80,30 +67,36 @@ class PendingIntent:
     FLAG_IMMUTABLE = ''
     FLAG_UPDATE_CURRENT = ''
 
-    def getActivity(self, context, value, action_intent, pending_intent_type):
+    @classmethod
+    def getActivity(cls, context, value, action_intent, pending_intent_type):
         print(
             f"[MOCK] PendingIntent.getActivity called with context={context}, value={value}, action_intent={action_intent}, type={pending_intent_type}")
 
 
 class BitmapFactory:
-    def decodeStream(self, stream):
+    @classmethod
+    def decodeStream(cls, stream):
         print(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
 
 
 class BuildVersion:
     SDK_INT = 0
 
+
 class Manifest:
     POST_NOTIFICATIONS = 'FACADE_IMPORT'
+
 
 class Settings:
     ACTION_APP_NOTIFICATION_SETTINGS = 'FACADE_IMPORT_ACTION_APP_NOTIFICATION_SETTINGS'
     EXTRA_APP_PACKAGE = 'FACADE_IMPORT_EXTRA_APP_PACKAGE'
     ACTION_APPLICATION_DETAILS_SETTINGS = 'FACADE_IMPORT_ACTION_APPLICATION_DETAILS_SETTINGS'
 
+
 class Uri:
-    def __init__(self,package_name):
+    def __init__(self, package_name):
         print("FACADE_URI")
+
 
 class NotificationManager:
     pass
@@ -133,9 +126,13 @@ class NotificationChannel:
         print(f"[MOCK] NotificationChannel.getId called, returning {self.channel_id}")
         return self.channel_id
 
+    def setSound(self, sound_uri, _):
+        pass
+
 
 class IconCompat:
-    def createWithBitmap(self, bitmap):
+    @classmethod
+    def createWithBitmap(cls, bitmap):
         print(f"[MOCK] IconCompat.createWithBitmap called with bitmap={bitmap}")
 
 
@@ -143,9 +140,10 @@ class Color:
     def __init__(self):
         print("[MOCK] Color initialized")
 
-    def parseColor(self, color: str):
+    @classmethod
+    def parseColor(cls, color: str):
         print(f"[MOCK] Color.parseColor called with color={color}")
-        return self
+        return cls
 
 
 class RemoteViews:
@@ -188,13 +186,17 @@ class NotificationCompatBuilder:
     def __init__(self, context, channel_id):
         self.mActions = MActions()
         pass
-    def setProgress(self,max_value,current_value,endless):
+
+    def setProgress(self, max_value, current_value, endless):
         pass
-    def setStyle(self,style):
+
+    def setStyle(self, style):
         pass
-    def setContentTitle(self,title):
+
+    def setContentTitle(self, title):
         pass
-    def setContentText(self,text):
+
+    def setContentText(self, text):
         pass
 
     def setSmallIcon(self, icon):
@@ -206,7 +208,7 @@ class NotificationCompatBuilder:
     def setAutoCancel(self, auto_cancel: bool):
         print(f"[MOCK] setAutoCancel called with auto_cancel={auto_cancel}")
 
-    def setPriority(self, priority: Importance):
+    def setPriority(self, priority):
         print(f"[MOCK] setPriority called with priority={priority}")
 
     def setDefaults(self, defaults):
@@ -251,6 +253,13 @@ class NotificationCompatBigTextStyle:
         print(f"[MOCK] NotificationCompatBigTextStyle.bigText called with body={body}")
         return self
 
+    def setBigContentTitle(self, title):
+        print(f"[MOCK] NotificationCompatBigTextStyle.setBigContentTitle called with title={title}")
+        return self
+
+    def setSummaryText(self, summary):
+        print(f"[MOCK] NotificationCompatBigTextStyle.setSummaryText called with summary={summary}")
+
 
 class NotificationCompatBigPictureStyle:
     def bigPicture(self, bitmap):
@@ -291,11 +300,20 @@ class AndroidActivity:
         print(f"[MOCK] AndroidActivity.unbind called with {on_new_intent}")
 
 
+class MActivity:
+    def getSystemService(self):
+        print("[MOCK] mActivity.getSystemService called")
+        return self
+
 class PythonActivity:
-    mActivity = "[MOCK] mActivity used"
+
     def __init__(self):
         print("[MOCK] PythonActivity initialized")
 
+    @staticmethod
+    def mActivity():
+        print("[MOCK] mActivity used")
+        return MActivity()
 
 class DummyIcon:
     icon = 101
