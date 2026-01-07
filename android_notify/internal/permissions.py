@@ -8,7 +8,6 @@ from android_notify.internal.java_classes import autoclass, BuildVersion, Manife
 from android_notify.internal.helper import execute_callback
 
 
-
 def has_notification_permission():
     """
     Checks if device has permission to send notifications
@@ -32,8 +31,7 @@ def has_notification_permission():
         return check_permission(Permission.POST_NOTIFICATIONS)
 
 
-
-def ask_notification_permission(callback=None, set_requesting_state=None):
+def ask_notification_permission(callback=None, set_requesting_state=None, legacy=False):
     if not on_android_platform():
         logger.warning("Can't ask permission when not on android")
         execute_callback(callback, True)
@@ -57,12 +55,22 @@ def ask_notification_permission(callback=None, set_requesting_state=None):
         return None
 
     context = get_python_activity_context()
+
     def on_permissions_result(_, grants):
         # _ is permissions
         execute_callback(callback, grants[0])
         execute_callback(set_requesting_state, False)
 
-    if on_flet_app():
+    if legacy:
+        # TODO Handle activity with request code
+        PackageManager = autoclass("android.content.pm.PackageManager")
+        permission = Manifest.POST_NOTIFICATIONS
+
+        granted = context.checkSelfPermission(permission)
+        if granted != PackageManager.PERMISSION_GRANTED:
+            context.requestPermissions([permission], 101)
+        return None
+    elif on_flet_app():
         # TODO Callback when user answers request question
         # Can't bind activity result method is from p4a which is only on kivy
         ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
@@ -74,7 +82,6 @@ def ask_notification_permission(callback=None, set_requesting_state=None):
         execute_callback(set_requesting_state, True)
         request_permissions([Permission.POST_NOTIFICATIONS], on_permissions_result)
         return None
-
 
 
 def open_notification_settings_screen():

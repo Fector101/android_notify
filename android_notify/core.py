@@ -32,12 +32,13 @@ def get_app_root_path():
     return os.path.join(path, 'app')
 
 
-def asks_permission_if_needed():
+def asks_permission_if_needed(legacy=False, no_androidx=False):
     """
     Ask for permission to send notifications if needed.
+    legacy parameter will replace no_androidx parameter in Future Versions
     """
     if not has_notification_permission():
-        ask_notification_permission()
+        ask_notification_permission(legacy=legacy or no_androidx)
 
 
 def get_image_uri(relative_path):

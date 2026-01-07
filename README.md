@@ -152,7 +152,7 @@ class AndroidNotifyDemoApp(App):
         return layout
 
     def request_permission(self, *args):
-        asks_permission_if_needed(no_androidx=True)
+        asks_permission_if_needed(legacy=True)
 
     def send_notification(self, *args):
         Notification(
