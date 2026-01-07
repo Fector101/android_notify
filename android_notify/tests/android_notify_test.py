@@ -81,20 +81,20 @@ class TestAndroidNotifyFull(unittest.TestCase):
         except Exception as e:
             self.fail(f"Callback failed: {e}")
 
-    # def test_cancel(self):
-    #     try:
-    #         n = Notification(id=self.uid, title="Testing cancel() in 3secs", message="Cancel")
-    #         n.send()
-    #         time.sleep(3)
-    #         n.cancel()
-    #     except Exception as e:
-    #         self.fail(f"Cancel failed: {e}")
-    #
-    # def test_cancel_all(self):
-    #     try:
-    #         Notification.cancelAll()
-    #     except Exception as e:
-    #         self.fail(f"Cancel all failed: {e}")
+    def test_cancel(self):
+        try:
+            n = Notification(id=self.uid, title="Testing cancel() in 3secs", message="Cancel")
+            n.send()
+            time.sleep(3)
+            n.cancel()
+        except Exception as e:
+            self.fail(f"Cancel failed: {e}")
+
+    def test_cancel_all(self):
+        try:
+            Notification.cancelAll()
+        except Exception as e:
+            self.fail(f"Cancel all failed: {e}")
 
     def test_cancel_with_id(self):
         try:
@@ -174,12 +174,12 @@ class TestAndroidNotifyFull(unittest.TestCase):
         except Exception as e:
             self.fail(f"Download channel failed: {e}")
 
-    # def test_custom_channel_name(self):
-    #     try:
-    #         Notification.deleteChannel('default_channel')
-    #         # This clears all Notifications Like Cancel All
-    #     except Exception as e:
-    #         self.fail(f"Test deleteChannel failed: {e}")
+    def test_custom_channel_name(self):
+        try:
+            Notification.deleteChannel('default_channel')
+            # This clears all Notifications Like Cancel All
+        except Exception as e:
+            self.fail(f"Test deleteChannel failed: {e}")
 
     def test_custom_icon(self):
         try:
@@ -264,6 +264,7 @@ class TestAndroidNotifyFull(unittest.TestCase):
             ).send()
         except Exception as e:
             self.fail("Failed added names",e)
+
     def test_persistent(self):
         try:
             n = Notification(id=self.uid, title="Test persistent", message="Testing persistent")
@@ -391,44 +392,7 @@ class TestAndroidNotifyFull(unittest.TestCase):
         except Exception as e:
             self.fail(f"updateTitle failed: {e}")
 
-    # -------------------------
-    # COMMENTED / DISABLED TESTS
-    # -------------------------
 
-
-    # def test_simple(self):
-    #     try:
-    #         n = Notification( id=self.uid,title="Simple", message="Simple message test")
-    #         n.send()
-    #     except Exception as e:
-    #         self.fail(f"Simple notification failed: {e}")
-    #
-
-    #
-    # def test_inbox_from_file_message(self):
-    #     try:
-    #         lines = "Test1\nTest2\nTest3"
-    #         n = Notification( id=self.uid,title="Inbox File", message="File Inbox Test", lines_txt=lines)
-    #         n.send()
-    #     except Exception as e:
-    #         self.fail(f"Inbox from file failed: {e}")
-    #
-    # def test_reuse_custom_channel(self):
-    #     try:
-    #         n = Notification( id=self.uid,title="Check ID Lifespan", message="Testing channel id reuse")
-    #         cid = "test_channel_id"
-    #         n.createChannel(id=cid, name="Test Channel", description="Lifespan check")
-    #         n.send()
-    #     except Exception as e:
-    #         self.fail(f"Create channel lifespan failed: {e}")
-    #
-    #
-
-    # def test_get_active_notifications(self):
-    #     try:
-    #         Notification( id=self.uid,).get_active_notifications()
-    #     except Exception as e:
-    #         self.fail(f"Get active notifications failed: {e}")
 
 
 if __name__ == "__main__":

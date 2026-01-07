@@ -1,94 +1,185 @@
+# from jnius import cast, autoclass
+# import logging
+# import traceback
+# from android_notify import Notification
 
-import unittest, threading
-from android_notify.tests.android_notify_test import TestAndroidNotifyFull
-from kivy.app import App
-from kivy.core.window import Window
-from kivy.utils import platform
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from android_notify import Notification, NotificationHandler
-from android_notify.core import asks_permission_if_needed
 # android_notify.logger.setLevel(logging.INFO)
 # logging.getLogger("android_notify").setLevel(logging.WARNING)
+import unittest
+import time
+from kivy.metrics import dp
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from kivy.utils import platform
+from kivymd.app import MDApp
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivy.uix.button import Button
 
+from android_notify import Notification, NotificationHandler
+from android_notify.core import asks_permission_if_needed
+
+# ---- IMPORT YOUR SPLIT TEST FILES (TestCase CLASSES) ----
+from android_notify.tests.test_notification_styles import TestNotificationStyles
+from android_notify.tests.test_notification_actions import TestNotificationActions
+from android_notify.tests.test_basic_notifications import TestBasicNotifications
+from android_notify.tests.test_notification_channels import TestNotificationChannels
+from android_notify.tests.test_notification_appearance import TestNotificationAppearance
+from android_notify.tests.test_notification_behavior import TestNotificationBehavior
+from android_notify.tests.test_notification_progress import TestNotificationProgress
+from android_notify.tests.test_notification_sound import TestNotificationSound
+
+
+# -----------------------------
+# Linux input fix
+# -----------------------------
 if platform == 'linux':
     from kivy import Config
 
-    # Linux has some weirdness with the touchpad by default... remove it
-    options = Config.options('input')
-    for option in options:
+    for option in Config.options('input'):
         if Config.get('input', option) == 'probesysfs':
             Config.remove_option('input', option)
+
     Window.size = (370, 700)
 
 
-
-
-class AndroidNotifyDemoApp(App):
-    def __init__(self, **kwargs):
+# -----------------------------
+# Triple click button
+# -----------------------------
+class TripleClickButton(Button):
+    def __init__(self, callback, max_interval=1.0, **kwargs):
+        """
+        :param callback: function to run after triple click
+        :param max_interval: max seconds allowed between clicks
+        """
         super().__init__(**kwargs)
-        self.count = 0
+        self.callback = callback
+        self.max_interval = max_interval
+        self._click_count = 0
+        self._last_click_time = 0
+        self.bind(on_release=self._on_release)
+
+    def _on_release(self, instance):
+        if not self.disabled:
+            now = time.time()
+            if now - self._last_click_time > self.max_interval:
+                # Too much time since last click, reset counter
+                self._click_count = 0
+            self._click_count += 1
+            self._last_click_time = now
+
+            if self._click_count == 3:
+                # Triple click reached
+                self._click_count = 0
+                self.disabled = True  # disable button immediately
+                self.callback(self)
+
+
+# -----------------------------
+# App
+# -----------------------------
+class AndroidNotifyDemoApp(MDApp):
 
     def on_start(self):
-        print("on_start...")
         try:
             from kivymd.toast import toast
             name = NotificationHandler.get_name(on_start=True)
-            print("name", name)
             toast(text=f"name: {name}", length_long=True)
-        except Exception as error_getting_notify_name:
-            print("Error getting notify name:", error_getting_notify_name)
+        except Exception as e:
+            print("Error getting notify name:", e)
 
     def build(self):
-        layout = BoxLayout(orientation='vertical', spacing=10, padding=20)
-        layout.add_widget(Button(
-            text="Ask Notification Permission",
-            on_release=self.request_permission
-        ))
-        layout.add_widget(Button(
-            text="Send Notification",
-            on_release=self.send_notification
-        ))
-        layout.add_widget(Button(
-            text="Mass Test",
-            on_release=self.mass_test
-        ))
-        return layout
+        root = ScrollView(do_scroll_x=False)
 
-    def mass_test(self, *args):
-        def run_tests():
-            suite = unittest.TestLoader().loadTestsFromTestCase(TestAndroidNotifyFull)
-            unittest.TextTestRunner(verbosity=2).run(suite)
+        main = MDBoxLayout(
+            orientation="vertical",
+            size_hint_y=None,
+            padding=10,
+            spacing=10
+        )
+        main.bind(minimum_height=main.setter("height"))
+        root.add_widget(main)
 
-        if self.count == 3:
-            self.count = 0
-            # threading.Thread(target=run_tests, daemon=True).start()
-            run_tests()
-        self.count += 1
+        # --- Control Buttons ---
+        main.add_widget(self._btn("Ask Notification Permission", self.request_permission))
+        main.add_widget(self._btn("Send Demo Notification", self.send_notification))
 
-    def request_permission(self, *args):
+        # --- Test Buttons ---
+        self.test_buttons = []  # keep reference for enabling/disabling
+
+        tests = [
+            ("Basic Notifications", TestBasicNotifications),
+            ("Styles & Layouts", TestNotificationStyles),
+            ("Buttons & Actions", TestNotificationActions),
+            ("Channels", TestNotificationChannels),
+            ("Appearance", TestNotificationAppearance),
+            ("Behavior", TestNotificationBehavior),
+            ("Progress", TestNotificationProgress),
+            ("Sound", TestNotificationSound),
+        ]
+
+        for label, test_case in tests:
+            btn = self._btn(f"Run Tests: {label}", lambda _, tc=test_case, b=None: self.run_test_case(tc, b))
+            self.test_buttons.append(btn)
+            main.add_widget(btn)
+
+        return root
+
+    # -----------------------------
+    # Helper to make buttons
+    # -----------------------------
+    def _btn(self, text, callback, height=106):
+        return TripleClickButton(
+            text=text,
+            height=dp(height),
+            size_hint_y=None,
+            callback=callback
+        )
+
+    # -----------------------------
+    # Test runner
+    # -----------------------------
+    def run_test_case(self, test_case, button_instance=None):
+        # Disable all test buttons while running
+        for btn in self.test_buttons:
+            btn.disabled = True
+
+        print(f"\n▶ Running {test_case.__name__}")
+        try:
+            suite = unittest.TestLoader().loadTestsFromTestCase(test_case)
+            runner = unittest.TextTestRunner(verbosity=2)
+            runner.run(suite)
+        finally:
+            # Re-enable all buttons after test finishes
+            for btn in self.test_buttons:
+                btn.disabled = False
+
+    # -----------------------------
+    # Actions
+    # -----------------------------
+    def request_permission(self, *_):
         asks_permission_if_needed()
 
-    def send_notification(self, *args):
-        N = Notification(
+    def send_notification(self, *_):
+        n = Notification(
             title="Hello",
             message="This is a basic notification.",
             channel_id="android_notify_demo",
             channel_name="Android Notify Demo"
         )
-        N.title = N.title +' '+ str(N.id)
-        N.send()
+        n.title = f"{n.title} {n.id}"
+        n.send()
 
     def on_resume(self):
-        print("on_resume...")
         try:
             from kivymd.toast import toast
             name = NotificationHandler.get_name()
-            print("name", name)
             toast(text=f"name: {name}", length_long=True)
-        except Exception as error_getting_notify_name:
-            print("Error getting notify name:", error_getting_notify_name)
+        except Exception as e:
+            print("Error getting notify name:", e)
 
 
+# -----------------------------
+# Entry
+# -----------------------------
 if __name__ == "__main__":
     AndroidNotifyDemoApp().run()
