@@ -6,7 +6,7 @@ from .base import BaseNotification
 from .styles import NotificationStyles
 from .internal.helper import generate_channel_id
 from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
-    get_python_activity_context
+    get_python_activity_context, on_android_platform
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
     set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance
 
@@ -21,7 +21,7 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
     get_broadcast_pending_intent_for_btn
 # All Needed Java Classes
-from .internal.java_classes import *
+from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder,NotificationCompatBigPictureStyle
 # Logger
 from .internal.logger import logger
 
