@@ -21,7 +21,8 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
     get_broadcast_pending_intent_for_btn, get_intent_used_to_open_app
 # All Needed Java Classes
-from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder,NotificationCompatBigPictureStyle
+from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder, \
+    NotificationCompatBigPictureStyle
 # Logger
 from .internal.logger import logger
 
@@ -710,12 +711,13 @@ class NotificationHandler:
     __bound = False
     __requesting_permission = False
     android_activity = None
+
     if on_android_platform() and not on_flet_app():
         from android import activity  # type: ignore
         android_activity = activity
 
     @classmethod
-    def get_name(cls):
+    def get_name(cls, on_start=False):
         """Returns name or id str for Clicked Notification."""
         if not on_android_platform():
             return "Not on Android"
@@ -734,8 +736,16 @@ class NotificationHandler:
         # print('Start up Intent ----', action)
         # print('start Up Title --->',__intent.getStringExtra("title"))
 
-        # TODO action Doesn't change even not opened from notification from `get_intent_used_to_open_app`
-        return saved_intent or get_intent_used_to_open_app()
+        if on_start:    # Using `on_start` arg because no way to know if opening from `Recents` only `Home Screen`
+        # if not saved_intent and cls.opened_from_notification:
+            # When Launching app(on_start) `cls.opened_from_notification` will be true so `get_intent_used_to_open_app` can check for `extras`
+            # When Opening App from main screen `__notification_handler` receives real Intent action value if `android.intent.action.MAIN` it sets to cls.opened_from_notification false
+            # TODO Launching From Recents
+            saved_intent = get_intent_used_to_open_app()
+        else:
+            logger.debug(f"fallback data: {get_intent_used_to_open_app()}")
+
+        return saved_intent
 
     @classmethod
     def __notification_handler(cls, intent):
@@ -745,9 +755,9 @@ class NotificationHandler:
         Sets self.__name #action of Notification that was clicked from Notification.name or Notification.id
         """
         if not on_android_platform():
-            return "Not on Android"
+            return None
 
-        # print('intent.getStringExtra("title")',intent.getStringExtra("title"))
+        logger.debug(f'main intent.getStringExtra("notification_name"): {intent.getStringExtra("notification_name")}')
         buttons_object = Notification.btns_box
         notify_functions = Notification.main_functions
         if DEV:
@@ -757,12 +767,13 @@ class NotificationHandler:
             action = intent.getAction()
             cls.__name = action
 
-            # print("The Action --> ",action)
+            logger.debug(f"main Action From Listener: {action}")
             if action == "android.intent.action.MAIN":  # Not Open From Notification
+                # cls.opened_from_notification = False
                 cls.__name = None
-                return 'Not notification'
+                return None
+            # cls.opened_from_notification = True
 
-            # print(intent.getStringExtra("title"))
             try:
                 if action in notify_functions and notify_functions[action]:
                     notify_functions[action]()

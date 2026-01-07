@@ -39,11 +39,12 @@ def get_broadcast_pending_intent_for_btn(receiver_class, action, title, btn_no):
     return pending_action_intent
 
 
-def add_data_to_intent(intent, title, notification_id):
+def add_data_to_intent(intent, title, notification_id, action_name):
     """Persist Some data to notification object for later use"""
     bundle = Bundle()
     bundle.putString("notification_title", title or 'Title Placeholder')
     bundle.putInt("notification_id", notification_id)
+    bundle.putString("notification_name", action_name)
     intent.putExtras(bundle)
 
 
@@ -59,15 +60,12 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
     )
     action = String(action_name)
     intent.setAction(action)
-    bundle = Bundle()
-    bundle.putString("title", notification_title)
-    bundle.putInt("notification_id", notification_id)
-    intent.putExtras(bundle)
-    add_data_to_intent(intent, notification_title, notification_id)
 
     # intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
     # intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
+    add_data_to_intent(intent, notification_title, notification_id, str(action_name))
+    logger.debug(f'data for intent: {notification_title}, id: {notification_id}, name: {action_name}')
     pending_intent = PendingIntent.getActivity(
         context, notification_id,
         intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
@@ -77,7 +75,11 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
 
 
 def get_intent_used_to_open_app():
-    action = None
+    """
+    Fail Safe for `App.on_start`
+    :return:
+    """
+    name = None
 
     # ALL WORKED
     # try:
@@ -91,6 +93,7 @@ def get_intent_used_to_open_app():
     #             for key in extras.keySet().toArray():
     #                 value = extras.get(key)
     #                 print(key, value)
+    #             print('start Up Title --->', intent.getStringExtra("notification_title"))
     #     except Exception as error_in_loop:
     #         print(error_in_loop)
     #
@@ -102,26 +105,28 @@ def get_intent_used_to_open_app():
     #         print("error_getting_action",error_getting_action)
     #
     #
-    #     try:
-    #         extras = intent.getExtras()
-    #         if extras:
-    #             value = extras.getString(String("title"))
-    #             print('title', value)
-    #     except Exception as error_in_last:
-    #         print("error_getting_title",error_in_last)
-    #         pass
-    #
-    #     print('start Up Title --->', intent.getStringExtra("title"))
     # except Exception as error_getting_notify_name:
     #     print("Error getting xxxxx name:", error_getting_notify_name)
-
 
     # TODO action Doesn't change even not opened from notification
     try:
         context = get_python_activity_context()
         intent = context.getIntent()
-        action = intent.getAction()
+        extras = intent.getExtras()
+        if extras:
+            name = extras.getString("notification_name")
+            logger.debug(f"fallback notification_name: {name}")
+            #
+            # print("notification_id:", extras.getInt("notification_id"))
+            # for key in extras.keySet().toArray():
+            #     value = extras.get(key)
+            #     logger.debug(f"key: {key}, value: {value}")
+        else:
+            logger.warning(f"Did not find notification_name no extras in intent, Using action value")
+            name = intent.getAction()
+
+        logger.debug(f"fallback action: {intent.getAction()}")
     except Exception as error_getting_notification_name:
         logger.exception(error_getting_notification_name)
 
-    return action
+    return name
