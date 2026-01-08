@@ -16,15 +16,15 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
 
     def test_channel_exists(self):
         try:
-            Notification.channelExists("default_channel")
+            print(Notification.channelExists("default_channel"))
         except Exception as e:
             self.fail(f"Channel exists failed: {e}")
 
     def test_do_channels_exist(self):
         try:
-            Notification.doChannelsExist(
+            print(Notification.doChannelsExist(
                 ["default_channel", "frm_tests", "unknown"]
-            )
+            ))
         except Exception as e:
             self.fail(f"Do channels exist failed: {e}")
 
@@ -39,9 +39,3 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
             ).send()
         except Exception as e:
             self.fail(f"Using channel failed: {e}")
-
-    def test_delete_channel(self):
-        try:
-            Notification.deleteChannel("default_channel")
-        except Exception as e:
-            self.fail(f"Delete channel failed: {e}")

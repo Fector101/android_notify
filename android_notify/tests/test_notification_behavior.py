@@ -6,7 +6,7 @@ class TestNotificationBehavior(AndroidNotifyBaseTest):
 
     def test_set_priority(self):
         try:
-            n = Notification(id=self.uid, title="Priority", message="High")
+            n = Notification(id=self.uid, title="setPriority method: high", message="High")
             n.setPriority("high")
             n.send()
         except Exception as e:
@@ -14,7 +14,7 @@ class TestNotificationBehavior(AndroidNotifyBaseTest):
 
     def test_persistent(self):
         try:
-            Notification(id=self.uid, title="Persistent", message="Testing").send(
+            Notification(id=self.uid, title="Persistent: True", message="Testing").send(
                 persistent=True
             )
         except Exception as e:

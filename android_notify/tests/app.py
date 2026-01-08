@@ -19,6 +19,7 @@ from android_notify import Notification, NotificationHandler
 from android_notify.core import asks_permission_if_needed
 
 # ---- IMPORT YOUR SPLIT TEST FILES (TestCase CLASSES) ----
+from android_notify.tests.android_notify_test import TestAndroidNotifyFull
 from android_notify.tests.test_notification_styles import TestNotificationStyles
 from android_notify.tests.test_notification_actions import TestNotificationActions
 from android_notify.tests.test_basic_notifications import TestBasicNotifications
@@ -27,6 +28,7 @@ from android_notify.tests.test_notification_appearance import TestNotificationAp
 from android_notify.tests.test_notification_behavior import TestNotificationBehavior
 from android_notify.tests.test_notification_progress import TestNotificationProgress
 from android_notify.tests.test_notification_sound import TestNotificationSound
+from android_notify.tests.test_notification_clear import TestClearNotifications
 
 
 # -----------------------------
@@ -115,6 +117,8 @@ class AndroidNotifyDemoApp(MDApp):
             ("Behavior", TestNotificationBehavior),
             ("Progress", TestNotificationProgress),
             ("Sound", TestNotificationSound),
+            ("Clear", TestClearNotifications),
+            ("One Ring to", TestAndroidNotifyFull),
         ]
 
         for label, test_case in tests:
@@ -127,7 +131,7 @@ class AndroidNotifyDemoApp(MDApp):
     # -----------------------------
     # Helper to make buttons
     # -----------------------------
-    def _btn(self, text, callback, height=106):
+    def _btn(self, text, callback, height=80):
         return TripleClickButton(
             text=text,
             height=dp(height),
@@ -156,10 +160,11 @@ class AndroidNotifyDemoApp(MDApp):
     # -----------------------------
     # Actions
     # -----------------------------
-    def request_permission(self, *_):
+    def request_permission(self, btn_instance):
         asks_permission_if_needed()
+        btn_instance.disabled = False
 
-    def send_notification(self, *_):
+    def send_notification(self, btn_instance):
         n = Notification(
             title="Hello",
             message="This is a basic notification.",
@@ -168,6 +173,7 @@ class AndroidNotifyDemoApp(MDApp):
         )
         n.title = f"{n.title} {n.id}"
         n.send()
+        btn_instance.disabled = False
 
     def on_resume(self):
         try:
