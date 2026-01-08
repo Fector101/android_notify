@@ -88,7 +88,7 @@ def open_notification_settings_screen():
     context = get_python_activity_context()
 
     if not context:
-        print("android_notify - Can't open settings screen, No context [not On Android]")
+        logger.warning("Can't open settings screen, No context [not On Android]")
         return None
     intent = Intent()
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

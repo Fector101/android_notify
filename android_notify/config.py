@@ -47,7 +47,7 @@ if on_flet_app() or from_service_file() or not on_android_platform():
         """Fallback for Developing on PC"""
 
         def wrapper(*args, **kwargs):
-            # print("Simulating run on UI thread")
+            logger.warning("Simulating run on UI thread")
             return func(*args, **kwargs)
 
         return wrapper

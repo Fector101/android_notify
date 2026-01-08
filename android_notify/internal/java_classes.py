@@ -70,7 +70,3 @@ else:
     from .facade import *
     logger.warning("Did not initialize java classes, Not on Android")
 
-
-def log_status():
-    logger.warning("Did not initialize java classes, Not on Android")
-    logger.info("Did not initialize java classes, Not on Android")

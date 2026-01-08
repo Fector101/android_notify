@@ -26,8 +26,8 @@ def get_app_root_path():
         try:
             from android.storage import app_storage_path  # type: ignore
             path = app_storage_path()
-        except Exception as e:
-            print('android-notify- Error getting apk main file path: ', e)
+        except Exception as error_getting_app_storage_path:
+            logger.exception(f'Error getting app main path: {error_getting_app_storage_path}')
             return './'
     return os.path.join(path, 'app')
 
@@ -49,7 +49,7 @@ def get_image_uri(relative_path):
     """
     app_root_path = get_app_root_path()
     output_path = os.path.join(app_root_path, relative_path)
-    # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
+    # rint(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
 
     if not os.path.exists(output_path):
         raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
@@ -72,9 +72,8 @@ def insert_app_icon(builder, custom_icon_path):
             uri = get_image_uri(custom_icon_path)
             icon = get_icon_object(uri)
             builder.setSmallIcon(icon)
-        except Exception as e:
-            print(e)
-            logger.exception('Failed getting custom icon')
+        except Exception as error_getting_custom_small_icon:
+            logger.exception(f'Failed getting custom icon: {error_getting_custom_small_icon}')
             builder.setSmallIcon(context.getApplicationInfo().icon)
     else:
         builder.setSmallIcon(context.getApplicationInfo().icon)
@@ -139,25 +138,23 @@ def send_notification(
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
 
     if img_path:
-        print(
-            'android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
+        logger.warning( '"img_path" arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
     if style:
-        print(
-            'android_notify- "style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
+        logger.warning( '"style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
 
     big_picture = None
     if big_picture_path:
         try:
             big_picture = get_image_uri(big_picture_path)
-        except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for big_picture_path: ', e)
+        except FileNotFoundError as error_getting_img_uri_BIGPIC:
+            logger.exception(f'Error Getting Uri for big_picture_path: {error_getting_img_uri_BIGPIC}')
 
     large_icon = None
     if large_icon_path:
         try:
             large_icon = get_image_uri(large_icon_path)
-        except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for large_icon_path: ', e)
+        except FileNotFoundError as error_getting_img_uri_LARGEICON:
+            logger.exception(f'Error Getting Uri for large_icon_path: {error_getting_img_uri_LARGEICON}')
 
     # Apply notification styles
     try:
@@ -181,8 +178,8 @@ def send_notification(
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
             builder.setStyle(big_picture_style)
 
-    except Exception as e:
-        print('android_notify- Error Failed Adding Style: ', e)
+    except Exception as error_adding_style:
+        logger.exception(f'Error Failed Adding Style: {error_adding_style}')
     # Display the notification
     notification_id = random.randint(0, 100)
     notification_manager.notify(notification_id, builder.build())

@@ -13,13 +13,13 @@ def get_img_absolute_path(relative_path):
     app_folder = os.path.join(app_storage_path(), 'app')
     img_full_path = os.path.join(app_folder, relative_path) # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
     if not os.path.exists(img_full_path):
-        print(f'Image: "{img_full_path}" Not Found, (Local images gotten from App Path)')
+        logger.warning(f'Image: "{img_full_path}" Not Found, (Local images gotten from App Path)')
         try:
-            print("- These are the existing files in your app Folder:")
+            logger.warning("These are the existing files in your app Folder:")
             print('[' + ', '.join(os.listdir(app_folder)) + ']')
         except Exception as could_not_get_files_in_path_error:
-            print('Exception: ', could_not_get_files_in_path_error)
-            print("Couldn't get Files in App Folder")
+            logger.warning("Couldn't get Files in App Folder")
+            logger.exception(f'Exception: {could_not_get_files_in_path_error}')
         return None
     return img_full_path
     # return get_bitmap_from_path(img_full_path)
@@ -132,8 +132,7 @@ def set_small_icon_with_bitmap(bitmap, builder):
         builder.setSmallIcon(icon)
         return True
     except Exception as autoclass_icon_error:
-        print(autoclass_icon_error)
-        logger.exception("Couldn't find class to set custom icon")
+        logger.exception(f"Couldn't find class to set custom icon: {autoclass_icon_error}")
         set_default_small_icon(builder)
         return False
 

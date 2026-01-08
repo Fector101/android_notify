@@ -63,7 +63,7 @@ def set_when(builder, secs_ago):
     builder.setWhen(ms)
     builder.setShowWhen(True)
 
-    logger.info(f"When set to {secs_ago} ago")
+    logger.info(f"When set to {secs_ago} ago.")
     return None
 
 
@@ -76,7 +76,7 @@ def show_infinite_progressbar(builder):
     if on_android_platform():
         builder.setProgress(0, 0, True)
         
-    logger.info('Showing infinite progressbar')
+    logger.info('Showing infinite progressbar.')
 
 
 def remove_buttons(builder):
@@ -86,7 +86,7 @@ def remove_buttons(builder):
     if on_android_platform():
         builder.mActions.clear()
 
-    logger.info('Removed Notification Buttons')
+    logger.info('Removed Notification Buttons.')
 
 
 def get_sound_uri(res_sound_name):

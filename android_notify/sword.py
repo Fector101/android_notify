@@ -30,7 +30,6 @@ from .widgets.images import set_default_small_icon, get_bitmap_from_path, get_bi
     set_small_icon_with_bitmap, get_img_absolute_path, find_and_set_default_icon, set_small_icon_color
 from .widgets.texts import set_big_text, set_sub_text, set_title, set_message, set_lines, set_custom_colors
 
-DEV = 0
 
 
 class Notification(BaseNotification):
@@ -178,7 +177,7 @@ class Notification(BaseNotification):
         """
         if on_android_platform():
             self.__build_img(path, NotificationStyles.BIG_PICTURE)
-        logger.info('Done setting big picture')
+        logger.info('Done setting big picture.')
 
     def setSmallIcon(self, path):
         """
@@ -189,7 +188,7 @@ class Notification(BaseNotification):
         if on_android_platform():
             self.app_icon = path
             self.__insert_app_icon(path)
-        logger.info('Done setting small icon')
+        logger.info('Done setting small icon.')
 
     def setLargeIcon(self, path):
         """
@@ -199,7 +198,7 @@ class Notification(BaseNotification):
         """
         if on_android_platform():
             self.__build_img(path, NotificationStyles.LARGE_ICON)
-        logger.info('Done setting large icon')
+        logger.info('Done setting large icon.')
 
     def setBigText(self, body, title="", summary=""):
         """Sets a big text for when drop down button is pressed
@@ -296,11 +295,10 @@ class Notification(BaseNotification):
 
         def delayed_update():
             if self.__update_timer is None:  # Ensure we are not executing an old timer
-                if self.logs:
-                    print('ProgressBar update skipped: bar has been removed.')
+                logger.warning('ProgressBar update skipped: bar has been removed.')
                 return
-            if self.logs:
-                print(f'Progress Bar Update value: {self.progress_current_value}')
+
+            logger.info(f'Progress Bar Update value: {self.progress_current_value}.')
 
             if _callback:
                 try:
@@ -354,7 +352,7 @@ class Notification(BaseNotification):
             if self.logs:
                 msg = message or self.message
                 title_ = title or self.title
-                logger.info(f'removed progress bar with message: {msg} and title: {title_}')
+                logger.info(f'removed progress bar with message: {msg} and title: {title_}.')
 
             if _callback:
                 try:
@@ -374,7 +372,7 @@ class Notification(BaseNotification):
             self.builder.setProgress(0, 0, False)
             self.refresh()
 
-        # Incase `self.updateProgressBar delayed_update` is called right before this method, so android doesn't bounce update
+        # In case `self.updateProgressBar delayed_update` is called right before this method, so android doesn't bounce update
         threading.Timer(cooldown, delayed_update).start()
 
     def setPriority(self, importance: Importance):
@@ -486,7 +484,7 @@ class Notification(BaseNotification):
         self.btns_box[action] = on_release
         # action_intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
-        logger.info('Added Button: {text} \nButton action: {action}')
+        logger.info(f'Added Button: {text}. \nButton action: {action}.')
 
     def removeButtons(self):
         """Removes all notification buttons
@@ -591,7 +589,7 @@ class Notification(BaseNotification):
     def __insert_app_icon(self, path=''):
         if BuildVersion.SDK_INT >= 23 and (path or self.app_icon not in ['', 'Defaults to package app icon']):
             # Bitmap Insert as Icon Not available below Android 6
-            logger.info('Getting custom icon')
+            logger.info('Getting custom icon...')
             self.__set_icon_from_bitmap(path or self.app_icon)
         else:
             find_and_set_default_icon(self.builder)
@@ -653,7 +651,7 @@ class Notification(BaseNotification):
             # LargeIcon requires smallIcon to be already set
             # 'setLarge, setBigPic' tries to dispatch before filling required values `self.__create_basic_notification`
             self.refresh()
-            logger.info('Done adding image to notification-------')
+            logger.info('Done adding image to notification.')
         except Exception as notification_image_error:
             img = self.large_icon_path if img_style == NotificationStyles.LARGE_ICON else self.big_picture_path
             logger.exception(
@@ -724,7 +722,7 @@ class NotificationHandler:
 
         saved_intent = cls.__name
         cls.__name = None  # so value won't be set when opening app not from notification
-        # print('saved_intent ',saved_intent)
+        # rint('saved_intent ',saved_intent)
         # if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
         # Below action is always None
         # __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
@@ -733,8 +731,8 @@ class NotificationHandler:
         # __Intent = autoclass('android.content.Intent')
         # __intent = __Intent(__context, __PythonActivity)
         # action = __intent.getAction()
-        # print('Start up Intent ----', action)
-        # print('start Up Title --->',__intent.getStringExtra("title"))
+        # rint('Start up Intent ----', action)
+        # rint('start Up Title --->',__intent.getStringExtra("title"))
 
         if on_start:    # Using `on_start` arg because no way to know if opening from `Recents` only `Home Screen`
         # if not saved_intent and cls.opened_from_notification:
@@ -760,9 +758,7 @@ class NotificationHandler:
         logger.debug(f'main intent.getStringExtra("notification_name"): {intent.getStringExtra("notification_name")}')
         buttons_object = Notification.btns_box
         notify_functions = Notification.main_functions
-        if DEV:
-            print("notify_functions ", notify_functions)
-            print("buttons_object", buttons_object)
+
         try:
             action = intent.getAction()
             cls.__name = action
@@ -781,12 +777,11 @@ class NotificationHandler:
                     if buttons_object[action]:
                         buttons_object[action]()
                     else:
-                        print("android_notify- Notification button function not found got:", buttons_object[action])
+                        logger.warning(f"Notification button function not found got: {buttons_object[action]}")
             except Exception as notification_handler_function_error:
-                print("Error Type ", notification_handler_function_error)
-                print('Failed to run function: ', traceback.format_exc())
+                logger.exception(f"Error Handling Notification Function: {notification_handler_function_error}")
         except Exception as extracting_notification_props_error:
-            print('Notify Handler Failed ', extracting_notification_props_error)
+            logger.exception(f'Error getting Notify Name For Handler: {extracting_notification_props_error}')
 
     @classmethod
     def bindNotifyListener(cls):
@@ -812,7 +807,7 @@ class NotificationHandler:
             cls.__bound = True
             return True
         except Exception as binding_listener_error:
-            print('Failed to bin notifications listener', binding_listener_error)
+            logger.exception(f'Failed to bind notifications listener: {binding_listener_error}')
             return False
 
     @classmethod
@@ -825,7 +820,7 @@ class NotificationHandler:
             cls.android_activity.unbind(on_new_intent=cls.__notification_handler)
             return True
         except Exception as unbinding_listener_error:
-            print("Failed to unbind notifications listener: ", unbinding_listener_error)
+            logger.exception(f"Failed to unbind notifications listener: {unbinding_listener_error}")
             return False
 
     @staticmethod
