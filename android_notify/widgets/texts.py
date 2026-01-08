@@ -131,8 +131,8 @@ def set_custom_colors(builder, title, message, title_color, message_color):
     # Layout
     notificationLayout = RemoteViews(package_name, small_layout_id)
     notificationLayoutExpanded = RemoteViews(package_name, large_layout_id)
-
-    logger.debug(f'small: {small_layout_id}, notificationLayout:  {notificationLayout}')
+    if small_layout_id == 0: # "== 0" for reference will be zero when not found
+        logger.warning(f'XML for Colored text Not Found small_layout_id: {small_layout_id}, large_layout_id:  {large_layout_id}')
 
     # Notification Content
     setLayoutText(
