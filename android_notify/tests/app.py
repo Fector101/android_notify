@@ -6,7 +6,7 @@
 # android_notify.logger.setLevel(logging.INFO)
 # logging.getLogger("android_notify").setLevel(logging.WARNING)
 import unittest
-import time
+import time, traceback
 from kivy.metrics import dp
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
@@ -29,7 +29,7 @@ from android_notify.tests.test_notification_behavior import TestNotificationBeha
 from android_notify.tests.test_notification_progress import TestNotificationProgress
 from android_notify.tests.test_notification_sound import TestNotificationSound
 from android_notify.tests.test_notification_clear import TestClearNotifications
-
+from kivy.clock import Clock
 
 # -----------------------------
 # Linux input fix
@@ -88,6 +88,34 @@ class AndroidNotifyDemoApp(MDApp):
             toast(text=f"name: {name}", length_long=True)
         except Exception as e:
             print("Error getting notify name:", e)
+
+
+        def android_service():
+
+            try:
+                import socket
+                from android import mActivity
+                from jnius import autoclass
+
+                def get_free_port_():
+                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    s.bind(("", 0))  # bind to a random free port
+                    port = s.getsockname()[1]
+                    s.close()
+                    return port
+
+                port = get_free_port_()
+                context = mActivity.getApplicationContext()
+                service_name = "Wallpapercarousel"
+                service = autoclass(context.getPackageName() + '.Service' + service_name.capitalize())
+                service.start(mActivity,str(port))
+
+            except Exception as error_call_service_on_start:
+                print(error_call_service_on_start)
+                traceback.print_exc()
+
+        Clock.schedule_once(lambda dt: android_service(), 2)
+
 
     def build(self):
         root = ScrollView(do_scroll_x=False)
