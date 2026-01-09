@@ -17,7 +17,7 @@ class KivyColorFormatter(logging.Formatter):
         name = record.name.ljust(14)
         msg = record.getMessage()
 
-        if sys.stdout.isatty():
+        if getattr(sys.stdout, "isatty", lambda: False)():
             color = self.COLORS.get(record.levelname, '')
             level = f"{color}{level}{self.RESET}"
 
