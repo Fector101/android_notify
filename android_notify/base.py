@@ -56,7 +56,7 @@ class BaseNotification:
 
     def validate_args(self, inputted_kwargs):
         """Check for unexpected arguments and suggest corrections before Python validation"""
-        default_fields =  {field.name : field.type for field in fields(self)} #{'title': <class 'str'>, 'message': <class 'str'>,...
+        default_fields =  {field.name : field.type for field in fields(self)} #{'title': <class 'str'>, 'message': <class 'str'>,...}
         allowed_fields_keys = set(default_fields.keys())
 
         # Identify invalid arguments

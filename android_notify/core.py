@@ -1,114 +1,55 @@
 """ Non-Advanced Stuff """
 import random
-import os, traceback
-from .config import get_python_activity, Manifest, is_platform_android
+import os
 
-ON_ANDROID = False
+from android_notify.internal.logger import logger
+from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context
+from android_notify.internal.permissions import has_notification_permission, ask_notification_permission
+from android_notify.internal.java_classes import autoclass, BuildVersion, BitmapFactory, NotificationChannel, NotificationManagerCompat, NotificationCompat, NotificationCompatBuilder, \
+    NotificationCompatBigTextStyle, NotificationCompatBigPictureStyle, NotificationCompatInboxStyle, IconCompat
+
 
 
 def on_flet_app():
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
 
-if is_platform_android():
-    try:
-        from jnius import autoclass  # Needs Java to be installed
-        PythonActivity = get_python_activity()
-        context = PythonActivity.mActivity  # Get the app's context
-        NotificationChannel = autoclass('android.app.NotificationChannel')
-        String = autoclass('java.lang.String')
-        Intent = autoclass('android.content.Intent')
-        PendingIntent = autoclass('android.app.PendingIntent')
-        BitmapFactory = autoclass('android.graphics.BitmapFactory')
-        BuildVersion = autoclass('android.os.Build$VERSION')
-        ON_ANDROID = True
-    except Exception as e:
-        print("android-notify: Error importing Java Classes-",e)
-        traceback.print_exc()
-
-
-if ON_ANDROID:
-    try:
-        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')                                       
-        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-
-        # Notification Design
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-    except Exception as e:
-        print("""\n
-        Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
-        * android.enable_androidx = True\n
-        """)
-
-from .an_utils import can_show_permission_request_popup, open_settings_screen
+if on_android_platform():
+    PythonActivity = get_python_activity()
 
 
 def get_app_root_path():
-    path = ''
+    context = get_python_activity_context()
     if on_flet_app():
         path = os.path.join(context.getFilesDir().getAbsolutePath(), 'flet')
     else:
         try:
             from android.storage import app_storage_path  # type: ignore
             path = app_storage_path()
-        except Exception as e:
-            print('android-notify- Error getting apk main file path: ', e)
+        except Exception as error_getting_app_storage_path:
+            logger.exception(f'Error getting app main path: {error_getting_app_storage_path}')
             return './'
     return os.path.join(path, 'app')
 
-def asks_permission_if_needed():
+
+def asks_permission_if_needed(legacy=False, no_androidx=False):
     """
     Ask for permission to send notifications if needed.
+    legacy parameter will replace no_androidx parameter in Future Versions
     """
-    if not ON_ANDROID:
-        print("android_notify- Can't ask permission when not on android")
-        return None
-
-    if BuildVersion.SDK_INT < 33:
-        print("android_notify- On android 12 or less don't need permission")
-        return True
-
-    if not can_show_permission_request_popup():
-        print("""android_notify- Permission to send notifications has been denied permanently.
-This happens when the user denies permission twice from the popup.
-Opening notification settings...
-""")
-        open_settings_screen()
-        return None
-
-    if on_flet_app():
-        ContextCompat = autoclass('androidx.core.content.ContextCompat')
-        # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
-        #in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
-        ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
-
-        permission = Manifest.POST_NOTIFICATIONS
-        granted = ContextCompat.checkSelfPermission(context, permission)
-        if granted != 0:  # PackageManager.PERMISSION_GRANTED == 0
-            ActivityCompat.requestPermissions(context, [permission], 101)
-    else:  # android package is from p4a which is for kivy
-        try:
-            from android.permissions import request_permissions, Permission, check_permission  # type: ignore
-            permissions = [Permission.POST_NOTIFICATIONS]
-            if not all(check_permission(p) for p in permissions):
-                request_permissions(permissions)
-        except Exception as e:
-            print("android_notify- error trying to request notification access: ", e)
+    if not has_notification_permission():
+        ask_notification_permission(legacy=legacy or no_androidx)
 
 
 def get_image_uri(relative_path):
     """
-    Get the absolute URI for an image in the assets folder.
+    Get the absolute URI for an image in the app assets folder.
     :param relative_path: The relative path to the image (e.g., 'assets/imgs/icon.png').
     :return: Absolute URI java Object (e.g., 'file:///path/to/file.png').
     """
     app_root_path = get_app_root_path()
     output_path = os.path.join(app_root_path, relative_path)
-    # print(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
+    # rint(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
 
     if not os.path.exists(output_path):
         raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
@@ -118,24 +59,23 @@ def get_image_uri(relative_path):
 
 
 def get_icon_object(uri):
-    BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
-
+    context = get_python_activity_context()
     bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
     return IconCompat.createWithBitmap(bitmap)
 
 
 def insert_app_icon(builder, custom_icon_path):
+    context = get_python_activity_context()
+
     if custom_icon_path:
         try:
             uri = get_image_uri(custom_icon_path)
             icon = get_icon_object(uri)
             builder.setSmallIcon(icon)
-        except Exception as e:
-            print('android_notify- error: ', e)
+        except Exception as error_getting_custom_small_icon:
+            logger.exception(f'Failed getting custom icon: {error_getting_custom_small_icon}')
             builder.setSmallIcon(context.getApplicationInfo().icon)
     else:
-        # print('Found res icon -->',context.getApplicationInfo().icon,'<--')
         builder.setSmallIcon(context.getApplicationInfo().icon)
 
 
@@ -161,11 +101,19 @@ def send_notification(
     :param style: deprecated.
     :param img_path: Path to the image resource.
     :param channel_id: Notification channel ID.(Default is lowercase channel name arg in lowercase)
+    :param channel_name: Notification channel name.
+    :param custom_app_icon_path: Path to the custom app icon.
+    :param big_picture_path: Path to the big picture.
+    :param large_icon_path: Path to the large icon.
+    :param big_text: Str to the big text.
+    :param lines: Str to the lines.
     """
-    if not ON_ANDROID:
-        print(
+    if not on_android_platform():
+        logger.warning(
             'This Package Only Runs on Android !!! ---> Check "https://github.com/Fector101/android_notify/" for Documentation.')
         return None
+    context = get_python_activity_context()
+
 
     asks_permission_if_needed()
 
@@ -190,25 +138,23 @@ def send_notification(
     builder.setPriority(NotificationCompat.PRIORITY_HIGH)
 
     if img_path:
-        print(
-            'android_notify- img_path arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
+        logger.warning( '"img_path" arg deprecated use "large_icon_path or big_picture_path or custom_app_icon_path" instead')
     if style:
-        print(
-            'android_notify- "style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
+        logger.warning( '"style" arg deprecated use args "big_picture_path", "large_icon_path", "big_text", "lines" instead')
 
     big_picture = None
     if big_picture_path:
         try:
             big_picture = get_image_uri(big_picture_path)
-        except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for big_picture_path: ', e)
+        except FileNotFoundError as error_getting_img_uri_BIGPIC:
+            logger.exception(f'Error Getting Uri for big_picture_path: {error_getting_img_uri_BIGPIC}')
 
     large_icon = None
     if large_icon_path:
         try:
             large_icon = get_image_uri(large_icon_path)
-        except FileNotFoundError as e:
-            print('android_notify- Error Getting Uri for large_icon_path: ', e)
+        except FileNotFoundError as error_getting_img_uri_LARGEICON:
+            logger.exception(f'Error Getting Uri for large_icon_path: {error_getting_img_uri_LARGEICON}')
 
     # Apply notification styles
     try:
@@ -232,8 +178,8 @@ def send_notification(
             big_picture_style = NotificationCompatBigPictureStyle().bigPicture(bitmap)
             builder.setStyle(big_picture_style)
 
-    except Exception as e:
-        print('android_notify- Error Failed Adding Style: ', e)
+    except Exception as error_adding_style:
+        logger.exception(f'Error Failed Adding Style: {error_adding_style}')
     # Display the notification
     notification_id = random.randint(0, 100)
     notification_manager.notify(notification_id, builder.build())
