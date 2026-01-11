@@ -414,7 +414,7 @@ class Notification(BaseNotification):
         self.passed_check = True
         self.send(silent, persistent, close_on_click)
 
-    def setVibrate(self, pattern=False):
+    def setVibrate(self, pattern=None):
         """
         Set the vibration pattern for the notification (Android API < 26 only).
 
@@ -428,7 +428,7 @@ class Notification(BaseNotification):
                 A vibration pattern in milliseconds formatted as:
                 [delay, vibrate, pause, vibrate, ...].
 
-                If False or not provided, the default pattern
+                If not provided, the default pattern
                 [0, 500, 200, 500] is used.
 
         Example:
@@ -436,9 +436,7 @@ class Notification(BaseNotification):
             >>> self.setVibrate([0, 300, 100, 300])
         """
         if on_android_platform() and BuildVersion < 26:
-            if isinstance(pattern, bool):
-                pattern = [0, 500, 200, 500]
-
+            pattern = pattern or [0, 500, 200, 500]
             self.builder.setVibrate(pattern)
         if not on_android_platform() or BuildVersion < 26:
             logger.info(f"Vibration pattern set to {pattern}")
