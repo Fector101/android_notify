@@ -424,7 +424,7 @@ class Notification(BaseNotification):
         controls vibration behavior.
 
         Args:
-            pattern (list[int] | bool, optional):
+            pattern (list[int] | None, optional):
                 A vibration pattern in milliseconds formatted as:
                 [delay, vibrate, pause, vibrate, ...].
 
