@@ -436,7 +436,9 @@ class Notification(BaseNotification):
             >>> self.setVibrate([0, 300, 100, 300])
         """
         if BuildVersion < 26:
-            pattern = pattern or [0, 500, 200, 500]
+            if isinstance(pattern, bool):
+                pattern = [0, 500, 200, 500]
+
             self.builder.setVibrate(pattern)
             logger.info(f"Vibration pattern set to {pattern}")
 
