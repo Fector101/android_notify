@@ -65,12 +65,12 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
     # intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
     add_data_to_intent(intent, notification_title, notification_id, str(action_name))
-    logger.debug(f'data for intent: {notification_title}, id: {notification_id}, name: {action_name}')
     pending_intent = PendingIntent.getActivity(
         context, notification_id,
         intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
     )
     builder.setContentIntent(pending_intent)
+    logger.debug(f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
 
 
 

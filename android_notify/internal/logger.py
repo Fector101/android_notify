@@ -25,12 +25,12 @@ class KivyColorFormatter(logging.Formatter):
 
 
 logger = logging.getLogger("android_notify")
-logger.setLevel(logging.NOTSET)
+# logger.setLevel(logging.NOTSET) # this override app logger level
 
 handler = logging.StreamHandler(sys.stdout)
 formatter = KivyColorFormatter()
 handler.setFormatter(formatter)
-handler.setLevel(logging.WARNING)  # respect logger level
+# handler.setLevel(logging.WARNING) # this override app logger level
 
 # Avoid duplicate logs if root logger is configured
 logger.propagate = False
