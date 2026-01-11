@@ -131,7 +131,7 @@ class Notification(BaseNotification):
         return does_channel_exist(channel_id=channel_id)
 
     @classmethod
-    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None):
+    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None, vibrate=False):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
         :param id: Used to send other notifications later through same channel.
@@ -139,9 +139,10 @@ class Notification(BaseNotification):
         :param description: user-visible detail about channel (Not required defaults to empty str).
         :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
         :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+        :param vibrate: if channel notifications should vibrate or not
         :return: boolean if channel created
         """
-        return create_channel(id, name, description, importance, res_sound_name)
+        return create_channel(id__=id, name=name, description=description, importance=importance, res_sound_name=res_sound_name, vibrate=vibrate)
 
     @classmethod
     def deleteChannel(cls, channel_id):
@@ -413,6 +414,32 @@ class Notification(BaseNotification):
         self.passed_check = True
         self.send(silent, persistent, close_on_click)
 
+    def setVibrate(self, pattern=False):
+        """
+        Set the vibration pattern for the notification (Android API < 26 only).
+
+        On devices running Android versions prior to 8.0 (Oreo),
+        vibration is configured directly on the notification builder.
+        This method is ignored on API 26+ where NotificationChannel
+        controls vibration behavior.
+
+        Args:
+            pattern (list[int] | bool, optional):
+                A vibration pattern in milliseconds formatted as:
+                [delay, vibrate, pause, vibrate, ...].
+
+                If False or not provided, the default pattern
+                [0, 500, 200, 500] is used.
+
+        Example:
+            >>> self.setVibrate()
+            >>> self.setVibrate([0, 300, 100, 300])
+        """
+        if BuildVersion < 26:
+            pattern = pattern or [0, 500, 200, 500]
+            self.builder.setVibrate(pattern)
+            logger.info(f"Vibration pattern set to {pattern}")
+
     def __send_logs(self):
         if not self.logs:
             return
@@ -560,7 +587,7 @@ class Notification(BaseNotification):
 
     def __create_basic_notification(self, persistent, close_on_click):
         if not self.channelExists(self.channel_id):
-            self.createChannel(self.channel_id, self.channel_name)
+            self.createChannel(id=self.channel_id, name=self.channel_name)
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
 
