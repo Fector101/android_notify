@@ -38,6 +38,7 @@ if on_android_platform():
         Uri = autoclass("android.net.Uri")
         Manifest = autoclass('android.Manifest$permission')
         Color = autoclass('android.graphics.Color')
+        Context = autoclass('android.content.Context')
     except Exception as e:
         from .facade import *
         logger.exception("Didn't get Basic Java Classes")

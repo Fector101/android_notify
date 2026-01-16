@@ -8,7 +8,7 @@ from .internal.helper import generate_channel_id
 from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
     get_python_activity_context, on_android_platform
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
-    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance
+    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance, force_vibrate
 
 # Types
 from .internal.an_types import Importance
@@ -131,7 +131,7 @@ class Notification(BaseNotification):
         return does_channel_exist(channel_id=channel_id)
 
     @classmethod
-    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None):
+    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None, vibrate=False):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
         :param id: Used to send other notifications later through same channel.
@@ -139,9 +139,10 @@ class Notification(BaseNotification):
         :param description: user-visible detail about channel (Not required defaults to empty str).
         :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
         :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+        :param vibrate: if channel notifications should vibrate or not
         :return: boolean if channel created
         """
-        return create_channel(id, name, description, importance, res_sound_name)
+        return create_channel(id__=id, name=name, description=description, importance=importance, res_sound_name=res_sound_name, vibrate=vibrate)
 
     @classmethod
     def deleteChannel(cls, channel_id):
@@ -413,6 +414,41 @@ class Notification(BaseNotification):
         self.passed_check = True
         self.send(silent, persistent, close_on_click)
 
+    def setVibrate(self, pattern=None):
+        """
+        Set the vibration pattern for the notification (Android API < 26 only).
+
+        On devices running Android versions prior to 8.0 (Oreo),
+        vibration is configured directly on the notification builder.
+        This method is ignored on API 26+ where NotificationChannel
+        controls vibration behavior.
+
+        Args:
+            pattern (list[int] | None, optional):
+                A vibration pattern in milliseconds formatted as:
+                [delay, vibrate, pause, vibrate, ...].
+
+                If not provided, the default pattern
+                [0, 500] is used.
+
+        Example:
+            >>> self.setVibrate()
+            >>> self.setVibrate([0, 500, 200, 500])
+        """
+        if on_android_platform() and BuildVersion < 26:
+            pattern = pattern or [0, 500]
+            self.builder.setVibrate(pattern)
+        if not on_android_platform() or BuildVersion < 26:
+            logger.info(f"Vibration pattern set to {pattern}")
+
+    @staticmethod
+    def fVibrate():
+        """
+        Some Android devices have a setting to only vibrate on silent, If Vibration is a MUST called this.
+        :return:
+        """
+        force_vibrate()
+
     def __send_logs(self):
         if not self.logs:
             return
@@ -560,7 +596,7 @@ class Notification(BaseNotification):
 
     def __create_basic_notification(self, persistent, close_on_click):
         if not self.channelExists(self.channel_id):
-            self.createChannel(self.channel_id, self.channel_name)
+            self.createChannel(id=self.channel_id, name=self.channel_name)
         elif not self.__using_set_priority_method:
             self.setPriority('medium' if self.silent else 'urgent')
 
@@ -790,12 +826,12 @@ class NotificationHandler:
             return None
 
         if on_flet_app():
-            logger.warning('On Flet App, Didnt Binding Notification Listener')
+            logger.warning("On Flet App, Didn't Binding Notification Listener")
             return None
 
         if from_service_file():
             # In Service File error 'NoneType' object has no attribute 'registerNewIntentListener'
-            logger.warning("In service file, Didnt Binding Notification Listener")
+            logger.warning("In service file, Didn't Binding Notification Listener")
             return None
 
         # TODO use BroadcastReceiver For Whole notification Click Not Just Buttons

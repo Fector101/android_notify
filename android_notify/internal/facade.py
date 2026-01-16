@@ -130,9 +130,13 @@ class NotificationChannel:
         return self.channel_id
 
     def setSound(self, sound_uri, _):
-        pass
+        logger.debug(f"[MOCK] NotificationChannel.setSound called, sound_uri={sound_uri}")
 
+    def enableVibration(self,state):
+        logger.debug(f"[MOCK] NotificationChannel.enableVibration called, state={state}")
 
+    def setVibrationPattern(self,list_of_numbers):
+        logger.debug(f"[MOCK] NotificationChannel.setVibrationPattern called, list_of_numbers={list_of_numbers}")
 class IconCompat:
     @classmethod
     def createWithBitmap(cls, bitmap):
@@ -251,6 +255,9 @@ class NotificationCompatBuilder:
 
     def setColor(self, color: Color) -> None:
         logger.debug(f"[MOCK] setColor called with color={color}")
+
+    def setVibrate(self, state) -> None:
+        logger.debug(f"[MOCK] setVibrate called with state={state}")
 
 
 class NotificationCompatBigTextStyle:
