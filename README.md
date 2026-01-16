@@ -254,7 +254,7 @@ n.send()
 
 <details>
 <summary> <b> Add Data to Specifc Notification</b> </summary>
-Useful for Saving and Getting Data from Notification  
+
 
 - `NotificationHandler.data_object` returns a `dict` of data in the clicked `notification`
 - `setData` can also be called after `send` to change `data_object` stored
