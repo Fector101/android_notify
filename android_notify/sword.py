@@ -8,7 +8,7 @@ from .internal.helper import generate_channel_id
 from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
     get_python_activity_context, on_android_platform
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
-    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance
+    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance, force_vibrate
 
 # Types
 from .internal.an_types import Importance
@@ -429,17 +429,25 @@ class Notification(BaseNotification):
                 [delay, vibrate, pause, vibrate, ...].
 
                 If not provided, the default pattern
-                [0, 500, 200, 500] is used.
+                [0, 500] is used.
 
         Example:
             >>> self.setVibrate()
-            >>> self.setVibrate([0, 300, 100, 300])
+            >>> self.setVibrate([0, 500, 200, 500])
         """
         if on_android_platform() and BuildVersion < 26:
-            pattern = pattern or [0, 500, 200, 500]
+            pattern = pattern or [0, 500]
             self.builder.setVibrate(pattern)
         if not on_android_platform() or BuildVersion < 26:
             logger.info(f"Vibration pattern set to {pattern}")
+
+    @staticmethod
+    def fVibrate():
+        """
+        Some Android devices have a setting to only vibrate on silent, If Vibration is a MUST called this.
+        :return:
+        """
+        force_vibrate()
 
     def __send_logs(self):
         if not self.logs:
@@ -818,12 +826,12 @@ class NotificationHandler:
             return None
 
         if on_flet_app():
-            logger.warning('On Flet App, Didnt Binding Notification Listener')
+            logger.warning("On Flet App, Didn't Binding Notification Listener")
             return None
 
         if from_service_file():
             # In Service File error 'NoneType' object has no attribute 'registerNewIntentListener'
-            logger.warning("In service file, Didnt Binding Notification Listener")
+            logger.warning("In service file, Didn't Binding Notification Listener")
             return None
 
         # TODO use BroadcastReceiver For Whole notification Click Not Just Buttons

@@ -7,7 +7,8 @@ from .logger import logger
 from ..config import get_notification_manager, on_android_platform, from_service_file, on_flet_app, \
     get_python_activity_context
 from .permissions import has_notification_permission
-from .java_classes import BuildVersion, Uri, NotificationCompat, NotificationManagerCompat
+from .java_classes import autoclass, BuildVersion, Uri, NotificationCompat, NotificationManagerCompat, \
+    NotificationManager, Context
 from .an_types import Importance
 
 
@@ -75,7 +76,7 @@ def show_infinite_progressbar(builder):
 
     if on_android_platform():
         builder.setProgress(0, 0, True)
-        
+
     logger.info('Showing infinite progressbar.')
 
 
@@ -95,7 +96,6 @@ def get_sound_uri(res_sound_name):
     context = get_python_activity_context()
     package_name = context.getPackageName()
     return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
-
 
 
 def set_sound(builder, res_sound_name):
@@ -140,3 +140,43 @@ def get_android_importance(importance: Importance):
     return value
     # side-note 'medium' = NotificationCompat.PRIORITY_LOW and 'low' = NotificationCompat.PRIORITY_MIN # weird but from docs
 
+
+def do_not_disturb_on():
+    if not on_android_platform():
+        return None
+    try:
+        nm = get_python_activity_context().getSystemService(Context.NOTIFICATION_SERVICE)
+        mode = nm.getCurrentInterruptionFilter()
+        return mode != NotificationManager.INTERRUPTION_FILTER_ALL
+    except Exception as error_getting_do_not_disturb_state:
+        logger.exception(error_getting_do_not_disturb_state)
+
+
+def force_vibrate(repeat=False):
+    if not on_android_platform():
+        return None
+
+    context = get_python_activity_context()
+    vibrator = context.getSystemService(Context.VIBRATOR_SERVICE)
+
+    if vibrator is None or not vibrator.hasVibrator():
+        logger.warning("No vibrator available")
+        return None
+
+    if do_not_disturb_on():
+        logger.warning("Do not disturb is on")
+
+    AudioAttributes = autoclass('android.media.AudioAttributes')
+    AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+    pattern = [0, 500]  # vibrate pattern for once trying to replicate regular notification vibration.
+
+    if BuildVersion.SDK_INT >= 26:
+        VibrationEffect = autoclass('android.os.VibrationEffect')
+        effect = VibrationEffect.createWaveform(pattern, -1 if not repeat else 0)
+        attributes = AudioAttributesBuilder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).setUsage(
+            AudioAttributes.USAGE_ALARM).build()
+        vibrator.vibrate(effect, attributes)
+        return None
+    else:
+        vibrator.vibrate(pattern, -1 if not repeat else 0)
+        return None
