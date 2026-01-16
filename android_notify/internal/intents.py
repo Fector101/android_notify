@@ -7,31 +7,33 @@ from android_notify.config import get_python_activity, get_python_activity_conte
 from android_notify.internal.logger import logger
 
 
-def set_action(action_intent, action, title, key_int):
+def set_action(action_intent, action, title, key_int, data_object):
     action_intent.setAction(action)
     action_intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
     bundle = Bundle()
+    insert_data_object(data_object=data_object, bundle=bundle)
     bundle.putString("title", title)
     bundle.putInt("key_int", key_int)
     action_intent.putExtras(bundle)
     action_intent.putExtra("button_id", action)
 
 
-def get_default_pending_intent_for_btn(action, title, btn_no):
+def get_default_pending_intent_for_btn(action, title, btn_no, data_object):
     context = get_python_activity_context()
     PythonActivity = get_python_activity()
     action_intent = Intent(context, PythonActivity)
-    set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no)
+    set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no, data_object=data_object)
     pending_action_intent = PendingIntent.getActivity(
         context, btn_no, action_intent,
         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
     )
     return pending_action_intent
 
-def get_broadcast_pending_intent_for_btn(receiver_class, action, title, btn_no):
+
+def get_broadcast_pending_intent_for_btn(receiver_class, action, title, btn_no, data_object):
     context = get_python_activity_context()
     action_intent = Intent(context, receiver_class)
-    set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no)
+    set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no, data_object=data_object)
     pending_action_intent = PendingIntent.getBroadcast(
         context, btn_no, action_intent,
         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
@@ -39,16 +41,27 @@ def get_broadcast_pending_intent_for_btn(receiver_class, action, title, btn_no):
     return pending_action_intent
 
 
-def add_data_to_intent(intent, title, notification_id, action_name):
+def insert_data_object(data_object, bundle):
+    if not data_object:
+        return None
+    try:
+        for key, value in data_object.items():
+            bundle.putString(str(key), str(value))
+    except Exception as error_adding_data_object:
+        logger.exception(error_adding_data_object)
+
+
+def add_data_to_intent(intent, title, notification_id, action_name, data_object):
     """Persist Some data to notification object for later use"""
     bundle = Bundle()
+    insert_data_object(data_object, bundle)
     bundle.putString("notification_title", title or 'Title Placeholder')
     bundle.putInt("notification_id", notification_id)
     bundle.putString("notification_name", action_name)
     intent.putExtras(bundle)
 
 
-def add_intent_to_open_app(builder, action_name, notification_title, notification_id):
+def add_intent_to_open_app(builder, action_name, notification_title, notification_id, data_object):
     context = get_python_activity_context()
     PythonActivity = get_python_activity()
     intent = Intent(context, PythonActivity)
@@ -64,17 +77,17 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
     # intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
     # intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
 
-    add_data_to_intent(intent, notification_title, notification_id, str(action_name))
+    add_data_to_intent(intent, notification_title, notification_id, str(action_name), data_object)
     pending_intent = PendingIntent.getActivity(
         context, notification_id,
         intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
     )
     builder.setContentIntent(pending_intent)
-    logger.debug(f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
+    logger.debug(
+        f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
 
 
-
-def get_intent_used_to_open_app():
+def get_name_used_to_open_app():
     """
     Fail Safe for `App.on_start`
     :return:
@@ -125,3 +138,25 @@ def get_intent_used_to_open_app():
         logger.exception(error_getting_notification_name)
 
     return name
+
+
+def get_data_object_added_to_intent(intent=None):
+    gotten_data_object = {}
+    if not intent:
+        try:
+            context = get_python_activity_context()
+            intent = context.getIntent()
+        except Exception as error_getting_intent:
+            logger.exception(error_getting_intent)
+    try:
+        extras = intent.getExtras()
+        if extras:
+            for key in extras.keySet().toArray():
+                value = extras.get(key)
+                gotten_data_object[key] = value
+        else:
+            pass
+    except Exception as error_getting_optional_data_object:
+        logger.exception(f"Error getting data_object {error_getting_optional_data_object}")
+
+    return gotten_data_object
