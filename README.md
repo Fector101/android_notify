@@ -282,5 +282,5 @@ from android_notify import Notification, NotificationHandler
 
 ## ☕ Support the Project
 
-If you find this project helpful, any support would help me continue working on open-source projects. I’m currently saving for a laptop to keep developing.
+If you find this project helpful, your support would help me continue working on open-source projects
 [donate](https://www.buymeacoffee.com/fector101)
