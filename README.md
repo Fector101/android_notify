@@ -240,7 +240,6 @@ android.permissions = VIBRATE
 ```
 
 ```python
-# Use Hex Code to be Safe
 Notification.createChannel(id='shake', name="Shake Passage", vibrate=True)
 
 n=Notification(title='Vibrate',channel_id='shake')
