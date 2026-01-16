@@ -88,25 +88,25 @@ def get_intent_used_to_open_app():
     #     intent = activity.getIntent()
     #     try:
     #         extras = intent.getExtras()
-    #         rint(extras, 11)
+    #         drint(extras, 11)
     #         if extras:
     #             for key in extras.keySet().toArray():
     #                 value = extras.get(key)
-    #                 rint(key, value)
-    #             rint('start Up Title --->', intent.getStringExtra("notification_title"))
+    #                 drint(key, value)
+    #             drint('start Up Title --->', intent.getStringExtra("notification_title"))
     #     except Exception as error_in_loop:
-    #         rint(error_in_loop)
+    #         drint(error_in_loop)
     #
     #
     #     try:
     #         action = intent.getAction()
-    #         rint('Start up Intent ----', action)
+    #         drint('Start up Intent ----', action)
     #     except Exception as error_getting_action:
-    #         rint("error_getting_action",error_getting_action)
+    #         drint("error_getting_action",error_getting_action)
     #
     #
     # except Exception as error_getting_notify_name:
-    #     rint("Error getting xxxxx name:", error_getting_notify_name)
+    #     drint("Error getting name1:", error_getting_notify_name)
 
     # TODO action Doesn't change even not opened from notification
     try:
@@ -115,17 +115,12 @@ def get_intent_used_to_open_app():
         extras = intent.getExtras()
         if extras:
             name = extras.getString("notification_name")
-            logger.debug(f"fallback notification_name: {name}")
-            #
-            # rint("notification_id:", extras.getInt("notification_id"))
-            # for key in extras.keySet().toArray():
-            #     value = extras.get(key)
-            #     logger.debug(f"key: {key}, value: {value}")
-        else:
-            logger.warning(f"Did not find notification_name no extras in intent, Using action value")
-            name = intent.getAction()
+            # logger.debug(f"fallback notification_name: {name}")
+        if not name:
+            action = name = intent.getAction()
+            logger.warning(f"Did not find notification name no extras in intent, Using action value: {action}")
 
-        logger.debug(f"fallback action: {intent.getAction()}")
+        # logger.debug(f"fallback action: {intent.getAction()}")
     except Exception as error_getting_notification_name:
         logger.exception(error_getting_notification_name)
 
