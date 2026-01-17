@@ -172,28 +172,40 @@ if __name__ == "__main__":
 
 
 ## Documentation
-For Dev Version use
-```requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip```
+For Dev Version usage
+```ini
+requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
+```
 
-### To talk to BroadCast Listener From Buttons
+<details>
+<summary> <b> To talk to BroadCast Listener From Buttons </b> </summary>
 
 - Make things happen without being in your app
 ```python
-
 from android_notify import Notification
 notification = Notification(title="Reciver Notification")
 notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
 notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
 ```
-You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to#use-with-broadcast-listener-in-kivy) as a guide create a broadcast listener
+You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) as a guide create a broadcast listener
+</details>
 
-### To use colored text in your notifications
+<details>
+<summary> <b> To use colored text in your notifications </b> </summary>
 
 - Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
 - Lastly in your `buildozer.spec` file  
 Add `source.include_exts = xml` and `android.add_resources = # path you pasted`
+```python
+# Use Hex Code to be Safe
+n = Notification(title="Title and Message Color", message="Testing",title_color="red")
+n.send()
+```
 
-### To use Custom Sounds
+</details>
+
+<details>
+<summary> <b>To use Custom Sounds </b> </summary>
 
 - Put audio files in `res/raw` folder,
 - Then from `buildozer.spec` point to res folder `android.add_resources = res`
@@ -205,7 +217,7 @@ Lastly From the code
 Notification.createChannel(
     id="weird_sound_tester",
     name="Weird Sound Tester",
-    description="A test channel used to verify custom notification sounds from the res/raw folder.",
+    description="A test channel for custom sounds from the res/raw folder.",
     res_sound_name="sneeze" # file name without .wav or .mp3
 )
 
@@ -218,10 +230,59 @@ n=Notification(
 n.setSound("sneeze")# for android 7 below 
 n.send()
 ```
+</details>
+
+
+<details>
+<summary> <b> Vibrate feature</b> </summary>
+
+```ini
+# buildozer.spec
+android.permissions = VIBRATE
+```
+
+```python
+Notification.createChannel(id='shake', name="Shake Passage", vibrate=True)
+
+n=Notification(title='Vibrate',channel_id='shake')
+n.setVibrate() # for less than android 8
+n.fVibrate() # To Force Vibrate
+n.send()
+```
+
+</details>
+
+
+<details>
+<summary> <b> Add Data to Notification</b> </summary>
+
+
+- `NotificationHandler.data_object` returns a `dict` of data in the clicked `notification`
+- `setData` can also be called after `send` to change `data_object` stored
+- Use `name` if value is constant `Notification(name="change page")`
+```python
+from android_notify import Notification, NotificationHandler
+
+    def build(self):
+        notification = Notification(title="Hello")
+        notification.setData({"next wallpaper path": "test.jpg"})
+        notification.send()
+
+    def on_start(self):
+        notification_data = NotificationHandler.data_object  # {"next wallpaper path": "test.jpg",...}
+        print(notifcation_data)
+
+    def on_resume(self):
+        notification_data = NotificationHandler.data_object  # {"next wallpaper path": "test.jpg",...}
+        print(notifcation_data)
+```
+
+</details>
+
 
 ### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
 
-If you find this project helpful, any support would help me continue working on open-source projects. I’m currently saving for a laptop to keep developing.
+If you find this project helpful, your support would help me continue working on open-source projects
 [donate](https://www.buymeacoffee.com/fector101)

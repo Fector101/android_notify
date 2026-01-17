@@ -19,7 +19,7 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
     delete_all_channels, get_channels
 # Intents
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
-    get_broadcast_pending_intent_for_btn, get_intent_used_to_open_app
+    get_broadcast_pending_intent_for_btn, get_name_used_to_open_app, get_data_object_added_to_intent
 # All Needed Java Classes
 from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder, \
     NotificationCompatBigPictureStyle
@@ -75,6 +75,8 @@ class Notification(BaseNotification):
     def __init__(self, **kwargs):  # @dataclass already does work
         super().__init__(**kwargs)
 
+        self.__called_set_data = None
+        self.data_object = None
         self.__id = self.id or self.__get_unique_id()  # Different use from self.name all notifications require `integers` id's not `strings`
         self.id = self.__id  # To use same Notification in different instances
 
@@ -105,6 +107,19 @@ class Notification(BaseNotification):
         self.notification_manager = get_notification_manager()
         context = get_python_activity_context()
         self.builder = NotificationCompatBuilder(context, self.channel_id)
+
+    def setData(self, data_object:dict):
+        """
+        Set Optional data for notification
+        :param data_object:
+        :return:
+        """
+        self.__called_set_data = True
+        self.data_object = data_object
+        action_name = str(self.name or self.__id)
+        add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
+                               notification_id=self.__id, data_object=self.data_object)
+
 
     def addLine(self, text: str):
         self.__lines.append(text)
@@ -501,7 +516,7 @@ class Notification(BaseNotification):
                 receiver_class_name = f"{get_package_name()}.{receiver_name}"
                 receiverClass = autoclass(receiver_class_name)
                 pending_action_intent = get_broadcast_pending_intent_for_btn(receiver_class=receiverClass,
-                                                                             action=action, title=title, btn_no=btn_no)
+                                                                             action=action, title=title, btn_no=btn_no, data_object=self.data_object)
             except Exception as error_getting_broadcast_receiver:
                 logger.exception(error_getting_broadcast_receiver)
 
@@ -509,10 +524,9 @@ class Notification(BaseNotification):
             logger.warning(f"Didn't find: {receiver_class_name}, Warning defaulting to getActivity for Button")
 
         if not receiver_name and not pending_action_intent:
-            pending_action_intent = get_default_pending_intent_for_btn(action=action, title=title, btn_no=btn_no)
+            pending_action_intent = get_default_pending_intent_for_btn(action=action, title=title, btn_no=btn_no, data_object=self.data_object)
 
         context = get_python_activity_context()
-        # Convert text to CharSequence
         action_text = cast('java.lang.CharSequence', String(text))
         self.builder.addAction(int(context.getApplicationInfo().icon), action_text, pending_action_intent)
         self.builder.setContentIntent(pending_action_intent)  # Set content intent for notification tap
@@ -614,8 +628,9 @@ class Notification(BaseNotification):
 
         try:
             action_name = str(self.name or self.__id)
-            add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
-                                   notification_id=self.__id)
+            if not self.__called_set_data:
+                add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
+                                   notification_id=self.__id, data_object=self.data_object)
             self.main_functions[action_name] = self.callback
         except Exception as failed_to_add_intent_to_open_app:
             logger.exception(failed_to_add_intent_to_open_app)
@@ -745,6 +760,7 @@ class NotificationHandler:
     __bound = False
     __requesting_permission = False
     android_activity = None
+    data_object = {} # For getting added data on notification
 
     if on_android_platform() and not on_flet_app():
         from android import activity  # type: ignore
@@ -772,12 +788,14 @@ class NotificationHandler:
 
         if on_start:    # Using `on_start` arg because no way to know if opening from `Recents` only `Home Screen`
         # if not saved_intent and cls.opened_from_notification:
-            # When Launching app(on_start) `cls.opened_from_notification` will be true so `get_intent_used_to_open_app` can check for `extras`
+            # When Launching app(on_start) `cls.opened_from_notification` will be true so `get_name_used_to_open_app` can check for `extras`
             # When Opening App from main screen `__notification_handler` receives real Intent action value if `android.intent.action.MAIN` it sets to cls.opened_from_notification false
             # TODO Launching From Recents
-            saved_intent = get_intent_used_to_open_app()
+            saved_intent = get_name_used_to_open_app()
+            cls.data_object = get_data_object_added_to_intent()
+
         else:
-            logger.debug(f"fallback data: {get_intent_used_to_open_app()}")
+            logger.debug(f"name used to open app: {get_name_used_to_open_app()}")
 
         return saved_intent
 
@@ -805,7 +823,7 @@ class NotificationHandler:
                 cls.__name = None
                 return None
             # cls.opened_from_notification = True
-
+            cls.data_object = get_data_object_added_to_intent(intent)
             try:
                 if action in notify_functions and notify_functions[action]:
                     notify_functions[action]()
