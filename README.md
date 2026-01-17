@@ -254,7 +254,7 @@ n.send()
 
 
 <details>
-<summary> <b> Add Data Notification</b> </summary>
+<summary> <b> Add Data to Notification</b> </summary>
 
 
 - `NotificationHandler.data_object` returns a `dict` of data in the clicked `notification`
