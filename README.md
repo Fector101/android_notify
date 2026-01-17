@@ -172,8 +172,10 @@ if __name__ == "__main__":
 
 
 ## Documentation
-For Dev Version use
-```requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip```
+For Dev Version usage
+```ini
+requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
+```
 
 <details>
 <summary> <b> To talk to BroadCast Listener From Buttons </b> </summary>
@@ -185,7 +187,7 @@ notification = Notification(title="Reciver Notification")
 notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
 notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
 ```
-You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to#use-with-broadcast-listener-in-kivy) as a guide create a broadcast listener
+You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) as a guide create a broadcast listener
 </details>
 
 <details>
