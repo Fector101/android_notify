@@ -794,8 +794,7 @@ class NotificationHandler:
             saved_intent = get_name_used_to_open_app()
             cls.data_object = get_data_object_added_to_intent()
 
-        else:
-            logger.debug(f"name used to open app: {get_name_used_to_open_app()}")
+        logger.debug(f"name used to open app: {saved_intent}")
 
         return saved_intent
 
@@ -809,29 +808,34 @@ class NotificationHandler:
         if not on_android_platform():
             return None
 
-        logger.debug(f'main intent.getStringExtra("notification_name"): {intent.getStringExtra("notification_name")}')
         buttons_object = Notification.btns_box
         notify_functions = Notification.main_functions
 
         try:
             action = intent.getAction()
-            cls.__name = action
+            name = intent.getStringExtra("notification_name") # btns also have this.
+            cls.__name = name
 
-            logger.debug(f"main Action From Listener: {action}")
-            if action == "android.intent.action.MAIN":  # Not Open From Notification
-                # cls.opened_from_notification = False
+            logger.debug(f"Intent Data - notification_name: {name}, Action: {action}")
+            if not name:  # Not Open From Notification
+                logger.debug(f"Intent not from notification")
                 cls.__name = None
                 return None
-            # cls.opened_from_notification = True
             cls.data_object = get_data_object_added_to_intent(intent)
+
             try:
-                if action in notify_functions and notify_functions[action]:
-                    notify_functions[action]()
-                elif action in buttons_object:
-                    if buttons_object[action]:
-                        buttons_object[action]()
+                if name in notify_functions:
+                    notification_callback = notify_functions[name]
+                    if notification_callback:
+                        notification_callback()
                     else:
-                        logger.warning(f"Notification button function not found got: {buttons_object[action]}")
+                        logger.warning(f"Clicked Notification Callback Function Not Found.")
+                elif name in buttons_object:
+                    button_function = buttons_object[name]
+                    if button_function:
+                        button_function()
+                    else:
+                        logger.warning(f"Clicked Notification button function not found.")
             except Exception as notification_handler_function_error:
                 logger.exception(f"Error Handling Notification Function: {notification_handler_function_error}")
         except Exception as extracting_notification_props_error:
