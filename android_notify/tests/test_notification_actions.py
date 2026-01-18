@@ -1,15 +1,14 @@
 from android_notify import Notification
-from .base_test import AndroidNotifyBaseTest
-
+from .base_test import AndroidNotifyBaseTest, toast
 
 class TestNotificationActions(AndroidNotifyBaseTest):
 
     def test_buttons(self):
         try:
             n = Notification(id=self.uid, title="Buttons", message="Testing")
-            n.addButton("Play", on_release=lambda: print("Play"))
-            n.addButton("Pause", on_release=lambda: print("Pause"))
-            n.addButton("Stop", on_release=lambda: print("Stop"))
+            n.addButton("Play", on_release=lambda: toast("Play"))
+            n.addButton("Pause", on_release=lambda: toast("Pause"))
+            n.addButton("Stop", on_release=lambda: toast("Stop"))
             n.send()
         except Exception as e:
             self.fail(f"Buttons failed: {e}")
@@ -52,7 +51,7 @@ class TestNotificationActions(AndroidNotifyBaseTest):
                 id=self.uid,
                 title="With Callback",
                 message="Tap to run callback",
-                callback=lambda: print("Callback invoked")
+                callback=lambda: toast("Callback invoked")
             ).send()
         except Exception as e:
             self.fail(f"Callback failed: {e}")
@@ -63,7 +62,7 @@ class TestNotificationActions(AndroidNotifyBaseTest):
                 id=self.uid,
                 title="With Callback Dude",
                 message="Tap to run callback Dude",
-                callback=lambda: print("I'm callback, I ran Dude")
+                callback=lambda: toast("I'm callback, I ran Dude")
             ).send()
         except Exception as e:
             self.fail(f"Callback failed: {e}")
