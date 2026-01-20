@@ -1,6 +1,6 @@
 import os
 
-__version__ = "1.60.6"
+__version__ = "1.60.7"
 
 from .internal.java_classes import autoclass, cast, NotificationManager
 from .internal.logger import logger
@@ -14,6 +14,7 @@ def on_kivy_android():
         return True
     elif 'ANDROID_ARGUMENT' in os.environ:
         return True
+
     return False
 
 

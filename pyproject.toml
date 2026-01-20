@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-notify"
-version = "1.60.6"
+version = "1.60.7"
 description = "A Python package that simplifies creating Android notifications in Kivy and Flet apps."
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
@@ -49,6 +49,9 @@ Funding = "https://www.buymeacoffee.com/fector101"
 dev = [
     "kivy>=2.0.0"
 ]
+
+[tool.setuptools.package-data]
+"android_notify" = ["fallback-icons/*.png"]
 
 [project.scripts]
 android-notify = "android_notify.__main__:main"

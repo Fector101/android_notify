@@ -24,7 +24,7 @@ if on_android_platform():
     # Leaving this as a broad Exception for unforeseen case so apps don't crash
     # noinspection PyBroadException
     try:
-        # Get the required Java classes needs to on android to import
+        # Get the required Java classes needs to run on android to import
         Bundle = autoclass('android.os.Bundle')
         String = autoclass('java.lang.String')
         Intent = autoclass('android.content.Intent')

@@ -92,7 +92,6 @@ def get_intent_for_launching_app():
         context = get_python_activity_context()
         package_manager = context.getPackageManager()
         package_name = context.getPackageName()
-        print("package_manager.getLaunchIntentForPackage(package_name)",package_manager.getLaunchIntentForPackage(package_name))
         return package_manager.getLaunchIntentForPackage(package_name)
     except Exception as error_getting_default_intent_for_launching_app:
         print(error_getting_default_intent_for_launching_app)

@@ -763,6 +763,7 @@ class NotificationHandler:
     data_object = {} # For getting added data on notification
 
     if on_android_platform() and not on_flet_app():
+        # noinspection PyPackageRequirements
         from android import activity  # type: ignore
         android_activity = activity
 
@@ -774,7 +775,7 @@ class NotificationHandler:
 
         saved_intent = cls.__name
         cls.__name = None  # so value won't be set when opening app not from notification
-        # rint('saved_intent ',saved_intent)
+        # drint('saved_intent ',saved_intent)
         # if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
         # Below action is always None
         # __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
@@ -783,8 +784,8 @@ class NotificationHandler:
         # __Intent = autoclass('android.content.Intent')
         # __intent = __Intent(__context, __PythonActivity)
         # action = __intent.getAction()
-        # rint('Start up Intent ----', action)
-        # rint('start Up Title --->',__intent.getStringExtra("title"))
+        # drint('Start up Intent ----', action)
+        # drint('start Up Title --->',__intent.getStringExtra("title"))
 
         if on_start:    # Using `on_start` arg because no way to know if opening from `Recents` only `Home Screen`
         # if not saved_intent and cls.opened_from_notification:

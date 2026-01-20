@@ -81,7 +81,7 @@ android.api = 35
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.60.6.dev0"
+  "pyjnius","android-notify==1.60.7.dev0"
 ]
 
 [tool.flet.android.permission]
@@ -108,7 +108,7 @@ android-notify -v
 ------
 ## Installing without Androidx
 How to use without `gradle_dependencies`
-Use `android-notify==1.60.6.dev0` to install via `pip`
+Use `android-notify==1.60.7.dev0` to install via `pip`
 
 <details>
 <summary><b>In Kivy</b></summary>
@@ -116,7 +116,7 @@ Use `android-notify==1.60.6.dev0` to install via `pip`
 
 ```ini
 # buildozer.spec
-requirements = python3, kivy, pyjnius, android-notify==1.60.6.dev0
+requirements = python3, kivy, pyjnius, android-notify==1.60.7.dev0
 ```
 
 </details>
@@ -127,10 +127,10 @@ requirements = python3, kivy, pyjnius, android-notify==1.60.6.dev0
 <br/>
 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.6.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.7.dev0`
 - Minimal working example 
 ```py
-# Testing with `android-notify==1.60.6.dev0` on pydroid
+# Testing with `android-notify==1.60.7.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button

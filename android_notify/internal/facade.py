@@ -137,6 +137,7 @@ class NotificationChannel:
 
     def setVibrationPattern(self,list_of_numbers):
         logger.debug(f"[MOCK] NotificationChannel.setVibrationPattern called, list_of_numbers={list_of_numbers}")
+
 class IconCompat:
     @classmethod
     def createWithBitmap(cls, bitmap):
@@ -192,19 +193,19 @@ class MActions:
 class NotificationCompatBuilder:
     def __init__(self, context, channel_id):
         self.mActions = MActions()
-        pass
+        logger.debug(f"[MOCK] NotificationCompatBuilder initialized with context={context}, channel_id={channel_id}")
 
     def setProgress(self, max_value, current_value, endless):
-        pass
+        logger.debug(f"[MOCK] setProgress called with max={max_value}, current={current_value}, endless={endless}")
 
     def setStyle(self, style):
-        pass
+        logger.debug(f"[MOCK] setStyle called with style={style}")
 
     def setContentTitle(self, title):
-        pass
+        logger.debug(f"[MOCK] setContentTitle called with title={title}")
 
     def setContentText(self, text):
-        pass
+        logger.debug(f"[MOCK] setContentText called with text={text}")
 
     def setSmallIcon(self, icon):
         logger.debug(f"[MOCK] setSmallIcon called with icon={icon}")
@@ -355,6 +356,12 @@ class Context:
         logger.debug("[MOCK] Context.getPackageName called")
         return None  # TODO get package name from buildozer.spec file
 
+
+class PackageManager:
+    @property
+    def PERMISSION_GRANTED(self):
+        logger.debug("[MOCK] PackageManager.PERMISSION_GRANTED called")
+        return 1
 
 # Now writing Knowledge from errors
 # notify.(int, Builder.build()) # must be int

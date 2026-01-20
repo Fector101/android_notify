@@ -1,5 +1,6 @@
 """
 Deprecated: v1.59
+Use - (setLargeIcon, setBigPicture, setBigText and setLines) on Notification instance Instead
 ---
 Contains Safe way to call Styles
 """
