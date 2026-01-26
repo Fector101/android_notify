@@ -1,6 +1,6 @@
 import os
 
-__version__ = "1.60.7.dev0"
+__version__ = "1.60.8.dev0"
 
 
 from .internal.java_classes import autoclass, cast, NotificationManager
