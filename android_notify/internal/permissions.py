@@ -1,6 +1,7 @@
 """
 For Permission Related Blocks
 """
+import os.path
 
 from .logger import logger
 from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context
@@ -45,10 +46,16 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
         logger.warning("Already have permission to send notifications")
         return None
 
-    if not can_show_permission_request_popup():
+    if not is_first_permission_ask() and not can_show_permission_request_popup():
         logger.warning("""Permission to send notifications has been denied permanently.
-        This happens when the user denies permission twice from the popup.
-        Opening notification settings...""")
+        This can happen when the user denies permission twice from the popup.
+        
+        Opening notification settings...
+        
+        Add in MDApp().on_resume():
+        >> if NotificationHandler.has_permission() and self.screen_manager:
+        >>      self.screen_manager.current = "home_screen"
+        """)
         open_notification_settings_screen()
         return None
 
@@ -57,7 +64,7 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
     def on_permissions_result(_, grants):
         # _ is permissions
         execute_callback(callback, grants[0])
-        execute_callback(set_requesting_state, False)
+        execute_callback(set_requesting_state, False,from_who="package")
 
     if legacy or on_flet_app():
         # TODO Handle activity with request code
@@ -66,12 +73,18 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
         return None
     else:
         from android.permissions import request_permissions, Permission  # type: ignore
-        execute_callback(set_requesting_state, True)
+        execute_callback(set_requesting_state, True,from_who="package")
         request_permissions([Permission.POST_NOTIFICATIONS], on_permissions_result)
         return None
 
 
 def open_notification_settings_screen():
+    """In MDApp().on_resume()
+
+    Example:
+        >>> if NotificationHandler.has_permission() and self.screen_manager:
+        >>>     self.screen_manager.current = "home_screen"
+    """
     context = get_python_activity_context()
 
     if not context:
@@ -114,3 +127,14 @@ def can_show_permission_request_popup():
         return False
 
     return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
+
+
+def is_first_permission_ask():
+    from importlib.resources import files
+    buffer_file_name = "ASKED_PERMISSION.txt"
+    absolute_buffer_file_path = str(files("android_notify") / buffer_file_name) # Making sure one path is always used
+
+    if os.path.exists(absolute_buffer_file_path):
+        return False
+    open(absolute_buffer_file_path,'w').close()
+    return True
