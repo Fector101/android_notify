@@ -29,6 +29,7 @@ from android_notify.tests.test_notification_behavior import TestNotificationBeha
 from android_notify.tests.test_notification_progress import TestNotificationProgress
 from android_notify.tests.test_notification_sound import TestNotificationSound
 from android_notify.tests.test_notification_clear import TestClearNotifications
+from android_notify.tests.test_notification_permission import NOTIFICATION_PERMISSION_TESTS
 from kivy.clock import Clock
 
 # -----------------------------
@@ -82,6 +83,7 @@ class TripleClickButton(Button):
 class AndroidNotifyDemoApp(MDApp):
 
     def on_start(self):
+        print('starting app...')
         try:
             from kivymd.toast import toast
             name = NotificationHandler.get_name(on_start=True)
@@ -89,6 +91,7 @@ class AndroidNotifyDemoApp(MDApp):
         except Exception as e:
             print("Error getting notify name:", e)
 
+        print('on_start','-'*33)
 
         def android_service():
 
@@ -154,11 +157,28 @@ class AndroidNotifyDemoApp(MDApp):
             self.test_buttons.append(btn)
             main.add_widget(btn)
 
+        # Permission request needs human inputs for tests
+        for label, action in NOTIFICATION_PERMISSION_TESTS.items():
+            btn = self._btn(
+                f"Run: {label}",
+                lambda _, fn=action: self.run_action(fn, _)
+            )
+            main.add_widget(btn)
         return root
 
-    # -----------------------------
-    # Helper to make buttons
-    # -----------------------------
+    def run_action(self, action_fn, btn_instance):
+        btn_instance.disabled = True
+        print(f"\n▶ Running action: {action_fn.__name__}")
+
+        try:
+            action_fn()
+        except Exception as error_running_action:
+            print("error_running_action:", error_running_action)
+            traceback.print_exc()
+        finally:
+            # Re-enable AFTER user interaction finishes
+            btn_instance.disabled = False
+
     def _btn(self, text, callback, height=80):
         return TripleClickButton(
             text=text,
@@ -185,9 +205,6 @@ class AndroidNotifyDemoApp(MDApp):
             for btn in self.test_buttons:
                 btn.disabled = False
 
-    # -----------------------------
-    # Actions
-    # -----------------------------
     def request_permission(self, btn_instance):
         asks_permission_if_needed()
         btn_instance.disabled = False
@@ -204,16 +221,17 @@ class AndroidNotifyDemoApp(MDApp):
         btn_instance.disabled = False
 
     def on_resume(self):
+        print('resuming app..')
         try:
             from kivymd.toast import toast
             name = NotificationHandler.get_name()
-            toast(text=f"name: {name}", length_long=True)
+
+            toast(text=f"name: {name}, Permission:{NotificationHandler.has_permission()}", length_long=True)
         except Exception as e:
             print("Error getting notify name:", e)
+        print('on_resume','-'*33)
 
 
-# -----------------------------
-# Entry
-# -----------------------------
+
 if __name__ == "__main__":
     AndroidNotifyDemoApp().run()
