@@ -1,5 +1,3 @@
-# android_notify/tests/basic_notification_actions.py
-
 from android_notify import NotificationHandler
 from android_notify.internal.permissions import ask_notification_permission
 from android_notify.core import asks_permission_if_needed
