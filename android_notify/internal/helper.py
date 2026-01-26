@@ -40,14 +40,16 @@ def get_package_path():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def execute_callback(callback,arg):
+def execute_callback(callback,arg, from_who="user"):
     """
     Executing Callbacks Safely
     """
-    if callback:
+    if not callback:
         return None
+    if from_who == "user":
+        logger.info(f"Executing On Permission Result Callback...")
     try:
-        if can_accept_arguments(callback, True):
+        if can_accept_arguments(callback, arg):
             callback(arg)
         else:
             callback()

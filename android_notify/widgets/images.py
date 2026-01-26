@@ -75,8 +75,6 @@ def icon_finder(icon_name):
         # noinspection PyPackageRequirements
         from importlib.resources import files
         return str(files("android_notify")/"fallback-icons"/icon_name)
-        # import pkg_resources
-        # return pkg_resources.resource_filename(__name__, f"fallback-icons/{icon_name}")
     except Exception:
         # Fallback if pkg_resources not available
         package_dir = get_package_path()
