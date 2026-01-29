@@ -114,6 +114,8 @@ class Notification(BaseNotification):
         :param data_object:
         :return:
         """
+        if not on_android_platform():
+            return
         self.__called_set_data = True
         self.data_object = data_object
         action_name = str(self.name or self.__id)
