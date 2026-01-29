@@ -19,11 +19,16 @@ class String(str):
         return str.__new__(cls, value)
 
 
-class Intent:
-    FLAG_ACTIVITY_NEW_TASK = 'FACADE_FLAG_ACTIVITY_NEW_TASK'
-    CATEGORY_DEFAULT = 'FACADE_FLAG_CATEGORY_DEFAULT'
+from enum import IntFlag, auto
+
+class Intent(IntFlag):
+    NONE = 0
+    FLAG_ACTIVITY_CLEAR_TOP = auto()
+    FLAG_ACTIVITY_NEW_TASK = auto()
+    FLAG_ACTIVITY_SINGLE_TOP = auto()
 
     def __init__(self, context='', activity=''):
+        self.IS = "FACADE"
         self.obj = {}
         logger.debug(f"[MOCK] Intent initialized with context={context}, activity={activity}")
 
@@ -194,77 +199,77 @@ class NotificationCompatBuilder:
     def __init__(self, context, channel_id):
         self.mActions = MActions()
         logger.debug(f"[MOCK] NotificationCompatBuilder initialized with context={context}, channel_id={channel_id}")
-
-    def setProgress(self, max_value, current_value, endless):
+    @classmethod
+    def setProgress(cls, max_value, current_value, endless):
         logger.debug(f"[MOCK] setProgress called with max={max_value}, current={current_value}, endless={endless}")
-
-    def setStyle(self, style):
+    @classmethod
+    def setStyle(cls, style):
         logger.debug(f"[MOCK] setStyle called with style={style}")
-
-    def setContentTitle(self, title):
+    @classmethod
+    def setContentTitle(cls, title):
         logger.debug(f"[MOCK] setContentTitle called with title={title}")
-
-    def setContentText(self, text):
+    @classmethod
+    def setContentText(cls, text):
         logger.debug(f"[MOCK] setContentText called with text={text}")
-
-    def setSmallIcon(self, icon):
+    @classmethod
+    def setSmallIcon(cls, icon):
         logger.debug(f"[MOCK] setSmallIcon called with icon={icon}")
-
-    def setLargeIcon(self, icon):
+    @classmethod
+    def setLargeIcon(cls, icon):
         logger.debug(f"[MOCK] setLargeIcon called with icon={icon}")
-
-    def setAutoCancel(self, auto_cancel: bool):
+    @classmethod
+    def setAutoCancel(cls, auto_cancel: bool):
         logger.debug(f"[MOCK] setAutoCancel called with auto_cancel={auto_cancel}")
-
-    def setPriority(self, priority):
+    @classmethod
+    def setPriority(cls, priority):
         logger.debug(f"[MOCK] setPriority called with priority={priority}")
-
-    def setDefaults(self, defaults):
+    @classmethod
+    def setDefaults(cls, defaults):
         logger.debug(f"[MOCK] setDefaults called with defaults={defaults}")
-
-    def setOngoing(self, persistent: bool):
+    @classmethod
+    def setOngoing(cls, persistent: bool):
         logger.debug(f"[MOCK] setOngoing called with persistent={persistent}")
-
-    def setOnlyAlertOnce(self, state):
+    @classmethod
+    def setOnlyAlertOnce(cls, state):
         logger.debug(f"[MOCK] setOnlyAlertOnce called with state={state}")
-
-    def build(self):
+    @classmethod
+    def build(cls):
         logger.debug("[MOCK] build called")
-
-    def setContentIntent(self, pending_action_intent: PendingIntent):
+    @classmethod
+    def setContentIntent(cls, pending_action_intent: PendingIntent):
         logger.debug(f"[MOCK] setContentIntent called with {pending_action_intent}")
-
-    def addAction(self, icon_int, action_text, pending_action_intent):
+    @classmethod
+    def addAction(cls, icon_int, action_text, pending_action_intent):
         logger.debug(
             f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}"
         )
-
-    def setShowWhen(self, state):
+    @classmethod
+    def setShowWhen(cls, state):
         logger.debug(f"[MOCK] setShowWhen called with state={state}")
-
-    def setWhen(self, time_ms):
+    @classmethod
+    def setWhen(cls, time_ms):
         logger.debug(f"[MOCK] setWhen called with time_ms={time_ms}")
-
-    def setCustomContentView(self, layout):
+    @classmethod
+    def setCustomContentView(cls, layout):
         logger.debug(f"[MOCK] setCustomContentView called with layout={layout}")
-
-    def setCustomBigContentView(self, layout):
+    @classmethod
+    def setCustomBigContentView(cls, layout):
         logger.debug(f"[MOCK] setCustomBigContentView called with layout={layout}")
-
-    def setSubText(self, text):
+    @classmethod
+    def setSubText(cls, text):
         logger.debug(f"[MOCK] setSubText called with text={text}")
-
-    def setColor(self, color: Color) -> None:
+    @classmethod
+    def setColor(cls, color: Color) -> None:
         logger.debug(f"[MOCK] setColor called with color={color}")
-
-    def setVibrate(self, state) -> None:
+    @classmethod
+    def setVibrate(cls, state) -> None:
         logger.debug(f"[MOCK] setVibrate called with state={state}")
 
 
 class NotificationCompatBigTextStyle:
-    def bigText(self, body):
+    def bigText(cls, body):
         logger.debug(f"[MOCK] NotificationCompatBigTextStyle.bigText called with body={body}")
-        return self
+        return cls
 
     def setBigContentTitle(self, title):
         logger.debug(f"[MOCK] NotificationCompatBigTextStyle.setBigContentTitle called with title={title}")
@@ -327,6 +332,14 @@ class PythonActivity:
     def mActivity():
         logger.debug("[MOCK] mActivity used")
         return MActivity()
+
+    @staticmethod
+    def startForeground(notification_id, builder_build, foreground_type):
+        logger.debug(f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
+
+    def setAutoRestartService(self):
+        logger.debug("[MOCK] setAutoRestartService called")
+        return self
 
 
 class DummyIcon:
