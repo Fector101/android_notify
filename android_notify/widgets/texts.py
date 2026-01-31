@@ -3,7 +3,7 @@ Android Texts related logic
 """
 
 from android_notify.config import on_android_platform
-from android_notify.internal.java_classes import autoclass, String, NotificationCompatBigTextStyle, NotificationCompatInboxStyle
+from android_notify.internal.java_classes import String, NotificationCompatBigTextStyle, NotificationCompatInboxStyle
 
 
 def set_big_text(builder, body, title="", summary=""):
@@ -48,8 +48,10 @@ def set_title(builder, title, using_layout=False):
     :param title: New Notification Title
     :param using_layout: Whether to use layout or not
     """
-
+    def log():
+        logger.info(f'new notification title: {title}')
     if not on_android_platform():
+        log()
         return None
 
     if using_layout:
@@ -58,7 +60,7 @@ def set_title(builder, title, using_layout=False):
     else:
         builder.setContentTitle(String(title))
 
-    logger.info(f'new notification title: {title}')
+    log()
     return None
 
 
@@ -69,8 +71,11 @@ def set_message(builder, message, using_layout=False):
     :param message: New Notification message
     :param using_layout: Whether to use layout or not
     """
+    def log():
+        logger.info(f'new notification message: {message}')
 
     if not on_android_platform():
+        log()
         return None
 
     if using_layout:
@@ -79,7 +84,7 @@ def set_message(builder, message, using_layout=False):
     else:
         builder.setContentText(String(message))
 
-    logger.info(f'new notification message: {message}')
+    log()
     return None
 
 
@@ -116,6 +121,7 @@ def setLayoutText(layout, text_id, text, color):
 
 def set_custom_colors(builder, title, message, title_color, message_color):
     # Load layout
+    from android_notify.internal.java_classes import autoclass
     NotificationCompatDecoratedCustomViewStyle = autoclass(
         'android.app.Notification$DecoratedCustomViewStyle')
 

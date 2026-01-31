@@ -114,6 +114,8 @@ class Notification(BaseNotification):
         :param data_object:
         :return:
         """
+        if not on_android_platform():
+            return
         self.__called_set_data = True
         self.data_object = data_object
         action_name = str(self.name or self.__id)
@@ -413,7 +415,7 @@ class Notification(BaseNotification):
         """
         self.silent = silent or self.silent
         if on_android_platform():
-            self.start_building(persistent, close_on_click)
+            self.fill_args(persistent=persistent, close_on_click=close_on_click)
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
 
         self.__send_logs()
@@ -426,6 +428,7 @@ class Notification(BaseNotification):
             persistent (bool): True To not remove Notification When User hits clears All notifications button
             close_on_click (bool): True if you want Notification to be removed when clicked
         """
+        # TODO: Remove this method - Check if Device is Android 12 or less and log to use regular .send()
         self.passed_check = True
         self.send(silent, persistent, close_on_click)
 
@@ -591,7 +594,11 @@ class Notification(BaseNotification):
 
         return set_sound(self.builder, res_sound_name)
 
-    def start_building(self, persistent=False, close_on_click=True, silent: bool = False):
+    def fill_args(self, silent: bool = False, persistent=False, close_on_click=True):
+        """Name Makes More sense than start_building"""
+        return self.start_building(silent, persistent , close_on_click)
+
+    def start_building(self, silent: bool = False, persistent=False, close_on_click=True):
         # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
         self.silent = silent or self.silent
         if not on_android_platform():
