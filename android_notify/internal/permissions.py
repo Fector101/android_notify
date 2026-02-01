@@ -5,7 +5,7 @@ import os.path
 
 from .logger import logger
 from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context
-from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager
+from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat
 from android_notify.internal.helper import execute_callback
 
 
@@ -17,8 +17,15 @@ def has_notification_permission():
     if not on_android_platform():
         return True
 
-    if BuildVersion.SDK_INT < 33:  # Android 12 below
-        return True
+    if BuildVersion.SDK_INT < 33:  # Android 12 and below
+        try:
+            # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
+            context = get_python_activity_context()
+            nm = context.getSystemService(NotificationManagerCompat)
+            return nm.areNotificationsEnabled()
+        except Exception as error_checking_permission:
+            logger.exception(f"On Android 12 and below Error checking permission: {error_checking_permission}")
+            return None
 
     if on_flet_app():
         context = get_python_activity_context()
@@ -36,14 +43,21 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
         execute_callback(callback, True)
         return None
 
-    if BuildVersion.SDK_INT < 33:  # Android 12 below
-        execute_callback(callback, True)
-        logger.warning("On android 12 or less don't need permission")
-        return None
 
     if has_notification_permission():
         execute_callback(callback, True)
         logger.warning("Already have permission to send notifications")
+        return None
+
+    if BuildVersion.SDK_INT < 33:  # Android 12 and below
+        logger.warning("""
+        Can't show popup below Android 13, Opening Notification setting...
+        
+        Add in MDApp().on_resume():
+        >> if NotificationHandler.has_permission() and self.screen_manager:
+        >>      self.screen_manager.current = "home_screen"
+        """)
+        open_notification_settings_screen()
         return None
 
     if not is_first_permission_ask() and not can_show_permission_request_popup():
@@ -124,6 +138,7 @@ def can_show_permission_request_popup():
         return False
 
     if BuildVersion.SDK_INT < 33:
+        logger.warning("On android 12 or less, Can't show permission request popup")
         return False
 
     return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
