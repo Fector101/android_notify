@@ -58,7 +58,7 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add pyjnius so ensure it's packaged with the build
-requirements = python3, kivy, pyjnius, android-notify==1.60.8.dev0
+requirements = python3, kivy, pyjnius, android-notify==1.60.9.dev0
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
 ```
@@ -76,7 +76,7 @@ In your `pyproject.toml` file, ensure you include the following:
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.60.8.dev0"
+  "pyjnius","android-notify==1.60.9.dev0"
 ]
 
 [tool.flet.android.permission]
@@ -94,10 +94,10 @@ dependencies = [
 <br/>
 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.8.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify==1.60.9.dev0`
 - Minimal working example 
 ```py
-# Testing with `android-notify==1.60.8.dev0` on pydroid
+# Testing with `android-notify==1.60.9.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
