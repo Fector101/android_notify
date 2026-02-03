@@ -2,13 +2,63 @@ import logging
 import sys
 import os
 
+try:
+    from jnius import autoclass
+except ModuleNotFoundError:
+    autoclass = lambda x: None
+
+
+def on_kivy_android():
+    kivy_build = os.environ.get('KIVY_BUILD', '')
+    if kivy_build in {'android'}:
+        return True
+    elif 'P4A_BOOTSTRAP' in os.environ:
+        return True
+    elif 'ANDROID_ARGUMENT' in os.environ:
+        return True
+
+    return False
+
+
+def on_flet_app():
+    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
+
+
+def on_android_platform():
+    return on_kivy_android() or on_flet_app()
+
+
+def android_print(msg):
+    msg = str(msg)
+    if on_android_platform():
+        Log = autoclass("android.util.Log")
+        Log.i("python", msg)
+        return None
+    print(msg)
+    return None
+
+
+def kivy_logger_patch():
+    if not on_kivy_android():
+        return
+
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = KivyColorFormatter()
+    handler.setFormatter(formatter)
+
+    # Avoid duplicate logs if root logger is configured
+    logger.propagate = False
+    logger.addHandler(handler)
+    logger._configured = True
+
+
 class KivyColorFormatter(logging.Formatter):
     COLORS = {
-        'DEBUG': '\x1b[1;36m',    # bold cyan
-        'INFO': '\x1b[1;92m',     # bold lime green
+        'DEBUG': '\x1b[1;36m',  # bold cyan
+        'INFO': '\x1b[1;92m',  # bold lime green
         'WARNING': '\x1b[1;93m',  # bold yellow
-        'ERROR': '\x1b[1;91m',    # bold red
-        'CRITICAL': '\x1b[1;95m', # bold magenta
+        'ERROR': '\x1b[1;91m',  # bold red
+        'CRITICAL': '\x1b[1;95m',  # bold magenta
     }
     RESET = '\x1b[0m'
 
@@ -25,34 +75,17 @@ class KivyColorFormatter(logging.Formatter):
 
 
 logger = logging.getLogger("android_notify")
-# logger.setLevel(logging.NOTSET) # this override app logger level
-
-handler = logging.StreamHandler(sys.stdout)
-formatter = KivyColorFormatter()
-handler.setFormatter(formatter)
-# handler.setLevel(logging.WARNING) # this override app logger level
-
-# Avoid duplicate logs if root logger is configured
-logger.propagate = False
-# if not logger.handlers:
-logger.addHandler(handler)
-logger._configured = True
-
-
+kivy_logger_patch()
 
 env_level = os.getenv("ANDROID_NOTIFY_LOGLEVEL")
 if env_level:
-    # noinspection PyBroadException
     try:
-        logging.getLogger("android_notify").setLevel( getattr(logging, env_level.upper()) )
+        logging.getLogger("android_notify").setLevel(getattr(logging, env_level.upper()))
     except Exception as android_notify_loglevel_error:
-        print("android_notify_loglevel_error:",android_notify_loglevel_error)
-        pass
-
-
+        android_print(f"android_notify_loglevel_error: {android_notify_loglevel_error}")
 
 if __name__ == "__main__":
-    from kivymd.app import MDApp
+    # from kivymd.app import MDApp
 
     logger.debug("Debug message - should not appear with INFO level")
     logger.info("Info message")
