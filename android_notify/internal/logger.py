@@ -1,7 +1,7 @@
 import logging
 import sys
 import os
-import traceback
+
 
 try:
     from jnius import autoclass
@@ -39,6 +39,20 @@ def android_print(msg):
     return None
 
 
+def kivy_logger_patch():
+    if not on_kivy_android():
+        return
+
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = KivyColorFormatter()
+    handler.setFormatter(formatter)
+
+    # Avoid duplicate logs if root logger is configured
+    logger.propagate = False
+    logger.addHandler(handler)
+    logger._configured = True
+
+
 class KivyColorFormatter(logging.Formatter):
     COLORS = {
         'DEBUG': '\x1b[1;36m',  # bold cyan
@@ -61,109 +75,19 @@ class KivyColorFormatter(logging.Formatter):
         return f"[{level}] [{name}] {msg}"
 
 
-class AndroidNotifyLogger:
-    """
-    Patch logger for Android (Flet) where stdout logs don't always show.
-    Uses android.util.Log directly.
-    """
-
-    TAG = "python"
-
-    LEVELS = {
-        "debug": 10,
-        "info": 20,
-        "warning": 30,
-        "error": 40,
-        "critical": 50,
-    }
-
-    def __init__(self, level="debug"):
-        self.Log = autoclass("android.util.Log")
-        self.level = self.LEVELS[level]
-
-    def setLevel(self, level):
-        if isinstance(level, str):
-            level = level.lower()
-            if level not in self.LEVELS:
-                raise ValueError(f"Invalid log level: {level}")
-            self.level = self.LEVELS[level]
-        else:
-            self.Log.e(self.TAG, "Dude No such Level")
-            # raise TypeError("Log level must be a string")
-
-    def _log(self, level, msg):
-        if self.LEVELS[level] < self.level:
-            return
-
-        msg = str(msg)
-
-        if level == "debug":
-            self.Log.d(self.TAG, msg)
-        elif level == "info":
-            self.Log.i(self.TAG, msg)
-        elif level == "warning":
-            self.Log.w(self.TAG, msg)
-        elif level == "error":
-            self.Log.e(self.TAG, msg)
-        elif level == "critical":
-            self.Log.wtf(self.TAG, msg)
-
-    def debug(self, msg):
-        self._log("debug", msg)
-
-    def info(self, msg):
-        self._log("info", msg)
-
-    def warning(self, msg):
-        self._log("warning", msg)
-
-    def error(self, msg):
-        self._log("error", msg)
-
-    def critical(self, msg):
-        self._log("critical", msg)
-
-    def exception(self, msg):
-        self._log("error", msg)
-        self._log("error", traceback.format_exc())
-
-    def addHandler(self, _):
-        # Facade
-        pass
-
-
-class HandlerFacade:
-    def setFormatter(self, _):
-        pass
-
-
-logger = logging.getLogger("android_notify") if not on_flet_app() else AndroidNotifyLogger()
-
-# if not on flet android app use regular logger
-handler = logging.StreamHandler(sys.stdout) if not on_flet_app() else HandlerFacade()
-formatter = KivyColorFormatter()
-
-handler.setFormatter(formatter)
-# handler.setLevel(logging.WARNING) # this override app logger level
-
-# Avoid duplicate logs if root logger is configured
-logger.propagate = False
-# if not logger.handlers:
-logger.addHandler(handler)
-logger._configured = True
+logger = logging.getLogger("android_notify")
+kivy_logger_patch()
 
 env_level = os.getenv("ANDROID_NOTIFY_LOGLEVEL")
 if env_level:
-    # noinspection PyBroadException
     try:
-        logger.setLevel(getattr(logging, env_level.upper()))
+        logging.getLogger("android_notify").setLevel(getattr(logging, env_level.upper()))
     except Exception as android_notify_loglevel_error:
         android_print(f"android_notify_loglevel_error: {android_notify_loglevel_error}")
-        pass
+
+
 
 if __name__ == "__main__":
-    from kivymd.app import MDApp
-
     logger.debug("Debug message - should not appear with INFO level")
     logger.info("Info message")
     logger.warning("Warning message")
