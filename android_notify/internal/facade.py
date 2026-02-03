@@ -3,7 +3,9 @@ For autocomplete Storing and Safely Running on PC
 Also For Reference of Available Methods
 """
 
+from enum import IntFlag, auto
 from android_notify.internal.logger import logger
+
 
 class Bundle:
     def putString(self, key, value):
@@ -19,7 +21,7 @@ class String(str):
         return str.__new__(cls, value)
 
 
-from enum import IntFlag, auto
+
 
 class Intent(IntFlag):
     NONE = 0
@@ -137,11 +139,12 @@ class NotificationChannel:
     def setSound(self, sound_uri, _):
         logger.debug(f"[MOCK] NotificationChannel.setSound called, sound_uri={sound_uri}")
 
-    def enableVibration(self,state):
+    def enableVibration(self, state):
         logger.debug(f"[MOCK] NotificationChannel.enableVibration called, state={state}")
 
-    def setVibrationPattern(self,list_of_numbers):
+    def setVibrationPattern(self, list_of_numbers):
         logger.debug(f"[MOCK] NotificationChannel.setVibrationPattern called, list_of_numbers={list_of_numbers}")
+
 
 class IconCompat:
     @classmethod
@@ -181,6 +184,14 @@ class NotificationManagerCompat:
     IMPORTANCE_NONE = ''
 
 
+class AndroidNotification:
+    DEFAULT_ALL = 3
+    PRIORITY_HIGH = 4
+    PRIORITY_DEFAULT = ''
+    PRIORITY_LOW = ''
+    PRIORITY_MIN = ''
+
+
 class NotificationCompat:
     DEFAULT_ALL = 3
     PRIORITY_HIGH = 4
@@ -199,68 +210,89 @@ class NotificationCompatBuilder:
     def __init__(self, context, channel_id):
         self.mActions = MActions()
         logger.debug(f"[MOCK] NotificationCompatBuilder initialized with context={context}, channel_id={channel_id}")
+
     @classmethod
     def setProgress(cls, max_value, current_value, endless):
         logger.debug(f"[MOCK] setProgress called with max={max_value}, current={current_value}, endless={endless}")
+
     @classmethod
     def setStyle(cls, style):
         logger.debug(f"[MOCK] setStyle called with style={style}")
+
     @classmethod
     def setContentTitle(cls, title):
         logger.debug(f"[MOCK] setContentTitle called with title={title}")
+
     @classmethod
     def setContentText(cls, text):
         logger.debug(f"[MOCK] setContentText called with text={text}")
+
     @classmethod
     def setSmallIcon(cls, icon):
         logger.debug(f"[MOCK] setSmallIcon called with icon={icon}")
+
     @classmethod
     def setLargeIcon(cls, icon):
         logger.debug(f"[MOCK] setLargeIcon called with icon={icon}")
+
     @classmethod
     def setAutoCancel(cls, auto_cancel: bool):
         logger.debug(f"[MOCK] setAutoCancel called with auto_cancel={auto_cancel}")
+
     @classmethod
     def setPriority(cls, priority):
         logger.debug(f"[MOCK] setPriority called with priority={priority}")
+
     @classmethod
     def setDefaults(cls, defaults):
         logger.debug(f"[MOCK] setDefaults called with defaults={defaults}")
+
     @classmethod
     def setOngoing(cls, persistent: bool):
         logger.debug(f"[MOCK] setOngoing called with persistent={persistent}")
+
     @classmethod
     def setOnlyAlertOnce(cls, state):
         logger.debug(f"[MOCK] setOnlyAlertOnce called with state={state}")
+
     @classmethod
     def build(cls):
         logger.debug("[MOCK] build called")
+
     @classmethod
     def setContentIntent(cls, pending_action_intent: PendingIntent):
         logger.debug(f"[MOCK] setContentIntent called with {pending_action_intent}")
+
     @classmethod
     def addAction(cls, icon_int, action_text, pending_action_intent):
         logger.debug(
             f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}"
         )
+
     @classmethod
     def setShowWhen(cls, state):
         logger.debug(f"[MOCK] setShowWhen called with state={state}")
+
     @classmethod
     def setWhen(cls, time_ms):
         logger.debug(f"[MOCK] setWhen called with time_ms={time_ms}")
+
     @classmethod
     def setCustomContentView(cls, layout):
         logger.debug(f"[MOCK] setCustomContentView called with layout={layout}")
+
     @classmethod
     def setCustomBigContentView(cls, layout):
         logger.debug(f"[MOCK] setCustomBigContentView called with layout={layout}")
+
     @classmethod
     def setSubText(cls, text):
         logger.debug(f"[MOCK] setSubText called with text={text}")
+
     @classmethod
     def setColor(cls, color: Color) -> None:
         logger.debug(f"[MOCK] setColor called with color={color}")
+
     @classmethod
     def setVibrate(cls, state) -> None:
         logger.debug(f"[MOCK] setVibrate called with state={state}")
@@ -335,7 +367,8 @@ class PythonActivity:
 
     @staticmethod
     def startForeground(notification_id, builder_build, foreground_type):
-        logger.debug(f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
+        logger.debug(
+            f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
 
     def setAutoRestartService(self):
         logger.debug("[MOCK] setAutoRestartService called")
