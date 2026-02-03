@@ -2,6 +2,7 @@ import logging
 import sys
 import os
 
+
 try:
     from jnius import autoclass
 except ModuleNotFoundError:
@@ -39,17 +40,12 @@ def android_print(msg):
 
 
 def kivy_logger_patch():
-    if not on_kivy_android():
+    if on_flet_app():
         return
 
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = KivyColorFormatter()
-    handler.setFormatter(formatter)
-
+    # logs got weird in kivy app (duplicates logs)
     # Avoid duplicate logs if root logger is configured
     logger.propagate = False
-    logger.addHandler(handler)
-    logger._configured = True
 
 
 class KivyColorFormatter(logging.Formatter):
@@ -75,6 +71,13 @@ class KivyColorFormatter(logging.Formatter):
 
 
 logger = logging.getLogger("android_notify")
+
+handler = logging.StreamHandler(sys.stdout)
+formatter = KivyColorFormatter()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger._configured = True
+
 kivy_logger_patch()
 
 env_level = os.getenv("ANDROID_NOTIFY_LOGLEVEL")
@@ -84,9 +87,9 @@ if env_level:
     except Exception as android_notify_loglevel_error:
         android_print(f"android_notify_loglevel_error: {android_notify_loglevel_error}")
 
-if __name__ == "__main__":
-    # from kivymd.app import MDApp
 
+
+if __name__ == "__main__":
     logger.debug("Debug message - should not appear with INFO level")
     logger.info("Info message")
     logger.warning("Warning message")
