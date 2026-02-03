@@ -28,7 +28,7 @@ android.api = 35
 android.permissions = INTERNET, VIBRATE, USE_EXACT_ALARM, SCHEDULE_EXACT_ALARM, FOREGROUND_SERVICE, FOREGROUND_SERVICE_DATA_SYNC, POST_NOTIFICATIONS, SET_WALLPAPER, READ_MEDIA_IMAGES, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=28)
 android.add_src = %(source.dir)s/android/src
 android.add_resources = %(source.dir)s/android/res
-android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0, androidx.work:work-runtime:2.9.0
+android.gradle_dependencies = androidx.core:core-ktx:1.15.0
 p4a.hook = %(source.dir)s/android/p4a/hook.py
 
 android.archs = arm64-v8a
