@@ -49,7 +49,7 @@ def get_image_uri(relative_path):
     """
     app_root_path = get_app_root_path()
     output_path = os.path.join(app_root_path, relative_path)
-    # rint(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
+    # drint(output_path,'output_path')  # /data/user/0/org.laner.lan_ft/files/app/assets/imgs/icon.png
 
     if not os.path.exists(output_path):
         raise FileNotFoundError(f"\nImage not found at path: {output_path}\n")
