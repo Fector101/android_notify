@@ -40,17 +40,12 @@ def android_print(msg):
 
 
 def kivy_logger_patch():
-    if not on_kivy_android():
+    if on_flet_app():
         return
 
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = KivyColorFormatter()
-    handler.setFormatter(formatter)
-
+    # logs got weird in kivy app (duplicates logs)
     # Avoid duplicate logs if root logger is configured
     logger.propagate = False
-    logger.addHandler(handler)
-    logger._configured = True
 
 
 class KivyColorFormatter(logging.Formatter):
@@ -76,6 +71,13 @@ class KivyColorFormatter(logging.Formatter):
 
 
 logger = logging.getLogger("android_notify")
+
+handler = logging.StreamHandler(sys.stdout)
+formatter = KivyColorFormatter()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger._configured = True
+
 kivy_logger_patch()
 
 env_level = os.getenv("ANDROID_NOTIFY_LOGLEVEL")
