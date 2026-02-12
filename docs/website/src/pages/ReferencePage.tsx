@@ -201,10 +201,10 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 						<p className='page-name'>Advanced Methods</p>
 					</span>
 				</Link>
-				<Link className='next-page-btn' to='/extras'>
+				<Link className='next-page-btn' to='/help'>
 					<span>
 						<p className='next-txt'>Next</p>
-						<p className='page-name'>Extras</p>
+						<p className='page-name'>Help</p>
 					</span>
 					<ChevronRight />
 				</Link>

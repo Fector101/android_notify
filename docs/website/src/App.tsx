@@ -33,7 +33,7 @@ function App() {
                         <Route path="/components" element={<ComponentsPage version={version} setVersion={setVersion} />} />
                         <Route path="/advanced-methods" element={<AdvancedMethodsPage version={version} />} />
                         <Route path="/reference" element={<ReferencePage version={version} />} />
-                        <Route path="/extras" element={<ExtrasPage />} />
+                        <Route path="/help" element={<ExtrasPage />} />
                         {/* <Route path="/versions" element={<p className="main-page page">Will contain list of versions from 1.58+</p>} /> */}
                         <Route path="/versions" element={<VersionsPage setVersion={setVersion} />} />
                         <Route path="*" element={<p className="page">Page Not Found</p>} />

@@ -56,12 +56,12 @@ export default function Header({ version,setVersion }:IHeader) {
             </Link>
             <div className='css-dropdown flex fd-column'>
                 <span className='flex active'>
-                    <Link to='/versions' className='version-no'>v{version}</Link>
+                    <Link to='/versions' className='version-no'>v{version===1.6? "1.60":version}</Link>
                     <ChevronDown className='down-svg'/>
                     <ChevronUp className='up-svg' />
                 </span>
                 <div className='opts'>
-                    {[1.58, 1.59].map(each => <button onClick={()=>setVersion(each)} key={nanoid()}>{each}</button>)}
+                    {[1.59, "1.60"].map(each => <button onClick={()=>setVersion(Number(each))} key={nanoid()}>{each}</button>)}
                 </div>
             </div>
             <p className='page-title'>{location.pathname.slice(1).split('-').map(toTitleCase).join(' ')}{description || ''}</p>

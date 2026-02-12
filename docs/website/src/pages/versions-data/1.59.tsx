@@ -349,8 +349,8 @@ export const Sidebar = [
         }
     },
     {
-        title: 'Extras',
-        route: '/extras',
+        title: 'Help',
+        route: '/help',
         sections: {
             'How to update': 'how-to-update',
             'Debugging Tips': 'debugging-tips',

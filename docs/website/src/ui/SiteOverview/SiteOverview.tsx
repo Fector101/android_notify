@@ -200,8 +200,8 @@ export default function SiteOverview({ version }: { version: Iversion }) {
             />
             <DropDown
                 hash={hash}
-                title="Extras"
-                route='/extras'
+                title="Help"
+                route='/help'
                 sections={[
                     'How to update',
                     'Debugging Tips',

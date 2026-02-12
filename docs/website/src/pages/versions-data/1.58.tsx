@@ -382,7 +382,7 @@ export const Sidebar= [
         title: 'Advanced Methods',
         route: '/advanced-methods',
         sections: {
-            'Updating Notification':'ww',
+            'Updating Notification':title_and_message_update,
             'Adding Image':adding_image_code,
             'Channel Management':channel_management_code,
             'Getting Identifer':getting_identifer
@@ -398,8 +398,8 @@ export const Sidebar= [
         }
     },
     {
-        title: 'Extras',
-        route: '/extras',
+        title: 'Help',
+        route: '/help',
         sections: {
             'How to update': 'how-to-update',
             'Debugging Tips': 'debugging-tips',
