@@ -1,4 +1,4 @@
-import {  ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
@@ -10,19 +10,107 @@ export default function MainPage() {
     return (
         <div className="page main-page flex fd-column">
             <ScrollToSection />
-            <section className="page-section" id='introduction'>
+            <section className="page-section" id="introduction">
                 <h2>Introduction</h2>
                 <hr />
-                <p className='reader'>Android-Notify simplifies the process of creating and managing android notifications with <span className='code green'>Python</span>.</p>
-
-                <p className='paragraph reader'>It's built using pyjnius to interact with Android's native Java Classes and APIs.</p>
-                <p className='paragraph'>
-The goal of android-notify is to handle all the Java for you, allowing you to focus on your notification content using Python, without worrying about platform-specific implementation details. It also eliminates the need for unnecessary third-party APIs or online services.
+                <p className="reader">
+                    Android-Notify makes creating and managing Android notifications easy with <span className="code green">Python</span>.
                 </p>
-                <p className='paragraph'>Android-Notify has two dependencies: Kivy, Pyjnius</p>
+                <p className="paragraph reader">
+                    Built with Pyjnius, it interacts directly with Android’s Java APIs.
+                </p>
+                <p className="paragraph">
+                    It handles all Java details so you can focus on notification content in Python, No extra APIs or services needed.
+                </p>
+                <p className="paragraph">Dependencies: Kivy, Pyjnius, Flet</p>
+            </section>
+            <section className="page-section" id="features">
+                <h2>Features</h2>
+                <hr />
+
+                <ul className="inner-section-1 space-y-[20px]">
+
+                    <li><strong>Notification Styles:</strong></li>
+
+                    <ul className='space-y-[20px]'>
+                        <ul>
+                            <li>Texts (<a href="/components#texts" target="_blank" rel="noopener noreferrer">texts section </a>)</li>
+                            <li>Simple text</li>
+                            <li>Big text</li>
+                            <li>Inbox-style</li>
+                            <li>and Colored texts.</li>
+                        </ul>
+
+                        <ul>
+                            <li>Images
+                                (<a href="/components#images" target="_blank" rel="noopener noreferrer">images section </a>)
+                            </li>
+                            <li>Large icon</li>
+                            <li>Big picture</li>
+                            <li>Custom app icons</li>
+                            <li>Colored app icons</li>
+                        </ul>
+
+                        <ul>
+                            <li>Progress bar (<a href="/components#progress-bars" target="_blank" rel="noopener noreferrer">
+                                progress bars section</a>)
+                            </li>
+                            <li> Determinate</li>
+                            <li> Indeterminate</li>
+                        </ul>
+
+                        <ul>
+                            <li>Buttons (<a href="/components#buttons" target="_blank" rel="noopener noreferrer">
+                                buttons section</a>)
+                            </li>
+                            <li> Runtime Functions</li>
+                            <li> Broadcast Actions</li>
+                            
+                        </ul>
+
+                    </ul>
+
+                    <li><strong>Behaviours/ Runtime Functions:</strong></li>
+                    <ul>
+
+                        <li>Send: normal/silent/persistent/vibrate</li>
+                        <li>Update: title, message, images, progress bar</li>
+                        <li>Add or Remove Buttons</li>
+                        <li>Custom sound per notification</li>
+
+                    </ul>
+                    
+                    <li><strong>Utilities:</strong></li>
+                    <ul>
+
+                        <li>Set timestamp</li>
+                        <li>Clear single or all notifications</li>
+                        <li>Refrshing notifications setting new param</li>
+
+                    </ul>
+                    
+
+                    <li><strong>Channels </strong>
+                    (<a href="https://android-notify.vercel.app/advanced-methods#channel-management" target="_blank" rel="noopener noreferrer">Android 8.0+</a>):
+                    </li>
+                    <ul>
+                        <li>Create, delete, delete all</li>
+                        <li>Set importance, vibration, and sound</li>
+                    </ul>
+                    
+                    <li><strong>Permissions & Click Handling:</strong></li>
+                    <ul>
+                        <li>Ask / check notification permission</li>
+                        <li>Click handlers and opening app on notification click</li>
+                    </ul>
+
+                </ul>
+
             </section>
 
-            <section className="page-section" id='features'>
+
+
+            {/* <section className="page-section" id='features'>
                 <h2>Features</h2>
                 <hr />
                 <ul className='inner-section-1'>
@@ -35,7 +123,7 @@ The goal of android-notify is to handle all the Java for you, allowing you to fo
                     <li>Opening app on notification click</li>
                 </ul>
                 <p className='paragraph inner-section-1'>And Many More...</p>
-            </section>
+            </section> */}
 
             <section className="page-section" id='installation'>
                 <h2>Installation</h2>
