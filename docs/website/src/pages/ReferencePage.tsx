@@ -61,7 +61,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 	async function changeVersionData(version: Iversion) {
 		const v1 = await import(`./versions-data/1.58.tsx`);
 
-		if (version == 1.58){
+		if (version == "1.58"){
 			setData(v1.reference_page)
 			setNOTIFICATION_METHODS(v1.reference_page.NOTIFICATION_METHODS)
 			return
@@ -100,7 +100,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 					</li>
 				</ul>
 			</nav>
-			{version == 1.59 &&
+			{version == "1.59" &&
 				<section className='side-note'>
 					<h2>For v1.59</h2>
 					<p className='paragraph'>Add methods working to free up __init__ kwargs [parsing out `style` attribute] </p>

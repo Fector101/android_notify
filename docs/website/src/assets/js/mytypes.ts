@@ -1,1 +1,1 @@
-export type Iversion = number
+export type Iversion = string

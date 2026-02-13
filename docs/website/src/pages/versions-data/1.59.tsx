@@ -16,18 +16,23 @@ notification = Notification(
     message="0% downloaded",
     progress_current_value=0,progress_max_value=100
     )
-notification.send()
+#notification.send()
 
 def update_progress(dt):
     global progress
     progress = min(progress + 10, 100)
-    notification.updateProgressBar(
-        progress, f"{progress}% downloaded"
-    )
-    return progress < 100  # Stops when reaching 100%
+    
+    if progress==100:
+        notification.removeProgressBar(title="File Downloaded", message="super_large_file.zip")
+    elif progress >= 80:
+        notification.showInfiniteProgressBar()
+    else:
+        notification.updateProgressBar(progress, f"{progress}% downloaded")
 
-Clock.schedule_interval(update_progress, 3)
-`
+        return progress < 100  # Stops when reaching 100%
+
+Clock.schedule_interval(update_progress, 3)`
+
 const largeiconcode = `from android_notify import Notification
 
 notification = Notification(

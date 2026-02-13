@@ -9,7 +9,10 @@ import progressbarImg from './../assets/imgs/progress.jpg'
 import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
 import customIconImg from "../assets/imgs/custom_icon.jpg"
+import customColorIconImg from "../assets/imgs/custom_color_icon.jpg"
 import onlineBigPicImg from "../assets/imgs/online-img.jpg"
+import subTextImg from "../assets/imgs/sub-text.jpg"
+// import coloredTextImg from "../assets/imgs/colored-texts.jpg"
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
@@ -29,17 +32,26 @@ interface IComponentPage {
     progressbar_code: string;
     inbox_style_code: string;
     big_text_style_code: string
+    sub_text_code: string
+    an_colored_basic_small:string
+    an_colored_basic_large:string
+    colored_text_code:string
 }
-type set_version = React.Dispatch<React.SetStateAction<number>>
+type set_version = React.Dispatch<React.SetStateAction<string>>
 
+function InlineCode({ code }: { code: string }) {
+    return <span className='code'>{code}</span>
+}
 export default function ComponentsPage({ version, setVersion }: { version: Iversion, setVersion: set_version }) {
     const [data, setData] = useState<IComponentPage>()
 
     async function changeVersionData(version: Iversion) {
+        console.log('vers0+0' + version);
+
         const v1 = await import(`./versions-data/1.58.tsx`);
         const v2 = await import(`./versions-data/1.59.tsx`);
         const data = await import(`./versions-data/${version}.tsx`);
-        setData({...v1.component_page,...v2.component_page,...data.component_page})
+        setData({ ...v1.component_page, ...v2.component_page, ...data.component_page })
         // data.default; // if exported as default
     }
     useEffect(() => {
@@ -72,20 +84,8 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                         <li>A large image (Big Picture Style)</li>
                         <li>A small image (Large Icon Style)</li>
                         <li>Both large and small images together</li>
-                        <li>Custom notification icons (change the default app icon)</li>
+                        <li>Also custom app icons and custom colors</li>
                     </ul>
-                    {/* <p className='paragraph'>
-                        This gives you full control over how your notifications look on Android.
-                    </p> */}
-                    {/* <p>
-                        You can use the <code>setLargeIcon()</code> method to set a large image, and the <code>setSmallIcon()</code> method to set a small image.
-                        <br /><br />
-                        You can also use the <code>setCustomIcon()</code> method to set a custom notification icon.
-                        <br /><br />
-                        The <code>setStyle()</code> method allows you to set the style of the notification.
-                        <br /><br />
-                        The <code>setStyle()</code> method takes a <code>style</code> parameter, which can be one of the following:
-                    </p> */}
                     <CodeBlock title='Big Picture Style' img={bigPicImg} code={data?.big_picture_code || ''} />
                     <CodeBlock title='Large Icon Style' img={largeIconImg} code={data?.large_icon_code || ''} />
                     {data?.how_to_add_both_imgs || <></>}
@@ -98,6 +98,19 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     }
                     <p className='paragraph'>Must use <span className="code yellow"> PNG format</span> Or Image Will display as a Black Box.</p>
                     <CodeBlock title='Custom Icon' img={customIconImg} code={data?.small_icon_code || ''} />
+
+                    <p className='paragraph'>You can also set custom color for the icon to match your app theme:</p>
+                    <p className='paragraph'>Use <span className="code">.setColor(color)</span> method to set a custom color</p>
+                    <p className='paragraph'> You can specify the color using a hex code (e.g., "#FF0000" for red).</p>
+                    <p>Strings <span className="code yellow">(red, green, blue)</span> work without hex code.</p>
+                    {
+                        <CodeBlock code={`Notification(
+    title="Emergency 🚨🚨",
+    message="Check out now!"
+).setColor("red") # or "#FF0000"
+`} title="Coloured App Icon" img={customColorIconImg} />
+                    }
+
                     {
                         isLegacyVersion(version) ?
                             <CodeBlock code={`Notification(
@@ -113,6 +126,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
 ).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
 
                     }
+
                     <p className='paragraph inner-section-1'>For about Images see <Link to='/advanced-methods#updating-notification'>advanced methods</Link> section</p>
                 </div>
             </section>
@@ -166,24 +180,52 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                         isLegacyVersion(version) ?
                             <>
                                 <p>This feature doesn't work properly for v1.58, No way to set message and lines together. </p>
-                                <p className='paragraph'>Use <span className='link-design' onClick={()=>setVersion(1.59)}>v1.59.3</span> for proper implementation </p>
+                                <p className='paragraph'>Use <span className='link-design' onClick={() => setVersion("1.59")}>v1.59.3</span> for proper implementation </p>
                             </>
                             :
-                            <p>You can use <span className="code">addLine</span> and pass in each line or<br/><span className="code">setLines</span> and pass in list of strings or <br/> Pass in txt separated by <span className="code">\n</span> as arg to <span className="code">lines_txt</span> in instance</p>
-                        // <p>
-                        //     Simply Adds new line where <span className='code'>\n</span> is signified in message, Then specify <span className="code">style='inbox'</span> [will auto detect in other versions]
-                        // </p>
+                            <p>You can use <span className="code">addLine</span> and pass in each line or<br /><span className="code">setLines</span> and pass in list of strings or <br /> Pass in txt separated by <span className="code">\n</span> as arg to <span className="code">lines_txt</span> in instance</p>
+
                     }
-                    {/* <ul>
-                        <li>Use <code>\\n</code> to add new lines in the message</li>
-                        <li>Use <code>\\t</code> to add tabs in the message</li>
-                        <li>Use <code>\\r</code> to add carriage returns in the message</li>
-                        </ul> */}
+
                 </div>
-                <CodeBlock title='Inbox Style' img={isLegacyVersion(version)?inboxImg:inboxTextGif} code={data?.inbox_style_code || ''} />
+                <CodeBlock title='Inbox Style' img={isLegacyVersion(version) ? inboxImg : inboxTextGif} code={data?.inbox_style_code || ''} />
+
                 <h3 className='paragraph'>Big Text Style</h3>
                 <p className='paragraph'>When using big_text style <span className="code">message</span> acts as sub-title, Then when notification drop down button is pressed <span className="code">body</span> is revealed</p>
+                {version !== "1.58" ? <p className='paragraph'>Use <span className='code'>setBigText</span> to display string</p> : ""}
                 <CodeBlock title='Big Text Style' code={data?.big_text_style_code || ''} img={bigTextGif} />
+
+                <h3 className='paragraph'>Sub Text</h3>
+                <p className='paragraph'>Sub Text is a smaller text that appears side of app name, often used to provide additional context or information, Like download seconds remaining.</p>
+                <p className='paragraph'>Use <span className='code'>setSubText</span> to display string</p>
+                <CodeBlock title='Sub Text' code={data?.sub_text_code || '# No available in version: ' + version} img={subTextImg} />
+
+                <h3 className='paragraph'>Colored Texts [dev]</h3>
+                <ol>
+                    <li className='paragraph'> Create a path named <span>res/layout</span> </li>
+                    <li className='paragraph'> Copy these files using exact names 
+                        
+                    
+                    <details>
+                        <summary><InlineCode code="an_colored_basic_small.xml"/></summary>
+                        <CodeBlock code={data?.an_colored_basic_small || '# No available in version: ' + version} lang='xml'/>
+                    </details>
+                    <details>
+                        <summary><InlineCode code="an_colored_basic_large.xml"/></summary>
+                        <CodeBlock code={data?.an_colored_basic_large || '# No available in version: ' + version} lang='xml'/>
+                    </details>
+                    </li>
+                    <li className='paragraph'>
+                        In your `buildozer.spec` file add these: 
+                        <br/>
+                        <p >- `source.include_exts = xml` and `android.add_resources = res`
+                            </p>
+                    </li>
+
+                </ol>
+                <p className='paragraph'>Use params <InlineCode code='title_color'/> and/or <InlineCode code='message_color'/> with hex color codes to control colors.</p>
+                <CodeBlock title='Sub Text' code={data?.colored_text_code || '# No available in version: ' + version} />
+
             </section>
 
             <span className='flex next-page-btns-box space-between'>

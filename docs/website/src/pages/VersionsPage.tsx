@@ -5,9 +5,9 @@ import { ScrollToSection } from '../ui/ScrollAssist';
 import './../assets/css/versionspage.css'
 
 interface IDropDown {
-    version: number;
+    version: string;
     sections: { msg: React.ReactNode; type: 'good' | 'warning' | 'bad' | '' }[];
-    setVersion: React.Dispatch<React.SetStateAction<number>>
+    setVersion: React.Dispatch<React.SetStateAction<string>>
 }
 
 function DropDown({ version, sections, setVersion }: IDropDown) {
@@ -25,7 +25,7 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
         <div className="dropdown flex fd-column align-items-cen justify-content-cen">
             <div className="header flex align-items-cen width100per flex-wrap">
                 <p>
-                    {'version-' + (version == 1.6? "1.60": version)}
+                    {'version-' + (version)}
                 </p>
                 <div className='flex margin-left-auto'>
                     {warnings.length > 0 && <span className="warning ver-badge flex align-items-cen justify-content-cen">{warnings.length}</span>}
@@ -60,7 +60,7 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
     )
 
 }
-export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<number>> }) {
+export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<string>> }) {
 
 
     return (
@@ -80,7 +80,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
             <section className="versions">
                 <DropDown
   setVersion={setVersion}
-  version={1.6}
+  version="1.60"
   sections={[
     { msg: 'Improvements', type: '' },
 
@@ -126,7 +126,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
     { msg: <><span className="code">data_object</span> - access data added via Notification.setData.</>, type: 'good' },
   ]}
 />
-                <DropDown setVersion={setVersion} version={1.59} sections={[
+                <DropDown setVersion={setVersion} version="1.59" sections={[
                     { msg: 'Add new features', type: '' },
                     { msg: <>Added a way to access Old Notification instance with <span className="code">Notification().id</span> </>, type: 'good' },
                     { msg: <>methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span>, For if old instance not available and need to cancel one use id with <span className="code">Notification.cancel(_id)</span></>, type: 'good' },
@@ -143,7 +143,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                     { msg: '`Notification.identifer` to `Notification.name`', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` to `NotificationHandler.get_name`', type: 'warning' },
                 ]} />
-                <DropDown setVersion={setVersion} version={1.58} sections={[
+                <DropDown setVersion={setVersion} version="1.58" sections={[
                     { msg: '`showInfiniteProgressBar` Had no guard block when not on android', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` always returned value even when app not opened from notification', type: 'bad' },
                 ]} />

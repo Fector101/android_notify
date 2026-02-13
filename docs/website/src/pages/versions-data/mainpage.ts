@@ -8,6 +8,16 @@ android.permissions = POST_NOTIFICATIONS
 android.gradle_dependencies = androidx.core:core-ktx:1.15.0
 android.enable_androidx = True
 android.api = 35`
+export const installation_code_buildozer_without_androidx = `requirements = python3, kivy, pyjnius, android-notify==1.60.10.dev0
+ android.permissions = POST_NOTIFICATIONS
+`
+export const installation_code_flet = `[tool.flet.android]
+dependencies = [
+  "pyjnius","android-notify==1.60.10.dev0"
+]
+
+[tool.flet.android.permission]
+"android.permission.POST_NOTIFICATIONS" = true`
 export const installation_code_pip = `pip install android-notify`
 export const code = `from android_notify import Notification, NotificationHandler
 
