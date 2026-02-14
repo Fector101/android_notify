@@ -5,7 +5,6 @@ import { Link } from 'react-router'
 import './../assets/css/componentspage.css'
 import bigPicImg from './../assets/imgs/bigpicturenoti.jpg'
 import btnsImg from './../assets/imgs/btns.jpg'
-import progressbarImg from './../assets/imgs/progress.jpg'
 import largeIconImg from './../assets/imgs/largeicon.jpg'
 import inboxImg from '../assets/imgs/inboxnoti.jpg'
 import customIconImg from "../assets/imgs/custom_icon.jpg"
@@ -16,6 +15,7 @@ import subTextImg from "../assets/imgs/sub-text.jpg"
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
+import progressbarGif from './../assets/imgs/progressbar.gif'
 
 import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
@@ -167,7 +167,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                         You can customize the displayed message and title while the progress bar updates.
                     </p>
                 </div>
-                <CodeBlock title='Progress Bar Style' img={progressbarImg} code={data?.progressbar_code || ''} />
+                <CodeBlock title='Progress Bar Style' img={progressbarGif} code={data?.progressbar_code || ''} />
             </section>
 
 
