@@ -69,7 +69,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     <p>You can enhance your notifications by adding images, Images can be local or online</p>
                     <p className='paragraph'>For Local Images:</p>
                     <ul>
-                        <li>Images should be in the <span className="code">app</span> folder</li>
+                        <li>Image path should be in relative to your <span className="code">main.py</span> </li>
                     </ul>
 
                     <p className='paragraph'>For Online Images:</p>
