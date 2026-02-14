@@ -16,7 +16,7 @@ notification = Notification(
     message="0% downloaded",
     progress_current_value=0,progress_max_value=100
     )
-#notification.send()
+notification.send()
 
 def update_progress(dt):
     global progress
@@ -29,7 +29,7 @@ def update_progress(dt):
     else:
         notification.updateProgressBar(progress, f"{progress}% downloaded")
 
-        return progress < 100  # Stops when reaching 100%
+    return progress < 100  # Ends loop when reaching 100%
 
 Clock.schedule_interval(update_progress, 3)`
 
