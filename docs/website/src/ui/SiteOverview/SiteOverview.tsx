@@ -81,7 +81,7 @@ export default function SiteOverview({ version }: { version: Iversion }) {
 
     async function changeVersionData(version: Iversion) {
 
-        const data = await import(`../../pages/versions-data/${version}.tsx`);
+        // const data = await import(`../../pages/versions-data/${version}.tsx`);
         // console.log(data,' 1p11')
         setData([
     {
