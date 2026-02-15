@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Iversion } from '../assets/js/mytypes';
 import { isLegacyVersion } from '../assets/js/helper';
+import { InlineCode } from '../ui/CodeBlock/CodeBlock';
 
 type arg = { name: string; desc: string };
 
@@ -270,7 +271,7 @@ export default function ReferencePage({ version }: { version: Iversion }) {
 			</section>
 
 			{/* Styles */}
-{["1.58", "1.59"].includes(version) ? (
+{["1.58", "1.59", "1.60"].includes(version) ? (
   <section
     id="notificationstyles-class"
     className="space-y-6 page-section"
@@ -284,10 +285,8 @@ export default function ReferencePage({ version }: { version: Iversion }) {
       <>
         <h2 className="text-xl font-bold">NotificationStyles</h2>
         <p className="paragraph">
-          All NotificationStyles attributes are deprecated in v1.59.3, but
-          they're still available for backward compatibility. You can use the{" "}
-          <span className="code yellow-shade">style</span> attribute in the
-          Notification class to set styles.
+          All NotificationStyles attributes are deprecated in v1.59.3 they were transformed to methods for better usability and to free up __init__ kwargs. You can check the new methods in the Notification section above.
+		  The Methods: <InlineCode code='setSmallIcon' />, <InlineCode code='setLargeIcon' />, <InlineCode code='setBigPicture' />, and <InlineCode code='setBigText' /> work to safely add styles without worrying about overwriting other styles or kwargs.
         </p>
       </>
     )}
