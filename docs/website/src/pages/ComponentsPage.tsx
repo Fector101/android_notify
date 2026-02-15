@@ -146,7 +146,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     </p>
                 </div>
                 <CodeBlock title='Button Example' img={btnsImg} code={data?.buttons_code || ''} />
-                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced#functions'>Advanced</Link> section</p>
+                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p>
             </section>
 
             <section tabIndex={0} className="page-section" id="progress-bars">
