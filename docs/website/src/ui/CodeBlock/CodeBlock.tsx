@@ -5,6 +5,12 @@ import './codeblock.css'
 import { Check, Copy } from "lucide-react";
 import { copyText } from '../../assets/js/helper';
 
+
+
+
+export function InlineCode({ code }: { code: string }) {
+    return <span className='code'>{code}</span>
+}
 export function CodeBlock({ title, img = '', code, lang = 'python' }: { title?: string, img?: string, code: string; lang?: string;}) {
 
     const [fontSize, setFontSize] = useState<string>(getFontSize());

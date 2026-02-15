@@ -15,7 +15,7 @@ import { Iversion } from '../../assets/js/mytypes';
 // };
 interface IHeader {
     version: Iversion;
-    setVersion: React.Dispatch<React.SetStateAction<number>>
+    setVersion: React.Dispatch<React.SetStateAction<string>>
 }
 export default function Header({ version,setVersion }:IHeader) {
     // const [search,setSearch]=useState('')
@@ -61,7 +61,7 @@ export default function Header({ version,setVersion }:IHeader) {
                     <ChevronUp className='up-svg' />
                 </span>
                 <div className='opts'>
-                    {[1.58, 1.59].map(each => <button onClick={()=>setVersion(each)} key={nanoid()}>{each}</button>)}
+                    {["1.58","1.59", "1.60"].map(each => <button onClick={()=>setVersion(each)} key={nanoid()}>{each}</button>)}
                 </div>
             </div>
             <p className='page-title'>{location.pathname.slice(1).split('-').map(toTitleCase).join(' ')}{description || ''}</p>

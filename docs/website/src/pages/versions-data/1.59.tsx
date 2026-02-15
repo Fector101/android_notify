@@ -21,13 +21,18 @@ notification.send()
 def update_progress(dt):
     global progress
     progress = min(progress + 10, 100)
-    notification.updateProgressBar(
-        progress, f"{progress}% downloaded"
-    )
-    return progress < 100  # Stops when reaching 100%
+    
+    if progress==100:
+        notification.removeProgressBar(title="File Downloaded", message="super_large_file.zip")
+    elif progress >= 80:
+        notification.showInfiniteProgressBar()
+    else:
+        notification.updateProgressBar(progress, f"{progress}% downloaded")
 
-Clock.schedule_interval(update_progress, 3)
-`
+    return progress < 100  # Ends loop when reaching 100%
+
+Clock.schedule_interval(update_progress, 3)`
+
 const largeiconcode = `from android_notify import Notification
 
 notification = Notification(
@@ -98,7 +103,7 @@ from android_notify import Notification, NotificationHandler
 
 class Myapp(MDApp):
     
-    def on_start(self):
+    def build(self):
         Notification(
             title="Change Page",
             message="Click to change App page.",
@@ -223,7 +228,7 @@ const HANDLER_METHODS = [
         id: 'get_name',
         signature: 'NotificationHandler.get_name()',
         description:
-            'Returns the unique string `name` or `id` for the notification or button that opened the app.'
+            'Returns the unique string `name` or `id` for the notification or button that opened the app.',
     },
     {
         id: 'bindNotifyListener',
@@ -308,59 +313,59 @@ const reference_page = {
 }
 
 
-export const Sidebar = [
-    {
-        title: 'Getting Started',
-        route: '/getting-started',
-        sections: {
-            'Introduction': 'introduction',
-            'Features': 'features',
-            'Installation': 'installation',
-            'Basic Usage': 'basic-usage'
-        }
-    },
-    {
-        title: 'Components',
-        route: '/components',
-        sections: {
-            'Images': 'images',
-            'Buttons': 'buttons',
-            'Progress Bars': 'progress-bars',
-            'Texts': 'texts'
-        }
-    },
-    {
-        title: 'Advanced Methods',
-        route: '/advanced-methods',
-        sections: {
-            'Updating Notification': 'updating-notification',
-            'Adding Image': 'adding-image',
-            'Channel Management': 'channel-management',
-            'Getting Identifer': 'getting-identifer'
-        }
-    },
-    {
-        title: 'Reference',
-        route: '/reference',
-        sections: {
-            'Notification Class': 'notification-class',
-            'NotificationHandler Class': 'notificationhandler-class',
-            'NotificationStyles Class': 'notificationstyles-class'
-        }
-    },
-    {
-        title: 'Extras',
-        route: '/extras',
-        sections: {
-            'How to update': 'how-to-update',
-            'Debugging Tips': 'debugging-tips',
-            'Contributing-Issues': 'contributing-issues',
-            'Support Project': 'support-project',
-            'Credits': 'credits',
+// export const Sidebar = [
+//     {
+//         title: 'Getting Started',
+//         route: '/getting-started',
+//         sections: {
+//             'Introduction': 'introduction',
+//             'Features': 'features',
+//             'Installation': 'installation',
+//             'Basic Usage': 'basic-usage'
+//         }
+//     },
+//     {
+//         title: 'Components',
+//         route: '/components',
+//         sections: {
+//             'Images': 'images',
+//             'Buttons': 'buttons',
+//             'Progress Bars': 'progress-bars',
+//             'Texts': 'texts'
+//         }
+//     },
+//     {
+//         title: 'Advanced Methods',
+//         route: '/advanced-methods',
+//         sections: {
+//             'Updating Notification': 'updating-notification',
+//             'Adding Image': 'adding-image',
+//             'Channel Management': 'channel-management',
+//             'Getting Identifer': 'getting-identifer'
+//         }
+//     },
+//     {
+//         title: 'Reference',
+//         route: '/reference',
+//         sections: {
+//             'Notification Class': 'notification-class',
+//             'NotificationHandler Class': 'notificationhandler-class',
+//             'NotificationStyles Class': 'notificationstyles-class'
+//         }
+//     },
+//     {
+//         title: 'Help',
+//         route: '/help',
+//         sections: {
+//             'How to update': 'how-to-update',
+//             'Debugging Tips': 'debugging-tips',
+//             'Contributing-Issues': 'contributing-issues',
+//             'Support Project': 'support-project',
+//             'Credits': 'credits',
 
-        }
-    },
+//         }
+//     },
 
-]
+// ]
 
 export { component_page, advanced_methods_page, reference_page }

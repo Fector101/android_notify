@@ -5,9 +5,9 @@ import { ScrollToSection } from '../ui/ScrollAssist';
 import './../assets/css/versionspage.css'
 
 interface IDropDown {
-    version: number;
+    version: string;
     sections: { msg: React.ReactNode; type: 'good' | 'warning' | 'bad' | '' }[];
-    setVersion: React.Dispatch<React.SetStateAction<number>>
+    setVersion: React.Dispatch<React.SetStateAction<string>>
 }
 
 function DropDown({ version, sections, setVersion }: IDropDown) {
@@ -19,20 +19,13 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
         setOpened(old => !old)
     }
     function switchToDocs() {
-        // console.log(''+version)
         setVersion(version)
     }
-    // useEffect(() => {
-    //     sections.forEach(each_section => {
-    //         const hash_ = '#' + each_section.trim().toLocaleLowerCase().replace(/ /g, '-')
-    //         if (hash === hash_) setOpened(true)
-    //     })
-    // }, [hash, sections])
     return (
         <div className="dropdown flex fd-column align-items-cen justify-content-cen">
             <div className="header flex align-items-cen width100per flex-wrap">
                 <p>
-                    {'version-' + version}
+                    {'version-' + (version)}
                 </p>
                 <div className='flex margin-left-auto'>
                     {warnings.length > 0 && <span className="warning ver-badge flex align-items-cen justify-content-cen">{warnings.length}</span>}
@@ -51,15 +44,10 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
                 {
                     sections.length ?
                         sections.map(({ msg, type }) => {
-                            // const hash_ = '#' + each_section.toLocaleLowerCase().replace(/ /g, '-')
-                            // const state = hash == hash_
                             return <li key={nanoid()} className={type} style={{ listStyleType: ['good', 'warning', 'bad'].includes(type) ? 'initial' : 'none' }}>
                                 <p>
                                     {msg}
                                 </p>
-                                {/* <Link className={state ? 'active' : ''} to={route + hash_} tabIndex={opened ? 0 : -1}>
-                                    {each_section}
-                                </Link> */}
                             </li>
                         })
                         :
@@ -72,7 +60,7 @@ function DropDown({ version, sections, setVersion }: IDropDown) {
     )
 
 }
-export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<number>> }) {
+export default function VersionsPage({ setVersion }: { setVersion: React.Dispatch<React.SetStateAction<string>> }) {
 
 
     return (
@@ -90,7 +78,55 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                 <hr />
             </section>
             <section className="versions">
-                <DropDown setVersion={setVersion} version={1.59} sections={[
+                <DropDown
+  setVersion={setVersion}
+  version="1.60"
+  sections={[
+    { msg: 'Improvements', type: '' },
+
+    { msg: 'Interactions in Service: A way to pass in BroadCast Reciver and Actions to Buttons', type: 'good' },
+
+    { msg: <>Usage without gradle dependencies: new branch <span className="code green-shade">without-androidx</span> was created, allowing usage in Pyroid3 and Flet apps. Install via <span className="code green-shade">__version__.dev0</span>.</>, type: 'good' },
+
+    { msg: 'Flet support: Beta support for Flet Python apps.', type: 'good' },
+
+    { msg: 'Better Logging: replaced prints with Python logger, allowing log levels.', type: 'good' },
+
+    { msg: 'Modularization: split package into smaller task-based structure for easier management.', type: 'good' },
+
+
+    { msg: <>Class: <span className="code">Notification</span></>, type: '' },
+
+    { msg: 'New Arguments', type: '' },
+    { msg: <><span className="code">addButton</span> - receiver_name, action</>, type: 'good' },
+    { msg: <><span className="code">createChannel</span> - vibrate, res_sound_name</>, type: 'good' },
+    { msg: <><span className="code">setBigText</span> - title, summary</>, type: 'good' },
+
+    { msg: 'New Methods', type: '' },
+    { msg: <><span className="code">setColor</span> - color, changes app icon color using hex code.</>, type: 'good' },
+    { msg: <><span className="code">setSubText</span> - text, Adds small text near the title.</>, type: 'good' },
+    { msg: <><span className="code">setWhen</span> - secs_ago, to change the time the notification was created.</>, type: 'good' },
+    { msg: <><span className="code">channelExists</span> - channel_id, to check if said channel exists.</>, type: 'good' },
+    { msg: <><span className="code">doChannelsExist</span> - ids, returns those that do not exist.</>, type: 'good' },
+    { msg: <><span className="code">setData</span> - attach a dictionary of data for later use.</>, type: 'good' },
+    { msg: <><span className="code">fVibrate</span> - force vibration even if disabled in device settings.</>, type: 'good' },
+    { msg: <><span className="code">fill_args</span> - fills notification args without sending.</>, type: 'good' },
+
+    { msg: 'Support for devices less than Android 8', type: 'good' },
+    { msg: <><span className="code">setVibrate</span> - pattern, defaults to a single vibration.</>, type: 'good' },
+    { msg: <><span className="code">setSound</span> - res_sound_name, changes the default notification sound.</>, type: 'good' },
+
+
+    { msg: <>Class: <span className="code">NotificationHandler</span></>, type: '' },
+
+    { msg: 'New Arguments', type: '' },
+    { msg: <><span className="code">get_name</span> - on_start must be True when called from App.on_start().</>, type: 'good' },
+
+    { msg: 'New Property', type: '' },
+    { msg: <><span className="code">data_object</span> - access data added via Notification.setData.</>, type: 'good' },
+  ]}
+/>
+                <DropDown setVersion={setVersion} version="1.59" sections={[
                     { msg: 'Add new features', type: '' },
                     { msg: <>Added a way to access Old Notification instance with <span className="code">Notification().id</span> </>, type: 'good' },
                     { msg: <>methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span>, For if old instance not available and need to cancel one use id with <span className="code">Notification.cancel(_id)</span></>, type: 'good' },
@@ -107,7 +143,7 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
                     { msg: '`Notification.identifer` to `Notification.name`', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` to `NotificationHandler.get_name`', type: 'warning' },
                 ]} />
-                <DropDown setVersion={setVersion} version={1.58} sections={[
+                <DropDown setVersion={setVersion} version="1.58" sections={[
                     { msg: '`showInfiniteProgressBar` Had no guard block when not on android', type: 'warning' },
                     { msg: '`NotificationHandler.getIdentifer` always returned value even when app not opened from notification', type: 'bad' },
                 ]} />
@@ -116,3 +152,170 @@ export default function VersionsPage({ setVersion }: { setVersion: React.Dispatc
         </div>
     )
 }
+
+
+// import { nanoid } from "nanoid";
+// import React from "react";
+
+// interface ReleaseItem {
+//   msg: React.ReactNode;
+//   type: "good" | "warning" | "bad" | "";
+// }
+
+// interface ReleaseProps {
+//   version: number;
+//   sections: ReleaseItem[];
+//   setVersion: React.Dispatch<React.SetStateAction<number>>;
+// }
+
+// // Helper to group sections
+// function groupSections(sections: ReleaseItem[]) {
+//   return {
+//     good: sections.filter(s => s.type === "good"),
+//     warning: sections.filter(s => s.type === "warning"),
+//     bad: sections.filter(s => s.type === "bad"),
+//     neutral: sections.filter(s => s.type === ""),
+//   };
+// }
+
+// // Single Release Card
+// function Release({ version, sections, setVersion }: ReleaseProps) {
+//   const { good, warning, bad, neutral } = groupSections(sections);
+
+//   return (
+//     <article className="relative border-l-4 border-blue-500 pl-6 mb-12">
+//       {/* Version Header */}
+//       <div className="flex items-center justify-between mb-4">
+//         <h2 className="text-2xl font-bold text-white">
+//           Version {version === 1.6 ? "1.60" : version}
+//         </h2>
+//         <button
+//           onClick={() => setVersion(version)}
+//           className="text-sm text-blue-400 hover:underline"
+//         >
+//           View Docs →
+//         </button>
+//       </div>
+
+//       <div className="space-y-6 text-sm">
+//         {good.length > 0 && (
+//           <div>
+//             <h3 className="text-green-400 font-semibold mb-2">Added</h3>
+//             <ul className="space-y-2 text-zinc-300 list-disc list-inside">
+//               {good.map(item => (
+//                 <li key={nanoid()}>{item.msg}</li>
+//               ))}
+//             </ul>
+//           </div>
+//         )}
+
+//         {warning.length > 0 && (
+//           <div>
+//             <h3 className="text-yellow-400 font-semibold mb-2">Changed</h3>
+//             <ul className="space-y-2 text-zinc-300 list-disc list-inside">
+//               {warning.map(item => (
+//                 <li key={nanoid()}>{item.msg}</li>
+//               ))}
+//             </ul>
+//           </div>
+//         )}
+
+//         {bad.length > 0 && (
+//           <div>
+//             <h3 className="text-red-400 font-semibold mb-2">Fixed / Critical</h3>
+//             <ul className="space-y-2 text-zinc-300 list-disc list-inside">
+//               {bad.map(item => (
+//                 <li key={nanoid()}>{item.msg}</li>
+//               ))}
+//             </ul>
+//           </div>
+//         )}
+
+//         {neutral.length > 0 && (
+//           <div>
+//             <h3 className="text-zinc-500 font-semibold mb-2">Notes</h3>
+//             <ul className="space-y-2 text-zinc-400 list-disc list-inside">
+//               {neutral.map(item => (
+//                 <li key={nanoid()}>{item.msg}</li>
+//               ))}
+//             </ul>
+//           </div>
+//         )}
+//       </div>
+//     </article>
+//   );
+// }
+
+// // Main Page
+// export default function VersionsPage({
+//   setVersion,
+// }: {
+//   setVersion: React.Dispatch<React.SetStateAction<number>>;
+// }) {
+//   return (
+//     <div className="max-w-3xl mx-auto px-5 py-16">
+//       <h1 className="text-4xl font-bold mb-3 text-white">Changelog</h1>
+//       <p className="text-zinc-400 mb-12">
+//         Track new features, improvements, and fixes in each version.
+//       </p>
+
+//       <section className="space-y-12">
+//         {/* v1.60 */}
+//         <Release
+//           version={1.6}
+//           setVersion={setVersion}
+//           sections={[
+//             { msg: "Interactions in Service: pass receivers and button actions.", type: "good" },
+//             {
+//               msg: (
+//                 <>
+//                   Usage without gradle via <span className="code text-green-400">without-androidx</span>.
+//                 </>
+//               ),
+//               type: "good",
+//             },
+//             { msg: "Flet support (beta).", type: "good" },
+//             { msg: "Better logging with Python logger instead of prints.", type: "good" },
+//             { msg: "Modularization: split package into smaller task-based structure.", type: "good" },
+//             { msg: "New Arguments in Notification class: addButton, createChannel, setBigText", type: "" },
+//             { msg: "New Methods in Notification: setColor, setSubText, setWhen, channelExists, doChannelsExist, setData, fVibrate, fill_args", type: "" },
+//             { msg: "Support for devices less than Android 8.", type: "good" },
+//             { msg: "New Arguments in NotificationHandler: get_name", type: "" },
+//             { msg: "New Property: data_object", type: "" },
+//           ]}
+//         />
+
+//         {/* v1.59 */}
+//         <Release
+//           version={1.59}
+//           setVersion={setVersion}
+//           sections={[
+//             { msg: "Add new features", type: "good" },
+//             {
+//               msg: (
+//                 <>
+//                   Added a way to access Old Notification instance with{" "}
+//                   <span className="code text-green-400">Notification().id</span>
+//                 </>
+//               ),
+//               type: "good",
+//             },
+//             { msg: "Methods to cancel a certain or all notifications.", type: "good" },
+//             { msg: "Changed Notification.identifier → Notification.name", type: "warning" },
+//             { msg: "Changed NotificationHandler.getIdentifier → NotificationHandler.get_name", type: "warning" },
+//           ]}
+//         />
+
+//         {/* v1.58 */}
+//         <Release
+//           version={1.58}
+//           setVersion={setVersion}
+//           sections={[
+//             { msg: "`showInfiniteProgressBar` had no guard block when not on android", type: "warning" },
+//             { msg: "`NotificationHandler.getIdentifier` always returned value even when app not opened from notification", type: "bad" },
+//           ]}
+//         />
+//       </section>
+//     </div>
+//   );
+// }

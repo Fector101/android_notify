@@ -1,51 +1,143 @@
-import {  ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
-import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
+import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
 import '../assets/css/mainpage.css'
-import { code, installation_code_buildozer, installation_code_pip } from './versions-data/mainpage';
+import { code, installation_code_buildozer, installation_code_pip, installation_code_flet, installation_code_buildozer_without_androidx } from './versions-data/mainpage';
 
 export default function MainPage() {
 
     return (
         <div className="page main-page flex fd-column">
             <ScrollToSection />
-            <section className="page-section" id='introduction'>
+            <section className="page-section" id="introduction">
                 <h2>Introduction</h2>
                 <hr />
-                <p className='reader'>Android-Notify simplifies the process of creating and managing android notifications with <span className='code green'>Python</span>.</p>
-
-                <p className='paragraph reader'>It's built using pyjnius to interact with Android's native Java Classes and APIs.</p>
-                <p className='paragraph'>
-The goal of android-notify is to handle all the Java for you, allowing you to focus on your notification content using Python, without worrying about platform-specific implementation details. It also eliminates the need for unnecessary third-party APIs or online services.
+                <p className="reader">
+                    Android-Notify makes creating and managing Android notifications easy with <span className="code green">Python</span>.
                 </p>
-                <p className='paragraph'>Android-Notify has two dependencies: Kivy, Pyjnius</p>
+                <p className="paragraph reader">
+                    Built with Pyjnius, it interacts directly with Android’s Java APIs.
+                </p>
+                <p className="paragraph">
+                    It handles all Java details so you can focus on notification content in Python, No extra APIs or services needed.
+                </p>
+                <p className="paragraph">Dependencies: Kivy, Pyjnius</p>
             </section>
 
-            <section className="page-section" id='features'>
+            <section className="page-section" id="features">
                 <h2>Features</h2>
                 <hr />
-                <ul className='inner-section-1'>
-                    <li>Permission request for notifications</li>
-                    <li>Allows notification to have a callback function Onclick</li>
-                    <li>Supports Images, adding Buttons and Progress-Bar</li>
-                    <li>Changing default notification icon</li>
-                    <li>Persisting on notification tray </li>
-                    <li>Customizable notification channels</li>
-                    <li>Opening app on notification click</li>
+
+                <ul className="inner-section-1 space-y-[20px]">
+
+                    <details>
+                        <summary><strong>Notification Components&Design:</strong></summary>
+
+                        <ul className='space-y-[20px] mt-[10px]'>
+                            <ul>
+                                <li>Texts (<a href="/components#texts" target="_blank" rel="noopener noreferrer">texts section </a>)</li>
+                                <li>Simple text</li>
+                                <li>Big text</li>
+                                <li>Inbox-style</li>
+                                <li>Sub Texts</li>
+                                <li>and Colored texts.</li>
+                            </ul>
+
+                            <ul>
+                                <li>Images
+                                    (<a href="/components#images" target="_blank" rel="noopener noreferrer">images section </a>)
+                                </li>
+                                <li>Large icon</li>
+                                <li>Big picture</li>
+                                <li>Custom app icons</li>
+                                <li>Colored app icons</li>
+                            </ul>
+
+                            <ul>
+                                <li>Progress bar (<a href="/components#progress-bars" target="_blank" rel="noopener noreferrer">
+                                    progress bars section</a>)
+                                </li>
+                                <li> Determinate</li>
+                                <li> Indeterminate</li>
+                            </ul>
+
+                            <ul>
+                                <li>Buttons (<a href="/components#buttons" target="_blank" rel="noopener noreferrer">
+                                    buttons section</a>)
+                                </li>
+                                <li> Runtime Functions</li>
+                                <li> Broadcast Actions</li>
+
+                            </ul>
+
+                        </ul>
+                    </details>
+                    <details>
+
+                        <summary><strong>Behaviours/ Runtime Functions:</strong></summary>
+
+                        <ul className='space-y-[10px] mt-[10px]'>
+                            <li>Send: normal/silent/persistent/vibrate</li>
+                            <li>Update: title, message, images, progress bar</li>
+                            <li>Add or Remove Buttons</li>
+                            <li>Click handlers and opening app on notification click</li>
+                            <li>Custom sound per and vibrate notification</li>
+                            <li>Set timestamps</li>
+                            <li>Clear single or all notifications</li>
+
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary><strong>Channels for </strong>(<a href="https://android-notify.vercel.app/advanced-methods#channel-management" target="_blank" rel="noopener noreferrer">Android 8.0+</a>):</summary>
+                        <ul className='space-y-[10px] mt-[10px]'>
+                            <li>Create, delete, delete all</li>
+                            <li>Set importance, vibration, and sound</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary><strong>Permissions:</strong></summary>
+                        <ul className='space-y-[10px] mt-[10px]'>
+                            <li>Ask / check notification permission with callback</li>
+                        </ul>
+                    </details>
+
+
                 </ul>
-                <p className='paragraph inner-section-1'>And Many More...</p>
+
             </section>
 
             <section className="page-section" id='installation'>
                 <h2>Installation</h2>
                 <hr />
+                <h3 className='my-[20px]'>- With Androidx:</h3>
+                <h4 className='ml-[20px]'>Recommended for Newer devices</h4>
+
                 <div className='inner-section-1'>
-                    <h3 className='sub-header'>Buildozer</h3>
+                    <h3 className='sub-header'>Kivy Apps</h3>
                     <p>In your `buildozer.spec` file include the following:</p>
                     <CodeBlock code={installation_code_buildozer} lang='ini' />
+                    
+                    <h3 className='my-[20px]'>- Without Androidx:</h3>
+                    <p className='my-[20px]'> easy usage without gradle dependencies,
+                         android-notify uses android legacy implementations.(Tested up to Android 15)</p>
+                    
+                    <h3 className='sub-header'>Flet Apps</h3>
+
+                    <p>In your `pyproject.toml` include the following:</p>
+
+                    <CodeBlock code={installation_code_flet} lang='toml' />
+                    <h3 className='sub-header'>Kivy Apps</h3>
+                    <p className='my-[20px]'>In your `buildozer.spec` include the following:</p>
+                    <CodeBlock code={installation_code_buildozer_without_androidx} lang='ini' />
+
+                    <h3 className='sub-header'>Pydroid 3 App</h3>
+                    <p className='paragraph'>In pip section where you're asked to insert libary name paste <InlineCode code='android-notify==1.60.10.dev0'/> </p>
+
                     <h3 className='sub-header'>PIP</h3>
-                    <p className='paragraph'>You Can also install Via PIP for testing purposes</p>
+                    <p className='paragraph'>You Can also install Via PIP for IDE IntelliSense and testing purposes</p>
                     <CodeBlock code={installation_code_pip} lang='bash' />
 
                 </div>

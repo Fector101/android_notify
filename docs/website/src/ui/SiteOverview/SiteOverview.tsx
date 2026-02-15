@@ -81,9 +81,62 @@ export default function SiteOverview({ version }: { version: Iversion }) {
 
     async function changeVersionData(version: Iversion) {
 
-        const data = await import(`../../pages/versions-data/${version}.tsx`);
-        // console.log(data,' 1p11')
-        setData(data?.Sidebar)
+        // const data = await import(`../../pages/versions-data/${version}.tsx`);
+        console.log(version)
+        setData([
+    {
+        title: 'Getting Started',
+        route: '/getting-started',
+        sections: {
+            'Introduction': 'introduction',
+            'Features': 'features',
+            'Installation': 'installation',
+            'Basic Usage': 'basic-usage'
+        }
+    },
+    {
+        title: 'Components',
+        route: '/components',
+        sections: {
+            'Images': 'images',
+            'Buttons': 'buttons',
+            'Progress Bars': 'progress-bars',
+            'Texts': 'texts'
+        }
+    },
+    {
+        title: 'Advanced Methods',
+        route: '/advanced-methods',
+        sections: {
+            'Updating Notification': 'updating-notification',
+            'Adding Image': 'adding-image',
+            'Channel Management': 'channel-management',
+            'Getting Identifer': 'getting-identifer'
+        }
+    },
+    {
+        title: 'Reference',
+        route: '/reference',
+        sections: {
+            'Notification Class': 'notification-class',
+            'NotificationHandler Class': 'notificationhandler-class',
+            'NotificationStyles Class': 'notificationstyles-class'
+        }
+    },
+    {
+        title: 'Help',
+        route: '/help',
+        sections: {
+            'How to update': 'how-to-update',
+            'Debugging Tips': 'debugging-tips',
+            'Contributing-Issues': 'contributing-issues',
+            'Support Project': 'support-project',
+            'Credits': 'credits',
+
+        }
+    },
+
+])
     }
     useEffect(() => {
         changeVersionData(version)
@@ -200,8 +253,8 @@ export default function SiteOverview({ version }: { version: Iversion }) {
             />
             <DropDown
                 hash={hash}
-                title="Extras"
-                route='/extras'
+                title="Help"
+                route='/help'
                 sections={[
                     'How to update',
                     'Debugging Tips',
