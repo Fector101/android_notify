@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
-import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
+import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
 import '../assets/css/mainpage.css'
 import { code, installation_code_buildozer, installation_code_pip, installation_code_flet, installation_code_buildozer_without_androidx } from './versions-data/mainpage';
 
@@ -112,20 +112,30 @@ export default function MainPage() {
             <section className="page-section" id='installation'>
                 <h2>Installation</h2>
                 <hr />
-                <h3 className='my-[20px]'>- With Androidx: Recommended for Newer devices</h3>
+                <h3 className='my-[20px]'>- With Androidx:</h3>
+                <h4 className='ml-[20px]'>Recommended for Newer devices</h4>
 
                 <div className='inner-section-1'>
-                    <h3 className='sub-header'>Buildozer</h3>
+                    <h3 className='sub-header'>Kivy Apps</h3>
                     <p>In your `buildozer.spec` file include the following:</p>
                     <CodeBlock code={installation_code_buildozer} lang='ini' />
                     
-                    <h3 className='my-[20px]'>- Without Androidx: for usage without gradle dependencies, android-notify uses android legacy implementations.(Tested up to Android 15)</h3>
+                    <h3 className='my-[20px]'>- Without Androidx:</h3>
+                    <p className='my-[20px]'> easy usage without gradle dependencies,
+                         android-notify uses android legacy implementations.(Tested up to Android 15)</p>
                     
-                    <p>For Flet Apps: In your `pyproject.toml` include the following:</p>
+                    <h3 className='sub-header'>Flet Apps</h3>
+
+                    <p>In your `pyproject.toml` include the following:</p>
 
                     <CodeBlock code={installation_code_flet} lang='toml' />
-                    <p className='my-[20px]'>For Kivy Apps: In your `buildozer.spec` include the following:</p>
+                    <h3 className='sub-header'>Kivy Apps</h3>
+                    <p className='my-[20px]'>In your `buildozer.spec` include the following:</p>
                     <CodeBlock code={installation_code_buildozer_without_androidx} lang='ini' />
+
+                    <h3 className='sub-header'>Pydroid 3 App</h3>
+                    <p className='paragraph'>In pip section where you're asked to insert libary name paste <InlineCode code='android-notify==1.60.10.dev0'/> </p>
+
                     <h3 className='sub-header'>PIP</h3>
                     <p className='paragraph'>You Can also install Via PIP for IDE IntelliSense and testing purposes</p>
                     <CodeBlock code={installation_code_pip} lang='bash' />

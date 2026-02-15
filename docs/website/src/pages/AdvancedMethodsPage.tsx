@@ -38,9 +38,10 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                 <h2 className=" long-title">Updating Notification</h2>
                 <hr />
                 <p>There Available methods to interact with notification after sending</p>
+                <h3 className="underline text-xl mt-[10px] mb-[0]">For Texts:</h3>
                 <p tabIndex={0} className="paragraph">For Changing <span className="code">title</span> and <span className="code">message</span> after sending:</p>
                 <CodeBlock title="Title & Message" code={data?.title_and_message_update_code || ''} />
-                <p tabIndex={0} className="paragraph">For the Progress Bar: </p>
+                <h3 className="underline text-xl mt-[10px] mb-[0]">For Progress Bars:</h3>
                 <ul className="inner-section-2 paragraph">
                     <li>Avoid changing it value in intervals less than 0.5sec</li>
                     <li>And always pass in the new title and message if any to <span className="code">updateProgressBar</span> method</li>
@@ -50,8 +51,7 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
             </section>
 
             <section id='adding-image' className="page-section">
-                <h2 className=" long-title">For Images:</h2>
-                <hr />
+                <h3 className="underline text-xl mt-[10px] mb-[0]">For Images:</h3>
                 {/* <p tabIndex={0} className="paragraph">For Images:</p> */}
                 <p className="paragraph">To add image after sending
                 {isLegacyVersion(version) ?

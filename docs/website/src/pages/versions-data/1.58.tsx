@@ -357,60 +357,60 @@ const reference_page = {
     NOTIFICATION_METHODS, HANDLER_METHODS, STYLE_ATTRIBUTES
 }
 
-export const Sidebar= [
-    {
-        title: 'Getting Started',
-        route: '/getting-started',
-        sections: {
-            'Introduction':'introduction',
-            'Features':'features',
-            'Installation':'installation',
-            'Basic Usage':'basic-usage'
-        }
-    },
-    {
-        title: 'Components',
-        route: '/components',
-        sections: {
-            'Images':'images',
-            'Buttons':'buttons',
-            'Progress Bars':'progress-bars',
-            'Texts':'texts'
-        }
-    },
-    {
-        title: 'Advanced Methods',
-        route: '/advanced-methods',
-        sections: {
-            'Updating Notification':title_and_message_update,
-            'Adding Image':adding_image_code,
-            'Channel Management':channel_management_code,
-            'Getting Identifer':getting_identifer
-        }
-    },
-    {
-        title: 'Reference',
-        route: '/reference',
-        sections: {
-            'Notification Class':NOTIFICATION_METHODS,
-            'NotificationHandler Class':HANDLER_METHODS,
-            'NotificationStyles Class':STYLE_ATTRIBUTES
-        }
-    },
-    {
-        title: 'Help',
-        route: '/help',
-        sections: {
-            'How to update': 'how-to-update',
-            'Debugging Tips': 'debugging-tips',
-            'Contributing-Issues': 'contributing-issues',
-            'Support Project': 'support-project',
-            'Credits': 'credits',
+// export const Sidebar= [
+//     {
+//         title: 'Getting Started',
+//         route: '/getting-started',
+//         sections: {
+//             'Introduction':'introduction',
+//             'Features':'features',
+//             'Installation':'installation',
+//             'Basic Usage':'basic-usage'
+//         }
+//     },
+//     {
+//         title: 'Components',
+//         route: '/components',
+//         sections: {
+//             'Images':'images',
+//             'Buttons':'buttons',
+//             'Progress Bars':'progress-bars',
+//             'Texts':'texts'
+//         }
+//     },
+//     {
+//         title: 'Advanced Methods',
+//         route: '/advanced-methods',
+//         sections: {
+//             'Updating Notification':title_and_message_update,
+//             'Adding Image':adding_image_code,
+//             'Channel Management':channel_management_code,
+//             'Getting Identifer':getting_identifer
+//         }
+//     },
+//     {
+//         title: 'Reference',
+//         route: '/reference',
+//         sections: {
+//             'Notification Class':NOTIFICATION_METHODS,
+//             'NotificationHandler Class':HANDLER_METHODS,
+//             'NotificationStyles Class':STYLE_ATTRIBUTES
+//         }
+//     },
+//     {
+//         title: 'Help',
+//         route: '/help',
+//         sections: {
+//             'How to update': 'how-to-update',
+//             'Debugging Tips': 'debugging-tips',
+//             'Contributing-Issues': 'contributing-issues',
+//             'Support Project': 'support-project',
+//             'Credits': 'credits',
 
-        }
-    },
+//         }
+//     },
 
     
-]
+// ]
 
 export { component_page, advanced_methods_page, reference_page }

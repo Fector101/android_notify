@@ -12,12 +12,13 @@ import customColorIconImg from "../assets/imgs/custom_color_icon.jpg"
 import onlineBigPicImg from "../assets/imgs/online-img.jpg"
 import subTextImg from "../assets/imgs/sub-text.jpg"
 // import coloredTextImg from "../assets/imgs/colored-texts.jpg"
+import progressbarImg from './../assets/imgs/progress.jpg'
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
 import progressbarGif from './../assets/imgs/progressbar.gif'
 
-import { CodeBlock } from '../ui/CodeBlock/CodeBlock';
+import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
 import { Iversion } from '../assets/js/mytypes';
 import { isLegacyVersion } from '../assets/js/helper';
@@ -39,9 +40,6 @@ interface IComponentPage {
 }
 type set_version = React.Dispatch<React.SetStateAction<string>>
 
-function InlineCode({ code }: { code: string }) {
-    return <span className='code'>{code}</span>
-}
 export default function ComponentsPage({ version, setVersion }: { version: Iversion, setVersion: set_version }) {
     const [data, setData] = useState<IComponentPage>()
 
@@ -167,7 +165,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                         You can customize the displayed message and title while the progress bar updates.
                     </p>
                 </div>
-                <CodeBlock title='Progress Bar Style' img={progressbarGif} code={data?.progressbar_code || ''} />
+                <CodeBlock title='Progress Bar Style' img={version == "1.58"?progressbarImg:progressbarGif} code={data?.progressbar_code || ''} />
             </section>
 
 
