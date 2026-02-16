@@ -1,3 +1,4 @@
+// index.tsx
 import { Iversion, NotificationMethods, IReferencePage } from "../../assets/js/mytypes";
 import { reference_page as v158 } from "./1.58";
 import { reference_page as v159 } from "./1.59";
@@ -14,17 +15,35 @@ import { reference_page as v160 } from "./1.60";
 */
 export const VERSION_ORDER: Iversion[] = ["1.58", "1.59", "1.60"];
 
+/* ------------------------------------------------ */
+/* REMOVALS PER VERSION */
+/* ------------------------------------------------ */
+const REMOVALS: Record<Iversion, { methods?: string[]; args?: Record<string, string[]>; handlers?: string[] }> = {
+  "1.60": {
+    // methods: ["init"], // remove old init
+    args: {
+      // init: ["style"]
+      // setBigText: ["body"], // remove 'body' arg
+      // addButton: ["receiver_name", "action"]
+    },
+    handlers: ["getIdentifer", "is_on_android"], // remove deprecated handler
 
+  },
+  "1.59": {
+    handlers: ["getIdentifer"], // remove old handler
+  }
+};
 
 /* ------------------------------------------------ */
 /* MERGE HELPERS */
 /* ------------------------------------------------ */
-
 const mergeMethods = (
   base: NotificationMethods = {},
-  incoming: NotificationMethods = {}
+  incoming: NotificationMethods = {},
+  version?: Iversion
 ) => {
   const result: NotificationMethods = { ...base };
+  const removal = version ? REMOVALS[version] : undefined;
 
   for (const key in incoming) {
     const prev = result[key];
@@ -35,15 +54,20 @@ const mergeMethods = (
       continue;
     }
 
-    // Merge args intelligently: maintain prev args and update/add from next
+    // Merge args
     let mergedArgs = prev.args || [];
     if (next.args) {
       const argMap = new Map(mergedArgs.map(arg => [arg.name, arg]));
-      // Update existing or add new args from next version
-      next.args.forEach(arg => {
-        argMap.set(arg.name, arg);
-      });
+      next.args.forEach(arg => argMap.set(arg.name, arg));
       mergedArgs = Array.from(argMap.values());
+    }
+
+    // Remove blacklisted args safely
+    if (removal?.args) {
+      const argsToRemove = removal.args[key];
+      if (argsToRemove?.length) {
+        mergedArgs = mergedArgs.filter(arg => !argsToRemove.includes(arg.name));
+      }
     }
 
     result[key] = {
@@ -53,39 +77,48 @@ const mergeMethods = (
     };
   }
 
+  // Remove blacklisted methods entirely
+  if (removal?.methods) {
+    for (const m of removal.methods) {
+      delete result[m];
+    }
+  }
+
   return result;
 };
 
+
 const mergeArrayById = <T extends { id: string }>(
   a: T[] = [],
-  b: T[] = []
+  b: T[] = [],
+  version?: Iversion
 ) => {
   const map = new Map<string, T>();
-
   a.forEach((i) => map.set(i.id, i));
   b.forEach((i) => map.set(i.id, { ...map.get(i.id), ...i }));
 
-  return Array.from(map.values());
+  let merged = Array.from(map.values());
+
+  const removal = version ? REMOVALS[version] : undefined;
+  if (removal?.handlers) {
+    merged = merged.filter(item => !removal.handlers!.includes(item.id));
+  }
+
+  return merged;
 };
-
-
 
 /* ------------------------------------------------ */
 /* RAW VERSION DATA */
 /* ------------------------------------------------ */
-
 const RAW_VERSION_MAP: Record<Iversion, IReferencePage> = {
   "1.58": v158,
   "1.59": v159,
   "1.60": v160,
 };
 
-
-
 /* ------------------------------------------------ */
 /* BUILD FINAL MAP WITH INHERITANCE */
 /* ------------------------------------------------ */
-
 export const VERSION_MAP: Record<Iversion, IReferencePage> = {} as any;
 
 for (let i = 0; i < VERSION_ORDER.length; i++) {
@@ -99,8 +132,8 @@ for (let i = 0; i < VERSION_ORDER.length; i++) {
     const v = VERSION_ORDER[j];
     const ref = RAW_VERSION_MAP[v];
 
-    methods = mergeMethods(methods, ref.NOTIFICATION_METHODS);
-    handlers = mergeArrayById(handlers, ref.HANDLER_METHODS || []);
+    methods = mergeMethods(methods, ref.NOTIFICATION_METHODS, version);
+    handlers = mergeArrayById(handlers, ref.HANDLER_METHODS || [], version);
     styles = { ...styles, ...(ref.STYLE_ATTRIBUTES || {}) };
   }
 

@@ -133,14 +133,14 @@ const NOTIFICATION_METHODS = {
     },
     fVibrate: {
         signature: 'fVibrate(pattern)',
-        description: 'For when regular notifications vibrate turned off in device settings (useful for Alarms).',
+        description: 'For when regular notifications vibrate turned off in device settings (useful for Alarms). Uses Single 500ms vibration for pattern.',// not provided.',
         args: [
-            { name: 'pattern', desc: "Vibration pattern, it accepts a list of ints representing vibration and pause durations in milliseconds, defaults to a single vibration of 500ms if not provided." }
+            // { name: 'pattern', desc: "Vibration pattern, it accepts a list of ints representing vibration and pause durations in milliseconds, defaults to a single vibration of 500ms if not provided." }
         ]
     },
     fill_args: {
         signature: 'fill_args(**kwargs)',
-        description: <>Takes same Arguments as send method, Returns builder object.<br /> It fills notification args without sending, useful for when you want to use update methods without sending right away.<br /> For example starting calling startForeground you need to fill notification args and pass in notification id and builder.</>,
+        description: <>Takes same Arguments as send method, Returns builder object.<br /> It fills notification args without sending, useful for when you want to fill arguments without sending right away.<br /> For example calling startForeground from service you need to pass in notification.id and builder.build.</>,
         args: [
             { name: '**kwargs', desc: "Same arguments as send method." }
         ]

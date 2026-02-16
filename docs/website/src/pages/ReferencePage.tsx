@@ -6,12 +6,13 @@ import { InlineCode } from "../ui/CodeBlock/CodeBlock";
 import { Iversion, NotificationMethods } from "../assets/js/mytypes";
 import { isLegacyVersion } from "../assets/js/helper";
 
-import { VERSION_MAP } from "./versions-data";
+import { VERSION_MAP } from "./versions-data/index";
 import { ScrollToSection } from "../ui/ScrollAssist";
 
-const MethodCard = ({ method, fallback }: { method: any; fallback?: string }) => (
-  <div className="bg-gray-50 p-4 rounded-lg shadow-sm transition">
-    <p className="ref-code">{method.signature || fallback}</p>
+function MethodCard({method, fallback }: { method: any; fallback?: string }) {
+  const class_name = fallback? fallback+" ref-code": "ref-code"
+  return (<div className="bg-gray-50 p-4 rounded-lg shadow-sm transition">
+    <p className={class_name}>{method.signature || fallback}</p>
     <p className="paragraph mb-2 text-gray-700">{method.description}</p>
 
     {method.args && method.args.length > 0 && (
@@ -26,7 +27,7 @@ const MethodCard = ({ method, fallback }: { method: any; fallback?: string }) =>
     )}
   </div>
 );
-
+}
 export default function ReferencePage({ version }: { version: Iversion }) {
   const data = VERSION_MAP[version];
   const NOTIFICATION_METHODS: NotificationMethods =
@@ -85,25 +86,8 @@ export default function ReferencePage({ version }: { version: Iversion }) {
         </h2>
 
         {Object.entries(NOTIFICATION_METHODS).map(([key, m]) => (
-          <div
-            key={nanoid()}
-            className="bg-gray-50 p-4 rounded-lg shadow-sm transition"
-          >
-            <p className={key + " ref-code"}>{m.signature || key}</p>
-
-            <p className="paragraph mb-2 text-gray-700">{m.description}</p>
-
-            {m.args && m.args.length > 0 && (
-              <dl className="pl-4 space-y-1">
-                {m.args.map(({ name, desc }) => (
-                  <div key={nanoid()}>
-                    <dt>{name}</dt>
-                    <dd>{desc}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-          </div>
+          <MethodCard key={key} method={m} fallback={key}/>
+          
         ))}
       </section>
 
