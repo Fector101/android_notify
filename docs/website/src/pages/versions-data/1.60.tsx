@@ -177,20 +177,25 @@ const HANDLER_METHODS = [
 ];
 
 
-export const getting_identifer = `
+export const getting_identifer =`
 from kivymd.app import MDApp
 from android_notify import Notification, NotificationHandler
+
+
+def use_name(name):
+    if name == 'change_app_page':
+        # Code to change Screen
+        pass
+    elif name == 'change_app_color':
+        # Code to change Screen Color
+        pass
+
 
 class Myapp(MDApp):
 
     def on_start(self):
         name = NotificationHandler.get_name(on_start=True)
-        if name == 'change_app_page':
-            # Code to change Screen
-            pass
-        elif name == 'change_app_color':
-            # Code to change Screen Color
-            pass
+        use_name(name)
 
     def build(self):
         Notification(
@@ -208,13 +213,7 @@ class Myapp(MDApp):
     def on_resume(self):
         # Is called every time app is reopened
         name = NotificationHandler.get_name()
-        if name == 'change_app_page':
-            # Code to change Screen
-            pass
-        elif name == 'change_app_color':
-            # Code to change Screen Color
-            pass`
-
+        use_name(name)`
 
 const advanced_methods_page = {
     getting_identifier_code: getting_identifer,
