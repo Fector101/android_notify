@@ -16,7 +16,7 @@ import progressbarImg from './../assets/imgs/progress.jpg'
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
-import progressbarGif from './../assets/imgs/progressbar.gif'
+import progressbarGif from '../assets/imgs/progressbar.gif'
 
 import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
