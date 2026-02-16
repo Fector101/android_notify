@@ -14,7 +14,8 @@ progress = 0
 notification = Notification(
     title="Downloading...",
     message="0% downloaded",
-    progress_current_value=0,progress_max_value=100
+    progress_current_value=0,
+    progress_max_value=100
     )
 notification.send()
 
@@ -131,8 +132,8 @@ class Myapp(MDApp):
 const NOTIFICATION_METHODS = {
     init: {
         args: [
-            { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },            
-            { name: 'lines_txt -- use addLine() instead', desc: "Lines of text for (for `INBOX` style) each line should be separated by '\\n'." },
+            { name: 'body', desc: " -- use setBigText() instead." },            
+            { name: 'lines_txt', desc: " -- use addLine() instead." },
         ]
     },
     
@@ -312,60 +313,5 @@ const reference_page = {
     NOTIFICATION_METHODS, HANDLER_METHODS, STYLE_ATTRIBUTES
 }
 
-
-// export const Sidebar = [
-//     {
-//         title: 'Getting Started',
-//         route: '/getting-started',
-//         sections: {
-//             'Introduction': 'introduction',
-//             'Features': 'features',
-//             'Installation': 'installation',
-//             'Basic Usage': 'basic-usage'
-//         }
-//     },
-//     {
-//         title: 'Components',
-//         route: '/components',
-//         sections: {
-//             'Images': 'images',
-//             'Buttons': 'buttons',
-//             'Progress Bars': 'progress-bars',
-//             'Texts': 'texts'
-//         }
-//     },
-//     {
-//         title: 'Advanced Methods',
-//         route: '/advanced-methods',
-//         sections: {
-//             'Updating Notification': 'updating-notification',
-//             'Adding Image': 'adding-image',
-//             'Channel Management': 'channel-management',
-//             'Getting Identifer': 'getting-identifer'
-//         }
-//     },
-//     {
-//         title: 'Reference',
-//         route: '/reference',
-//         sections: {
-//             'Notification Class': 'notification-class',
-//             'NotificationHandler Class': 'notificationhandler-class',
-//             'NotificationStyles Class': 'notificationstyles-class'
-//         }
-//     },
-//     {
-//         title: 'Help',
-//         route: '/help',
-//         sections: {
-//             'How to update': 'how-to-update',
-//             'Debugging Tips': 'debugging-tips',
-//             'Contributing-Issues': 'contributing-issues',
-//             'Support Project': 'support-project',
-//             'Credits': 'credits',
-
-//         }
-//     },
-
-// ]
 
 export { component_page, advanced_methods_page, reference_page }

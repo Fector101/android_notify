@@ -57,12 +57,6 @@ const component_page = {
 
 
 const NOTIFICATION_METHODS = {
-    init: {
-        args: [
-            { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },
-            { name: 'lines_txt -- use addLine() instead', desc: "Lines of text for (for `INBOX` style) each line should be separated by '\\n'." },
-        ]
-    },
     addButton: {
         signature: 'addButton(text, on_release)',
         description: 'Adds an action button to the notification.',
@@ -188,6 +182,7 @@ from kivymd.app import MDApp
 from android_notify import Notification, NotificationHandler
 
 class Myapp(MDApp):
+
     def on_start(self):
         name = NotificationHandler.get_name(on_start=True)
         if name == 'change_app_page':
@@ -196,6 +191,7 @@ class Myapp(MDApp):
         elif name == 'change_app_color':
             # Code to change Screen Color
             pass
+            
     def build(self):
         Notification(
             title="Change Page",

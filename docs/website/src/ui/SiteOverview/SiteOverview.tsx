@@ -1,279 +1,164 @@
 import { Link, useLocation } from "react-router";
-
-import { ChevronDown, ChevronUp } from "lucide-react"
-import './siteoverview.css'
+import { ChevronDown, ChevronUp } from "lucide-react";
+import "./siteoverview.css";
 import { useEffect, useState } from "react";
-// import { toast } from "sonner";
-import { ScrollToSection } from "../ScrollAssist";
-import { Iversion } from "../../assets/js/mytypes";
-import { nanoid } from "nanoid";
 
-function DropDown({ title, sections, hash, route }: { route: string; title: string; sections: string[], hash: string }) {
-    const [opened, setOpened] = useState(false)
-    function togglePreview() {
-        setOpened(old => !old)
-    }
-
-    useEffect(() => {
-        sections.forEach(each_section => {
-            const hash_ = '#' + each_section.trim().toLocaleLowerCase().replace(/ /g, '-')
-            if (hash === hash_) setOpened(true)
-        })
-    }, [hash, sections])
-    return (
-        <div className="dropdown flex fd-column align-items-cen justify-content-cen no-text-select">
-            <div className="header flex align-items-cen width100per space-between">
-                <p>
-                    {title}
-                </p>
-                <button onClick={togglePreview} className="flex align-items-cen justify-content-cen">
-                    {opened ? <ChevronUp /> : <ChevronDown />}
-                </button>
-            </div>
-            <ol className="content width100per flex fd-column" style={{ height: opened ? 'auto' : '0px' }}>
-                {
-                    sections.length ?
-                        sections.map(each_section => {
-                            const hash_ = '#' + each_section.toLocaleLowerCase().replace(/ /g, '-')
-                            const state = hash == hash_
-                            return <li key={each_section}>
-                                <Link className={state ? 'active' : ''} to={route + hash_} tabIndex={opened ? 0 : -1}>
-                                    {each_section}
-                                </Link>
-                            </li>
-                        })
-                        :
-                        <li>
-                            No Content
-                        </li>
-                }
-            </ol>
-        </div>
-    )
-
-}
-
-    // export const Sidebar= [
-    //     {
-    //         title: 'Getting Started',
-    //         route: '/getting-started',
-    //         sections: {
-    //             'Introduction':'introduction',
-    //             'Features':'features',
-    //             'Installation':'installation',
-    //             'Basic Usage':'basic-usage'
-    //         }
-    //     },
 interface ISiteOverviewData {
-    title: string;
-    route: string;
-    sections: {
-        [key: string]: string;
-    }
+  title: string;
+  route: string;
+  sections: {
+    [key: string]: string;
+  };
 }
 
-export default function SiteOverview({ version }: { version: Iversion }) {
-    const location = useLocation();
-    const [hash, setHash] = useState(location.hash)
-    const [data, setData] = useState<ISiteOverviewData[]>()
+function DropDown({
+  title,
+  sections,
+  hash,
+  route,
+}: {
+  route: string;
+  title: string;
+  sections: string[];
+  hash: string;
+}) {
+  const [opened, setOpened] = useState(false);
 
+  function togglePreview() {
+    setOpened((old) => !old);
+  }
 
+  // auto open if hash belongs here
+  useEffect(() => {
+    const match = sections.some((each) => {
+      const h =
+        "#" + each.trim().toLowerCase().replace(/ /g, "-");
+      return h === hash;
+    });
 
-    async function changeVersionData(version: Iversion) {
+    if (match) setOpened(true);
+  }, [hash, sections]);
 
-        // const data = await import(`../../pages/versions-data/${version}.tsx`);
-        console.log(version)
-        setData([
-    {
-        title: 'Getting Started',
-        route: '/getting-started',
-        sections: {
-            'Introduction': 'introduction',
-            'Features': 'features',
-            'Installation': 'installation',
-            'Basic Usage': 'basic-usage'
-        }
-    },
-    {
-        title: 'Components',
-        route: '/components',
-        sections: {
-            'Images': 'images',
-            'Buttons': 'buttons',
-            'Progress Bars': 'progress-bars',
-            'Texts': 'texts'
-        }
-    },
-    {
-        title: 'Advanced Methods',
-        route: '/advanced-methods',
-        sections: {
-            'Updating Notification': 'updating-notification',
-            'Adding Image': 'adding-image',
-            'Channel Management': 'channel-management',
-            'Getting Identifer': 'getting-identifer'
-        }
-    },
-    {
-        title: 'Reference',
-        route: '/reference',
-        sections: {
-            'Notification Class': 'notification-class',
-            'NotificationHandler Class': 'notificationhandler-class',
-            'NotificationStyles Class': 'notificationstyles-class'
-        }
-    },
-    {
-        title: 'Help',
-        route: '/help',
-        sections: {
-            'How to update': 'how-to-update',
-            'Debugging Tips': 'debugging-tips',
-            'Contributing-Issues': 'contributing-issues',
-            'Support Project': 'support-project',
-            'Credits': 'credits',
+  return (
+    <div className="dropdown flex fd-column align-items-cen justify-content-cen no-text-select">
+      <div className="header flex align-items-cen width100per space-between">
+        <p>{title}</p>
 
-        }
-    },
+        <button
+          onClick={togglePreview}
+          className="flex align-items-cen justify-content-cen"
+        >
+          {opened ? <ChevronUp /> : <ChevronDown />}
+        </button>
+      </div>
 
-])
-    }
-    useEffect(() => {
-        changeVersionData(version)
-    }, [version])
+      <ol
+        className="content width100per flex fd-column"
+        style={{ height: opened ? "auto" : "0px" }}
+      >
+        {sections.length ? (
+          sections.map((each) => {
+            const hash_ =
+              "#" + each.trim().toLowerCase().replace(/ /g, "-");
 
-    useEffect(() => {
-        setHash(location.hash)
-        // toast.success(location.pathname)
-    }, [location])
+            const active = hash === hash_;
 
-    useEffect(() => {
-        const sections = Array.from(
-            document.querySelectorAll("section.page-section")
-        );
-        // map sectionId → last seen intersectionRatio
-        const ratios = new Map(sections.map((s) => [s.id, 0]));
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                // update ratios for anything that changed
-                entries.forEach((entry) => {
-                    ratios.set(entry.target.id, entry.intersectionRatio);
-                });
-
-                // pick the section with the largest ratio
-                let bestId = null;
-                let bestRatio = 0;
-                for (const [id, ratio] of ratios.entries()) {
-                    if (ratio > bestRatio) {
-                        bestRatio = ratio;
-                        bestId = id;
-                    }
-                }
-
-                if (bestId) {
-                    const hash = `#${bestId}`;
-                    setHash(hash)
-                    history.replaceState(null, "", hash);
-                }
-            },
-            {
-                // fine‐grained ratios from 0 to 1 in steps of 0.01
-                threshold: Array.from({ length: 101 }, (_, i) => i / 100),
-            }
-        );
-
-        sections.forEach((s) => observer.observe(s));
-        return () => observer.disconnect();
-
-    }, [location.pathname]);
-
-
-    return (
-        <div id="site-overview">
-            <ScrollToSection />
-            {
-                data?.map((each) => {
-                    return <DropDown
-                        key={nanoid()}
-                        hash={hash}
-                        title={each.title}
-                        route={each.route}
-                        sections={Object.keys(each.sections)}
-                    />
-                })
-            }
-            {/* <DropDown
-                hash={hash}
-                route='/getting-started'
-                title="Getting Started"
-                sections={[
-                    'Introduction',
-                    'Features',
-                    'Installation',
-                    'Basic Usage'
-                ]}
-            /> */}
-            {/* <DropDown
-                hash={hash}
-                title="Components"
-                route='/components'
-                sections={[
-                    'Images',
-                    'Buttons',
-                    'Progress Bars',
-                    'Texts',
-                    //'Persistent Notifications'
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Advanced Methods"
-                route='/advanced-methods'
-
-                sections={[
-                    'Updating Notification', // 'Adding More Components',
-                    // 'Notification Clicks',
-                    'Channel Management',
-                    'Getting Identifer', //TODO version typo
-
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Reference"
-                route='/reference'
-                sections={[
-                    'Notification Class',
-                    'NotificationHandler Class',
-                    'NotificationStyles Class',
-                    // 'Available Methods',
-                    // 'Advanced Parameters'
-                ]}
-            />
-            <DropDown
-                hash={hash}
-                title="Help"
-                route='/help'
-                sections={[
-                    'How to update',
-                    'Debugging Tips',
-                    // 'Error Handling',
-                    'Contributing-Issues',
-                    // 'Changelog'
-                    // 'Author',
-                    'Credits',
-                    'Support Project',
-                    // 'FAQ',
-                    // 'Error Handling',
-                ]}
-            /> */}
-        </div>
-    )
+            return (
+              <li key={each}>
+                <Link
+                  className={active ? "active" : ""}
+                  to={route + hash_}
+                  tabIndex={opened ? 0 : -1}
+                >
+                  {each}
+                </Link>
+              </li>
+            );
+          })
+        ) : (
+          <li>No Content</li>
+        )}
+      </ol>
+    </div>
+  );
 }
 
+export default function SiteOverview() {
+  const location = useLocation();
+  const [hash, setHash] = useState(location.hash);
 
+  const data: ISiteOverviewData[] = [
+    {
+      title: "Getting Started",
+      route: "/getting-started",
+      sections: {
+        Introduction: "introduction",
+        Features: "features",
+        Installation: "installation",
+        "Basic Usage": "basic-usage",
+      },
+    },
+    {
+      title: "Components",
+      route: "/components",
+      sections: {
+        Images: "images",
+        Buttons: "buttons",
+        "Progress Bars": "progress-bars",
+        Texts: "texts",
+      },
+    },
+    {
+      title: "Advanced Methods",
+      route: "/advanced-methods",
+      sections: {
+        "Updating Notification": "updating-notification",
+        "Adding Image": "adding-image",
+        "Channel Management": "channel-management",
+        "Getting Identifer": "getting-identifer",
+      },
+    },
+    {
+      title: "Reference",
+      route: "/reference",
+      sections: {
+        "Notification Class": "notification-class",
+        "NotificationHandler Class": "notificationhandler-class",
+        "NotificationStyles Class": "notificationstyles-class",
+      },
+    },
+    {
+      title: "Help",
+      route: "/help",
+      sections: {
+        "How to update": "how-to-update",
+        "Debugging Tips": "debugging-tips",
+        "Contributing-Issues": "contributing-issues",
+        "Support Project": "support-project",
+        Credits: "credits",
+      },
+    },
+  ];
 
+  // update active hash when route changes
+  useEffect(() => {
+    setHash(location.hash);
+  }, [location]);
+
+  return (
+    <div id="site-overview">
+      {data.map((each) => (
+        <DropDown
+          key={each.title}
+          hash={hash}
+          title={each.title}
+          route={each.route}
+          sections={Object.keys(each.sections)}
+        />
+      ))}
+    </div>
+  );
+}
 
 
 
