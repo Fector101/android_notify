@@ -1,3 +1,4 @@
+import { IReferencePage } from "../../assets/js/mytypes";
 const bigimgcode = `from android_notify import Notification
 
 notification = Notification(
@@ -251,11 +252,7 @@ const HANDLER_METHODS = [
 ];
 
 const STYLE_ATTRIBUTES = [
-    // {
-    //     id: 'simple',
-    //     signature: 'NotificationStyles.DEFAULT',
-    //     description: 'contains default style "simple"'
-    // },
+
     {
         id: 'LARGE_ICON',
         signature: 'NotificationStyles.LARGE_ICON',
@@ -309,9 +306,16 @@ const advanced_methods_page = {
     getting_identifier_code: getting_identifer,
 }
 
-const reference_page = {
-    NOTIFICATION_METHODS, HANDLER_METHODS, STYLE_ATTRIBUTES
-}
+// const reference_page = {
+//     NOTIFICATION_METHODS, HANDLER_METHODS, STYLE_ATTRIBUTES
+// }
 
+
+
+const reference_page: IReferencePage = {
+  NOTIFICATION_METHODS,
+  HANDLER_METHODS,
+  STYLE_ATTRIBUTES
+};
 
 export { component_page, advanced_methods_page, reference_page }

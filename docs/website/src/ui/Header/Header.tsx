@@ -32,13 +32,15 @@ export default function Header({ version,setVersion }:IHeader) {
         if (side_bar_ele) {
             // side_bar_ele.style.transform = `translateX(-${isMobileView.current ? 0 : 100}%)`
             if (isOpen) {
-                setOldSideBarWidth(side_bar_ele.getBoundingClientRect().width)
+                setOldSideBarWidth(side_bar_ele.getBoundingClientRect().width || oldSideWidth)
                 side_bar_ele.style.width = '0'
                 side_bar_ele.style.minWidth = '0'
             } else {
                 side_bar_ele.style.width = oldSideWidth + 'px'
                 side_bar_ele.style.minWidth = oldSideWidth + 'px'
             }
+            console.log(side_bar_ele.style.width,oldSideWidth)
+
             // side_bar_ele.style.width = 0
 
         } 

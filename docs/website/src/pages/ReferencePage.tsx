@@ -1,114 +1,23 @@
 import "../assets/css/referencepage.css";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
 import { Link } from "react-router";
-import { Iversion } from "../assets/js/mytypes";
-import { isLegacyVersion } from "../assets/js/helper";
 import { InlineCode } from "../ui/CodeBlock/CodeBlock";
+import { Iversion, NotificationMethods } from "../assets/js/mytypes";
+import { isLegacyVersion } from "../assets/js/helper";
 
-/* -------------------------------- */
-/* 🔥 IMPORT ALL VERSION DATA HERE  */
-/* -------------------------------- */
+import { VERSION_MAP } from "./versions-data";
+import { ScrollToSection } from "../ui/ScrollAssist";
 
-import { reference_page as v158 } from "./versions-data/1.58";
-import { reference_page as v159 } from "./versions-data/1.59";
-import { reference_page as v160 } from "./versions-data/1.60";
-
-const VERSION_MAP = {
-  "1.58": v158,
-  "1.59": v159,
-  "1.60": v160,
-};
-
-/* -------------------------------- */
-
-type arg = { name: string; desc: string };
-
-type object_list = {
-  id: string;
-  signature: string;
-  description: string;
-  args?: arg[];
-};
-
-export type NotificationMethods = Record<
-  string,
-  {
-    signature?: string;
-    description?: string;
-    args?: arg[];
-  }
->;
-
-interface IReferencePage {
-  NOTIFICATION_METHODS: NotificationMethods;
-  HANDLER_METHODS: object_list[];
-  STYLE_ATTRIBUTES?: object_list[];
-}
-
-/* -------------------------------- */
-/* VERSION ORDER                    */
-/* -------------------------------- */
-
-const VERSION_ORDER: Iversion[] = ["1.58", "1.59", "1.60"];
-
-/* -------------------------------- */
-/* MERGE HELPERS                    */
-/* -------------------------------- */
-
-// remove duplicates by arg name
-const dedupeArgs = (arr: arg[] = []) => {
-  const map = new Map<string, arg>();
-  arr.forEach((a) => map.set(a.name, a));
-  return Array.from(map.values());
-};
-
-const mergeMethods = (
-  base: NotificationMethods = {},
-  incoming: NotificationMethods = {}
-) => {
-  const result: NotificationMethods = { ...base };
-
-  for (const key in incoming) {
-    const prev = result[key];
-    const next = incoming[key];
-
-    if (!prev) {
-      result[key] = next;
-      continue;
-    }
-
-    result[key] = {
-      signature: next.signature ?? prev.signature,
-      description: next.description ?? prev.description,
-      args: dedupeArgs([...(prev.args || []), ...(next.args || [])]),
-    };
-  }
-
-  return result;
-};
-
-const mergeArrayById = <T extends { id: string }>(
-  a: T[] = [],
-  b: T[] = []
-) => {
-  const map = new Map<string, T>();
-  a.forEach((i) => map.set(i.id, i));
-  b.forEach((i) => map.set(i.id, { ...map.get(i.id), ...i }));
-  return Array.from(map.values());
-};
-
-/* -------------------------------- */
-
-const MethodCard = ({ method }: { method: any }) => (
+const MethodCard = ({ method, fallback }: { method: any; fallback?: string }) => (
   <div className="bg-gray-50 p-4 rounded-lg shadow-sm transition">
-    <p className="ref-code">{method.signature}</p>
+    <p className="ref-code">{method.signature || fallback}</p>
     <p className="paragraph mb-2 text-gray-700">{method.description}</p>
 
-    {method.args?.length > 0 && (
+    {method.args && method.args.length > 0 && (
       <dl className="pl-4 space-y-1">
-        {method.args.map(({ name, desc }: any) => (
-          <div key={name}>
+        {method.args.map(({ name, desc }: { name: string; desc: string }) => (
+          <div key={nanoid()}>
             <dt>{name}</dt>
             <dd>{desc}</dd>
           </div>
@@ -118,52 +27,52 @@ const MethodCard = ({ method }: { method: any }) => (
   </div>
 );
 
-/* -------------------------------- */
-
 export default function ReferencePage({ version }: { version: Iversion }) {
-  const [data, setData] = useState<IReferencePage>();
-  const [NOTIFICATION_METHODS, setNOTIFICATION_METHODS] =
-    useState<NotificationMethods>();
-
-  useEffect(() => {
-    const index = VERSION_ORDER.indexOf(version);
-    if (index === -1) return;
-
-    let mergedMethods: NotificationMethods = {};
-    let mergedHandlers: object_list[] = [];
-    let mergedStyles: object_list[] = [];
-    let latest: IReferencePage | undefined;
-
-    for (let i = 0; i <= index; i++) {
-      const ref = VERSION_MAP[VERSION_ORDER[i]];
-
-      mergedMethods = mergeMethods(mergedMethods, ref.NOTIFICATION_METHODS);
-      mergedHandlers = mergeArrayById(
-        mergedHandlers,
-        ref.HANDLER_METHODS || []
-      );
-      mergedStyles = mergeArrayById(
-        mergedStyles,
-        ref.STYLE_ATTRIBUTES || []
-      );
-
-      latest = ref;
-    }
-
-    setNOTIFICATION_METHODS(mergedMethods);
-
-    setData({
-      ...latest!,
-      NOTIFICATION_METHODS: mergedMethods,
-      HANDLER_METHODS: mergedHandlers,
-      STYLE_ATTRIBUTES: mergedStyles,
-    });
-  }, [version]);
+  const data = VERSION_MAP[version];
+  const NOTIFICATION_METHODS: NotificationMethods =
+    data?.NOTIFICATION_METHODS || {};
 
   return (
     <div className="page main-page reference-page">
+      <ScrollToSection/>
       <h2>Reference</h2>
       <hr />
+
+      {/* Table of Contents */}
+      <nav className="border-l-4 border-blue-600 pl-4">
+        <h2 className="font-semibold mb-2">Contents</h2>
+        <ul className="inner-section-2 space-y-1 text-sm">
+          <li>
+            <a href="#notification-class" className="text-blue-600 hover:underline">
+              Notification Attributes and Methods
+            </a>
+          </li>
+          <li>
+            <a
+              href="#notificationhandler-class"
+              className="text-blue-600 hover:underline"
+            >
+              NotificationHandler Methods
+            </a>
+          </li>
+          <li>
+            <a href="#notificationstyles-class" className="text-blue-600 hover:underline">
+              NotificationStyles
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      {/* v1.59 helper note */}
+      {version === "1.59" && (
+        <section className="side-note">
+          <h2>For v1.59</h2>
+          <p className="paragraph">
+            Methods were introduced to free up <InlineCode code="__init__" /> kwargs
+            and replace direct style usage.
+          </p>
+        </section>
+      )}
 
       {/* Notification Methods */}
       <section
@@ -175,18 +84,19 @@ export default function ReferencePage({ version }: { version: Iversion }) {
           Notification Attributes and Methods
         </h2>
 
-        {Object.entries(NOTIFICATION_METHODS || {}).map(([key, m]) => (
+        {Object.entries(NOTIFICATION_METHODS).map(([key, m]) => (
           <div
-            key={key}
+            key={nanoid()}
             className="bg-gray-50 p-4 rounded-lg shadow-sm transition"
           >
-            <p className="ref-code">{m.signature || key}</p>
+            <p className={key + " ref-code"}>{m.signature || key}</p>
+
             <p className="paragraph mb-2 text-gray-700">{m.description}</p>
 
-            {m.args?.length > 0 && (
+            {m.args && m.args.length > 0 && (
               <dl className="pl-4 space-y-1">
                 {m.args.map(({ name, desc }) => (
-                  <div key={name}>
+                  <div key={nanoid()}>
                     <dt>{name}</dt>
                     <dd>{desc}</dd>
                   </div>
@@ -206,54 +116,51 @@ export default function ReferencePage({ version }: { version: Iversion }) {
         <h2 className="text-xl font-bold">NotificationHandler Methods</h2>
 
         {data?.HANDLER_METHODS?.map((m) => (
-          <MethodCard key={m.id} method={m} />
+          <MethodCard key={nanoid()} method={m} />
         ))}
       </section>
 
       {/* Styles */}
-      {["1.58", "1.59", "1.60"].includes(version) && (
-        <section
-          id="notificationstyles-class"
-          className="space-y-6 page-section"
-          tabIndex={0}
-        >
-          {isLegacyVersion(version) ? (
-            <h2 className="text-xl font-bold">
-              NotificationStyles attributes for Safely Adding Styles
-            </h2>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold">NotificationStyles</h2>
-              <p className="paragraph">
-                All NotificationStyles attributes are deprecated in v1.59.3.
-              </p>
-              <p>
-                The new methods are <InlineCode code="setSmallIcon" />,{" "}
-                <InlineCode code="setLargeIcon" />,{" "}
-                <InlineCode code="setBigPicture" />,{" "}
-                <InlineCode code="setBigText" /> and{" "}
-                <InlineCode code="updateProgressBar" />.
-              </p>
-            </>
-          )}
+      <section
+        id="notificationstyles-class"
+        className="space-y-6 page-section"
+        tabIndex={0}
+      >
+        {isLegacyVersion(version) ? (
+          <h2 className="text-xl font-bold">
+            NotificationStyles attributes for Safely Adding Styles
+          </h2>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold">NotificationStyles</h2>
+            <p className="paragraph">
+              Style attributes were converted into helper methods like{" "}
+              <InlineCode code="setSmallIcon" />,{" "}
+              <InlineCode code="setLargeIcon" />,{" "}
+              <InlineCode code="setBigPicture" />,{" "}
+              <InlineCode code="setBigText" />, and{" "}
+              <InlineCode code="updateProgressBar" />.
+            </p>
+          </>
+        )}
 
-          <div className="flex flex-wrap align-items-cen justify-content-cen styles-container">
-            {data?.STYLE_ATTRIBUTES?.map((m) => (
+        <div className="flex flex-wrap align-items-cen justify-content-cen styles-container">
+          {data?.STYLE_ATTRIBUTES &&
+            Object.entries(data.STYLE_ATTRIBUTES).map(([key, m]) => (
               <div
-                key={m.id}
+                key={nanoid()}
                 className="bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition"
               >
                 <h3 className="style-attr">
-                  <code>{m.signature}</code>
+                  <code>{m.signature || key}</code>
                 </h3>
                 <p className="text-gray-700 new-line-active">
                   {m.description}
                 </p>
               </div>
             ))}
-          </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Navigation */}
       <span className="flex next-page-btns-box space-between">

@@ -26,7 +26,7 @@ function App() {
             <Header version={version} setVersion={setVersion} />
             <main className="flex">
                 <SiteOverview />
-                <main className="flex fd-column overflow-hidden">
+                <main className="flex fd-column overflow-hidden m-auto">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/getting-started" element={<MainPage />} />

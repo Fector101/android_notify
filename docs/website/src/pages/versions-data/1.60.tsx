@@ -1,5 +1,5 @@
-// TODO : add a gif for big-text notification
-// FIXME : type loerm ipsum typos
+import { IReferencePage } from "../../assets/js/mytypes";
+
 const subtextcode = `notification = Notification(
     title="Downloading...",
     message="70% downloaded",
@@ -191,7 +191,7 @@ class Myapp(MDApp):
         elif name == 'change_app_color':
             # Code to change Screen Color
             pass
-            
+
     def build(self):
         Notification(
             title="Change Page",
@@ -219,9 +219,18 @@ class Myapp(MDApp):
 const advanced_methods_page = {
     getting_identifier_code: getting_identifer,
 }
-const reference_page = {
-    NOTIFICATION_METHODS,
-    HANDLER_METHODS
-}
 
-export { component_page, reference_page,advanced_methods_page }
+
+// const reference_page = {
+//     NOTIFICATION_METHODS,
+//     HANDLER_METHODS
+// }
+
+
+const reference_page: IReferencePage = {
+  NOTIFICATION_METHODS,
+  HANDLER_METHODS,
+  STYLE_ATTRIBUTES: undefined
+};
+
+export { component_page, reference_page, advanced_methods_page }
