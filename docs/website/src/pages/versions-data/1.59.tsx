@@ -133,6 +133,7 @@ class Myapp(MDApp):
 const NOTIFICATION_METHODS = {
     init: {
         args: [
+ { name: 'id', desc: "a unique integer less than 2_147_483_647 that can be used to reference specific notification or handly to reference old notification instance (Optional, it's created by default)." }, 
             { name: 'body', desc: " -- use setBigText() instead." },            
             { name: 'lines_txt', desc: " -- use addLine() instead." },
             { name: 'big_picture_path', desc: "-- use setBigPicture() instead." },
