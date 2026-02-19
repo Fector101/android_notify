@@ -137,6 +137,7 @@ const NOTIFICATION_METHODS = {
             { name: 'lines_txt', desc: " -- use addLine() instead." },
             { name: 'big_picture_path', desc: "-- use setBigPicture() instead." },
             { name: 'large_icon_path', desc: "-- use setLargeIcon() instead." },
+            { name: 'style', desc: "use ['addLine()','setBigText()','setLargeIcon()','setBigPicture()'] instead." },
         ]
     },
     
