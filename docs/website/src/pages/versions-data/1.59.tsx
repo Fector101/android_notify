@@ -135,6 +135,8 @@ const NOTIFICATION_METHODS = {
         args: [
             { name: 'body', desc: " -- use setBigText() instead." },            
             { name: 'lines_txt', desc: " -- use addLine() instead." },
+            { name: 'big_picture_path', desc: "-- use setBigPicture() instead." },
+            { name: 'large_icon_path', desc: "-- use setLargeIcon() instead." },
         ]
     },
     
