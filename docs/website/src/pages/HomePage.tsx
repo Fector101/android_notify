@@ -18,7 +18,7 @@ export default function HomePage() {
                 <h3 className='paragraph'>Improvements</h3>
                 <span className='code width100per flex paragraph'></span>
                 <ol>
-                    <p className="paragraph">- Interactions in Service: A way to pass in BroadCast Reciver and Actions to Buttons</p>
+                    <p className="paragraph">- BroadCast Recievers Name and Actions: Trigger actions in your app without opening it, helps Interactions when in Service- A way to pass in Reciver name and Actions to Buttons</p>
                     <p className="paragraph" style={{ lineHeight: 1.4 }}>- Usage without gradle dependencies: new branch <span className="code green-shade">without-androidx</span> was
                      created for this singular purpose, also allows to easily run tests in pyroid3 mobile app and use in Flet apps, This Branch can be installed through <span className="code green-shade">__version__.dev0</span></p>
                     <p className="paragraph">- Flet support: Beta support for Flet Python apps.</p>
