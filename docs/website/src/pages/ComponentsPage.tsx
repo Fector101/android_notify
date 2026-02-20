@@ -222,7 +222,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
 
                 </ol>
                 <p className='paragraph'>Use params <InlineCode code='title_color'/> and/or <InlineCode code='message_color'/> with hex color codes to control colors.</p>
-                <CodeBlock title='Sub Text' code={data?.colored_text_code || '# No available in version: ' + version} />
+                <CodeBlock title='Colored Texts' code={data?.colored_text_code || '# No available in version: ' + version} />
 
             </section>
 
