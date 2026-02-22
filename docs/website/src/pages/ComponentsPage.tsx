@@ -115,12 +115,11 @@ notification.send()
                     {
                         isLegacyVersion(version) ?
                             <CodeBlock code={`from android_notify import Notification
-notification = Notification(
+Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage",
     style=NotificationStyles.BIG_PICTURE,
-    big_picture_path="https://www.python.org/static/img/python-logo.png")
-notification.send()
+    big_picture_path="https://www.python.org/static/img/python-logo.png").send()
 `} title='Online Image' img={onlineBigPicImg} />
 
                             :
