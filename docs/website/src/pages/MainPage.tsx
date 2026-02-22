@@ -119,11 +119,11 @@ export default function MainPage() {
                     <h3 className='sub-header'>Kivy Apps</h3>
                     <p>In your `buildozer.spec` file include the following:</p>
                     <CodeBlock code={installation_code_buildozer} lang='ini' />
-                    
+
                     <h3 className='my-[20px]'>- Without Androidx:</h3>
                     <p className='my-[20px]'> easy usage without gradle dependencies,
-                         android-notify uses android legacy implementations.(Tested up to Android 15)</p>
-                    
+                        android-notify uses android legacy implementations.(Tested up to Android 15)</p>
+
                     <h3 className='sub-header'>Flet Apps</h3>
 
                     <p>In your `pyproject.toml` include the following:</p>
@@ -134,7 +134,7 @@ export default function MainPage() {
                     <CodeBlock code={installation_code_buildozer_without_androidx} lang='ini' />
 
                     <h3 className='sub-header'>Pydroid 3 App</h3>
-                    <p className='paragraph'>In pip section where you're asked to insert libary name paste <InlineCode code='android-notify==1.60.10.dev0'/> </p>
+                    <p className='paragraph'>In pip section where you're asked to insert libary name paste <InlineCode code='android-notify==1.60.10.dev0' /> </p>
 
                     <h3 className='sub-header'>PIP</h3>
                     <p className='paragraph'>You Can also install Via PIP for IDE IntelliSense and testing purposes</p>
@@ -151,7 +151,40 @@ export default function MainPage() {
                 <div className='inner-section-1'>
                     <p>You can easily create and send notifications with just a few lines of code.</p>
                     <p>Below is a simple example of how to create a basic notification:</p>
-                    <CodeBlock code={code} />
+                    <CodeBlock code={code} pydroid={`# Testing with "android-notify==1.60.10.dev0" on pydroid
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from android_notify import Notification
+from android_notify.core import asks_permission_if_needed
+
+
+class AndroidNotifyDemoApp(App):
+    def build(self):
+        layout = BoxLayout(orientation='vertical', spacing=10, padding=20)
+        layout.add_widget(Button(
+            text="Ask Notification Permission",
+            on_release=self.request_permission
+        ))
+        layout.add_widget(Button(
+            text="Send Notification",
+            on_release=self.send_notification
+        ))
+        return layout
+
+    def request_permission(self, *args):
+        # Callback for NotificationHandler.asks_permission not Available on Pyroid3
+        asks_permission_if_needed(legacy=True)
+
+    def send_notification(self, *args):
+        Notification(
+            title="Hello from Android Notify",
+            message="This is a basic notification."
+        ).send()
+
+
+if __name__ == "__main__":
+    AndroidNotifyDemoApp().run()`} />
 
 
                 </div>

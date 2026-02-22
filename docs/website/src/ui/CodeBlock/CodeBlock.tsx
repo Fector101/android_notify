@@ -11,7 +11,7 @@ import { copyText } from '../../assets/js/helper';
 export function InlineCode({ code }: { code: string }) {
     return <span className='code'>{code}</span>
 }
-export function CodeBlock({ title, img = '', code, lang = 'python' }: { title?: string, img?: string, code: string; lang?: string; }) {
+export function CodeBlock({ title, img = '', code, lang = 'python', pydroid = `` }: { title?: string, img?: string, code: string; lang?: string; pydroid?: string; }) {
 
     const [fontSize, setFontSize] = useState<string>(getFontSize());
 
@@ -43,20 +43,21 @@ export function CodeBlock({ title, img = '', code, lang = 'python' }: { title?: 
 
     }
 
-    function copyPydroidAction(txt: string, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    function copyPydroidAction(txt: string, e: React.MouseEvent<HTMLButtonElement, MouseEvent>, no_patch = false) {
         let element = e.target as HTMLElement | null | undefined
         element = element?.closest('button')
 
         element?.querySelector('.copy-icon')?.classList.add('display-none')
         element?.querySelector('.check-icon')?.classList.remove('display-none')
 
-        const indented = txt.split('\n').join('\n        ')
+        if (!no_patch) {
 
-        // Hoist any "global" statements found within the snippet so variables don't crash from being locally-scoped inside run_code
-        const globalsSet = [...new Set(txt.match(/global\s+[a-zA-Z0-9_, ]+/g) || [])];
-        const globalDeclarations = globalsSet.length > 0 ? globalsSet.join('\n        ') + '\n        ' : '';
+            const indented = txt.split('\n').join('\n        ').replace("assets/imgs/profile.png", "https://i.pravatar.cc/300").replace("assets/imgs/photo.png", "https://i.pravatar.cc/300")
+            // Hoist any "global" statements found within the snippet so variables don't crash from being locally-scoped inside run_code
+            const globalsSet = [...new Set(txt.match(/global\s+[a-zA-Z0-9_, ]+/g) || [])];
+            const globalDeclarations = globalsSet.length > 0 ? globalsSet.join('\n        ') + '\n        ' : '';
 
-        const pydroidTemplate = `from kivy.app import App
+            const pydroidTemplate = `from kivy.app import App
 from kivy.uix.button import Button
 
 class MainApp(App):
@@ -69,7 +70,12 @@ class MainApp(App):
 if __name__ == '__main__':
     MainApp().run()`
 
-        copyText(pydroidTemplate)
+            copyText(pydroidTemplate)
+        }else{
+            copyText(txt)
+        }
+
+
     }
     return (
         <div className='code-block flex fd-column width100per' tabIndex={0}>
@@ -82,7 +88,7 @@ if __name__ == '__main__':
                         <span className="btn-text">Copy</span>
                     </button>
                     {lang === 'python' && (
-                        <button onClick={(e) => copyPydroidAction(code, e)} title="Copy for Pydroid 3">
+                        <button onClick={(e) => copyPydroidAction(pydroid || code, e,Boolean(pydroid))} title="Copy for Pydroid 3">
                             <Smartphone className='copy-icon' size={16} />
                             <Check className='check-icon display-none' size={16} />
                             <span className="btn-text">Pydroid</span>

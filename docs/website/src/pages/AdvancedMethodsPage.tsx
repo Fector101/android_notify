@@ -91,7 +91,7 @@ export default function AdvancedMethodsPage({ version }: { version: Iversion }) 
                 <p>
                     {isLegacyVersion(version) && <span className="code warning yellow paragraph block width-max-con">In next version identifer will be changed to `name` and NotificationHandler.getIdentifer to NotificationHandler.get_name</span>}
                 </p>
-                <CodeBlock title="Identifer" code={data?.getting_identifier_code || ''} />
+                <CodeBlock title="Identifer" code={data?.getting_identifier_code || ''} pydroid={data?.getting_identifier_code || ''} />
             </section>
 
 
