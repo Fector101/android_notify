@@ -103,14 +103,21 @@ notification.updateTitle("New Title")
 # Update message
 notification.updateMessage("New Message")`
 
-export const progress_bar_update = `from android_notify import Notification
+export const progress_bar_update = `import time
+from android_notify import Notification
 
-notification = Notification(title="Waiting...")# Changes progress-bar values
+notification = Notification(title="Waiting...")
+notification.send()
+time.sleep(2)
+
+# Changes progress-bar values
 notification.updateProgressBar(
     current_value=30,
     message="30KB/100KB",
     title='Download update... 30%'
 )
+time.sleep(3)
+
 # Remove progress bar
 # show_on_update to notification briefly after removed progressbar
 notification.removeProgressBar("Download Complete",show_on_update=True)
