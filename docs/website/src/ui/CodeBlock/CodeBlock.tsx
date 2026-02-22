@@ -62,7 +62,8 @@ from kivy.uix.button import Button
 
 class MainApp(App):
     def build(self):
-        return Button(text="Run Code", on_press=self.run_code)
+        return Button(text="Run Code", on_press=self.run_code,size_hint=[None,None],size=[200,100],pos_hint={"center_y":.5,"center_x":.5})
+
 
     def run_code(self, *args):
         ${globalDeclarations}${indented}
