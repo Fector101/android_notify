@@ -32,7 +32,7 @@ export default function HomePage() {
                     <li>
                         <strong>No Gradle Dependencies</strong>
                         <p>
-                            Added <Link to="https://github.com/Fector101/android_notify/tree/without-androidx"><span className="code green-shade">without-androidx</span></Link>branch for
+                            Added <Link to="https://github.com/Fector101/android_notify/tree/without-androidx"><span className="code green-shade">without-androidx</span></Link> branch for
                             lightweight usage.
                         </p>
                         <ul  className="ml-[15px]">
