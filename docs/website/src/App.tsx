@@ -19,14 +19,14 @@ import HomePage from "./pages/HomePage.tsx";
 import Footer from "./ui/Footer/Footer.tsx";
 
 function App() {
-    const [version, setVersion] = useState("1.59")
+    const [version, setVersion] = useState("1.60")
     return (
         <>
             <Toaster position="top-right" />
             <Header version={version} setVersion={setVersion} />
             <main className="flex">
-                <SiteOverview version={version} />
-                <main className="flex fd-column width100per">
+                <SiteOverview />
+                <main className="flex fd-column overflow-hidden m-auto">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/getting-started" element={<MainPage />} />

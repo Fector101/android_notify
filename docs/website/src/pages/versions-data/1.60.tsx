@@ -1,5 +1,5 @@
-// TODO : add a gif for big-text notification
-// FIXME : type loerm ipsum typos
+import { IReferencePage } from "../../assets/js/mytypes";
+
 const subtextcode = `notification = Notification(
     title="Downloading...",
     message="70% downloaded",
@@ -57,12 +57,6 @@ const component_page = {
 
 
 const NOTIFICATION_METHODS = {
-    init: {
-        args: [
-            { name: 'body -- use setBigText() instead', desc: "Detailed text (for `BIG_TEXT` style)." },
-            { name: 'lines_txt -- use addLine() instead', desc: "Lines of text for (for `INBOX` style) each line should be separated by '\\n'." },
-        ]
-    },
     addButton: {
         signature: 'addButton(text, on_release)',
         description: 'Adds an action button to the notification.',
@@ -139,14 +133,14 @@ const NOTIFICATION_METHODS = {
     },
     fVibrate: {
         signature: 'fVibrate(pattern)',
-        description: 'For when regular notifications vibrate turned off in device settings (useful for Alarms).',
+        description: 'For when regular notifications vibrate turned off in device settings (useful for Alarms). Uses Single 500ms vibration for pattern.',// not provided.',
         args: [
-            { name: 'pattern', desc: "Vibration pattern, it accepts a list of ints representing vibration and pause durations in milliseconds, defaults to a single vibration of 500ms if not provided." }
+            // { name: 'pattern', desc: "Vibration pattern, it accepts a list of ints representing vibration and pause durations in milliseconds, defaults to a single vibration of 500ms if not provided." }
         ]
     },
     fill_args: {
         signature: 'fill_args(**kwargs)',
-        description: <>Takes same Arguments as send method, Returns builder object.<br /> It fills notification args without sending, useful for when you want to use update methods without sending right away.<br /> For example starting calling startForeground you need to fill notification args and pass in notification id and builder.</>,
+        description: <>Takes same Arguments as send method, Returns builder object.<br /> It fills notification args without sending, useful for when you want to fill arguments without sending right away.<br /> For example calling startForeground from service you need to pass in notification.id and builder.build.</>,
         args: [
             { name: '**kwargs', desc: "Same arguments as send method." }
         ]
@@ -183,19 +177,26 @@ const HANDLER_METHODS = [
 ];
 
 
-export const getting_identifer = `
+export const getting_identifer =`
 from kivymd.app import MDApp
 from android_notify import Notification, NotificationHandler
 
+
+def use_name(name):
+    if name == 'change_app_page':
+        # Code to change Screen
+        pass
+    elif name == 'change_app_color':
+        # Code to change Screen Color
+        pass
+
+
 class Myapp(MDApp):
+
     def on_start(self):
         name = NotificationHandler.get_name(on_start=True)
-        if name == 'change_app_page':
-            # Code to change Screen
-            pass
-        elif name == 'change_app_color':
-            # Code to change Screen Color
-            pass
+        use_name(name)
+
     def build(self):
         Notification(
             title="Change Page",
@@ -212,20 +213,23 @@ class Myapp(MDApp):
     def on_resume(self):
         # Is called every time app is reopened
         name = NotificationHandler.get_name()
-        if name == 'change_app_page':
-            # Code to change Screen
-            pass
-        elif name == 'change_app_color':
-            # Code to change Screen Color
-            pass`
-
+        use_name(name)`
 
 const advanced_methods_page = {
     getting_identifier_code: getting_identifer,
 }
-const reference_page = {
-    NOTIFICATION_METHODS,
-    HANDLER_METHODS
-}
 
-export { component_page, reference_page,advanced_methods_page }
+
+// const reference_page = {
+//     NOTIFICATION_METHODS,
+//     HANDLER_METHODS
+// }
+
+
+const reference_page: IReferencePage = {
+  NOTIFICATION_METHODS,
+  HANDLER_METHODS,
+  STYLE_ATTRIBUTES: undefined
+};
+
+export { component_page, reference_page, advanced_methods_page }

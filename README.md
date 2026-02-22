@@ -157,9 +157,7 @@ class AndroidNotifyDemoApp(App):
     def send_notification(self, *args):
         Notification(
             title="Hello from Android Notify",
-            message="This is a basic notification.",
-            channel_id="android_notify_demo",
-            channel_name="Android Notify Demo"
+            message="This is a basic notification."
         ).send()
 
 

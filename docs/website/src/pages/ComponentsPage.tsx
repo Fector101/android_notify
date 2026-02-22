@@ -16,7 +16,7 @@ import progressbarImg from './../assets/imgs/progress.jpg'
 
 import bigTextGif from "../assets/imgs/big_text.gif"
 import inboxTextGif from "../assets/imgs/inbox_text.gif"
-import progressbarGif from './../assets/imgs/progressbar.gif'
+import progressbarGif from '../assets/imgs/progressbar.gif'
 
 import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
 import { useEffect, useState } from 'react';
@@ -146,7 +146,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     </p>
                 </div>
                 <CodeBlock title='Button Example' img={btnsImg} code={data?.buttons_code || ''} />
-                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced#functions'>Advanced</Link> section</p>
+                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p>
             </section>
 
             <section tabIndex={0} className="page-section" id="progress-bars">
@@ -222,7 +222,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
 
                 </ol>
                 <p className='paragraph'>Use params <InlineCode code='title_color'/> and/or <InlineCode code='message_color'/> with hex color codes to control colors.</p>
-                <CodeBlock title='Sub Text' code={data?.colored_text_code || '# No available in version: ' + version} />
+                <CodeBlock title='Colored Texts' code={data?.colored_text_code || '# No available in version: ' + version} />
 
             </section>
 

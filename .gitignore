@@ -13,3 +13,4 @@ todo.md
 .vscode
 dist
 build
+docs/website/.github/copilot-instructions.md

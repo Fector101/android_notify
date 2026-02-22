@@ -17,15 +17,57 @@ export default function HomePage() {
 
                 <h3 className='paragraph'>Improvements</h3>
                 <span className='code width100per flex paragraph'></span>
-                <ol>
-                    <p className="paragraph">- Interactions in Service: A way to pass in BroadCast Reciver and Actions to Buttons</p>
-                    <p className="paragraph" style={{ lineHeight: 1.4 }}>- Usage without gradle dependencies: new branch <span className="code green-shade">without-androidx</span> was
-                     created for this singular purpose, also allows to easily run tests in pyroid3 mobile app and use in Flet apps, This Branch can be installed through <span className="code green-shade">__version__.dev0</span></p>
-                    <p className="paragraph">- Flet support: Beta support for Flet Python apps.</p>
-                    <p className="paragraph">- Better Logging: Instead of prints now using python logger allowing to show and choose logs by levels importance.</p>
-                    <p className="paragraph">- Modularization: Splited package file into simpler structure arranged by specific tasks making it easier to manage.</p>
-                    <p className="paragraph"></p>
-                </ol>
+                <ul className="paragraph ml-[15px] space-y-[5px]" style={{ listStyleType: "disc" }}>
+                    <li>
+                        <strong>Broadcast Receivers (Name & Actions)</strong>
+                        <p>
+                            Trigger app actions without opening the app. Supports passing receiver
+                            name and actions directly to buttons.
+                        </p>
+                        <ul  className="ml-[15px]" >
+                            <li>- This enhances background interaction when the app is running as a Service.</li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <strong>No Gradle Dependencies</strong>
+                        <p>
+                            Added <Link to="https://github.com/Fector101/android_notify/tree/without-androidx"><span className="code green-shade">without-androidx</span></Link> branch for
+                            lightweight usage.
+                        </p>
+                        <ul  className="ml-[15px]">
+                            <li>- Works in Pyroid 3</li>
+                            <li>- Supports Flet apps</li>
+                            <li>- 
+                                Install via{" "}
+                                <span className="code">__version__.dev0</span>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <strong>Flet Support (Beta)</strong>
+                        <p>Initial beta support for Flet Python applications.</p>
+                    </li>
+
+                    <li>
+                        <strong>Improved Logging</strong>
+                        <p>
+                            Replaced <span className="code">print</span> statements with Python’s{" "}
+                            <span className="code">logging</span> module for better log level control.
+                        </p>
+                    </li>
+
+                    <li>
+                        <strong>Modular Structure</strong>
+                        <p>
+                            Refactored package into a cleaner, task-based structure for easier
+                            maintenance.
+                        </p>
+                    </li>
+                </ul>
+
+                <hr />
 
 
                 <h3 className='paragraph'><span className='code'>Class: Notification</span></h3>
@@ -82,40 +124,40 @@ export default function HomePage() {
 
 
             <details className='version-deatils'>
-            <summary className='version-summary-strip'>Version 1.59 release notes</summary>
-            <section className="page-section flex fd-column" id='installation'>
-                <h1 className='huge'>1.59</h1>
-                <p>Release Notes</p>
-                <hr />
-                <p className="paragraph">This release includes several improvements, features and a bug fix to enhance the performance and stability of the library.</p>
-                <h3 className='paragraph'>Improvements</h3>
-                <span className='code width100per flex paragraph'></span>
+                <summary className='version-summary-strip'>Version 1.59 release notes</summary>
+                <section className="page-section flex fd-column" id='installation'>
+                    <h1 className='huge'>1.59</h1>
+                    <p>Release Notes</p>
+                    <hr />
+                    <p className="paragraph">This release includes several improvements, features and a bug fix to enhance the performance and stability of the library.</p>
+                    <h3 className='paragraph'>Improvements</h3>
+                    <span className='code width100per flex paragraph'></span>
 
-                <p className="paragraph">- Freeing up __init__ kwargs, Created some new methods:</p>
-                <ul className='inner-section-2 paragraph'>
-                    <li><span className="code green-shade">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></li>
-                    <li><span className="code green-shade">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></li>
-                    <li><span className="code green-shade">setBigPicture</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span></li>
-                    <li><span className="code green-shade">setBigText</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_TEXT)</span></li>
-                    <li><span className="code green-shade">setLines</span> == <span className="code yellow-shade">Notification(...,lines_txt="...",style=NotificationStyles.INBOX)</span></li>
-                </ul>
-                <h3 className='paragraph'>New Features</h3>
-                <span className='code width100per flex paragraph'></span>
-                <p className='auto-width paragraph'>- Created methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span> </p>
-                <p className='auto-width paragraph-05'>- Created <span className="code">Notification.createChannel(name, id, desc</span> For android Android 8+</p>
-                <p className='auto-width paragraph-05'>- Created <span className="code">Notification.deleteAllChannel()</span> and <span className="code">Notification.deleteChannel(channel_id)</span> </p>
-                <p className='auto-width paragraph-05'>- Instead of only requesting in init created <span className="code">NotificationHandler.asks_permission</span> and <span className="code">NotificationHandler.has_permission</span> </p>
-                <p className='auto-width paragraph-05'>- When setting a new component after <span className="code">Notification().send</span>  use <span className="code">Notification().refresh</span> </p>
-                <p className='auto-width paragraph-05'>- Added a way to access Old Notification instance with <span className="code">Notification().id</span> will act as reference key if instance not available</p>
-                <h3 className='paragraph'>Fixes</h3>
-                <span className='code width100per flex paragraph'></span>
-                <p className="paragraph">- Fixed a bug where .getIdentifer returned value even when app wasn't opened by notification.</p>
-                <h3 className='paragraph'>Changes</h3>
-                <p className="paragraph">- Changed .getIdentifer to .get_name</p>
-              
-            </section>
+                    <p className="paragraph">- Freeing up __init__ kwargs, Created some new methods:</p>
+                    <ul className='inner-section-2 paragraph'>
+                        <li><span className="code green-shade">setSmallIcon</span> == <span className="code yellow-shade">Notification(...,app_icon="...") </span></li>
+                        <li><span className="code green-shade">setLargeIcon</span> == <span className="code yellow-shade">Notification(...,large_icon_path="...",style=NotificationStyles.LARGE_ICON)</span></li>
+                        <li><span className="code green-shade">setBigPicture</span> == <span className="code yellow-shade">Notification(...,big_picture_path="...",style=NotificationStyles.BIG_PICTURE)</span></li>
+                        <li><span className="code green-shade">setBigText</span> == <span className="code yellow-shade">Notification(...,body="...",style=NotificationStyles.BIG_TEXT)</span></li>
+                        <li><span className="code green-shade">setLines</span> == <span className="code yellow-shade">Notification(...,lines_txt="...",style=NotificationStyles.INBOX)</span></li>
+                    </ul>
+                    <h3 className='paragraph'>New Features</h3>
+                    <span className='code width100per flex paragraph'></span>
+                    <p className='auto-width paragraph'>- Created methods to cancel a certain or all Notifications<span className="code">Notification().cancel()</span>, <span className="code">Notification.cancelAll</span> </p>
+                    <p className='auto-width paragraph-05'>- Created <span className="code">Notification.createChannel(name, id, desc</span> For android Android 8+</p>
+                    <p className='auto-width paragraph-05'>- Created <span className="code">Notification.deleteAllChannel()</span> and <span className="code">Notification.deleteChannel(channel_id)</span> </p>
+                    <p className='auto-width paragraph-05'>- Instead of only requesting in init created <span className="code">NotificationHandler.asks_permission</span> and <span className="code">NotificationHandler.has_permission</span> </p>
+                    <p className='auto-width paragraph-05'>- When setting a new component after <span className="code">Notification().send</span>  use <span className="code">Notification().refresh</span> </p>
+                    <p className='auto-width paragraph-05'>- Added a way to access Old Notification instance with <span className="code">Notification().id</span> will act as reference key if instance not available</p>
+                    <h3 className='paragraph'>Fixes</h3>
+                    <span className='code width100per flex paragraph'></span>
+                    <p className="paragraph">- Fixed a bug where .getIdentifer returned value even when app wasn't opened by notification.</p>
+                    <h3 className='paragraph'>Changes</h3>
+                    <p className="paragraph">- Changed .getIdentifer to .get_name</p>
+
+                </section>
             </details>
-            
+
 
             <span className='flex next-page-btns-box space-between'>
                 <Link className='next-page-btn' to='/help'>
