@@ -24,13 +24,16 @@ header .css-dropdown {
     /* background-color: yellowgreen; */
     height: 50px;
 }
-header .css-dropdown .active .up-svg{
+
+header .css-dropdown .active .up-svg {
     display: none;
 }
-header .css-dropdown .active{
+
+header .css-dropdown .active {
     gap: 5px;
 }
-header .css-dropdown .opts{
+
+header .css-dropdown .opts {
     position: absolute;
     border: 1px solid grey;
     top: 40px;
@@ -39,26 +42,32 @@ header .css-dropdown .opts{
     width: 100px;
     display: none;
 }
-header .css-dropdown:hover .opts{
+
+header .css-dropdown:hover .opts {
     display: block;
 }
-header .css-dropdown:hover .active .up-svg{
+
+header .css-dropdown:hover .active .up-svg {
     display: block;
 }
-header .css-dropdown:hover .active .down-svg{
+
+header .css-dropdown:hover .active .down-svg {
     display: none;
 }
-header .css-dropdown .opts button{
+
+header .css-dropdown .opts button {
     padding: 10px;
     display: block;
     width: 100%;
     color: white;
     font-size: unset;
 }
-header .css-dropdown .opts button:hover{
+
+header .css-dropdown .opts button:hover {
     background: #555454;
     cursor: pointer;
 }
+
 header .version-no {
     font-size: 18px;
 }
@@ -97,9 +106,10 @@ header .icon-nav svg {
     height: var(--size);
 }
 
-.page-toggler{
-    margin:  0 auto !important;
+.page-toggler {
+    margin: 0 auto !important;
 }
+
 @media screen and (max-width:500px) {
     header {
         gap: 10px;

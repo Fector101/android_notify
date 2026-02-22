@@ -1,16 +1,15 @@
 import { IReferencePage } from "../../assets/js/mytypes";
 
-const bigimgcode = `from android_notify import NotificationStyles
+const bigimgcode = `from android_notify import Notification, NotificationStyles
 
-notification = Notification(
+Notification(
     title='Picture Alert!',
     message='This notification includes an image.',
     style=NotificationStyles.BIG_PICTURE,
     big_picture_path="assets/imgs/photo.png"
-)
-notification.send()
+).send()
 `
-const progressbarcode = `from android_notify import NotificationStyles
+const progressbarcode = `from android_notify import Notification, NotificationStyles
 from kivy.clock import Clock
 
 progress = 0
@@ -34,33 +33,37 @@ def update_progress(dt):
 Clock.schedule_interval(update_progress, 3)
 `
 
-const largeiconcode = `from android_notify import NotificationStyles
-notification = Notification(
+const largeiconcode = `from android_notify import Notification, NotificationStyles
+
+Notification(
     title="FabianDev_",
     message="A twitter about some programming stuff",
     style=NotificationStyles.LARGE_ICON,
     large_icon_path="assets/imgs/profile.png"
-)`
+).send()`
 
-const inboxcode = `from android_notify import NotificationStyles
-notification = Notification(
+const inboxcode = `from android_notify import Notification, NotificationStyles
+
+Notification(
     title='Inbox Notification',
     message='Line 1\\nLine 2\\nLine 3',
     style=NotificationStyles.INBOX,
-)
-notification.send()
+).send()
 `
 // TODO : add a gif for big-text notification
 // FIXME : type loerm ipsum typos
-const bigtextcode = `from android_notify import NotificationStyles
-notification = Notification(
+const bigtextcode = `from android_notify import Notification, NotificationStyles
+
+Notification(
     title="Article",
     message="Histroy of Loerm Ipsuim",
     body="Lorem Ipsum is simply dummy text of the printing and ...",
     style=NotificationStyles.BIG_TEXT
-)`
+).send()`
 
-const buttons_code = `notification = Notification(
+const buttons_code = `from android_notify import Notification
+
+notification = Notification(
     title="Jane Dough",
     message="How to use android-notify #coding #purepython"
 )
@@ -77,7 +80,9 @@ notification.addButton(text="Play",on_release=playVideo)
 notification.addButton(text="Turn Off",on_release=turnOffNoti)
 notification.addButton(text="Watch Later",on_release=watchLater)
 notification.send()`
-const appiconcode = `Notification(
+const appiconcode = `from android_notify import Notification
+
+Notification(
     app_icon="assets/icons/download.png",
     title="Custom Icon",
     message="Also persist notification test"
@@ -87,7 +92,9 @@ const appiconcode = `Notification(
 
 // Advanced Methods Page
 
-export const title_and_message_update = `notification = Notification(title="Initial Title")
+export const title_and_message_update = `from android_notify import Notification
+
+notification = Notification(title="Initial Title")
 notification.send()
 
 # Update title
@@ -106,7 +113,7 @@ notification.updateProgressBar(
 # show_on_update to notification briefly after removed progressbar
 notification.removeProgressBar("Download Complete",show_on_update=True)
 `
-export const adding_image_code = `from android_notify import NotificationStyles
+export const adding_image_code = `from android_notify import Notification, NotificationStyles
 from kivy.clock import Clock
 
 notification = Notification(
@@ -125,12 +132,14 @@ def addImg(dt):
 Clock.schedule_once(addImg,5)
 `
 
-export const channel_management_code = `Notification(
+export const channel_management_code = `from android_notify import Notification
+
+Notification(
     title="Download finished",
     message="How to Catch a Fish.mp4",
     channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
     channel_id="downloads_notifications"  # Optional: specify custom channel ID
-)
+).send()
 `
 export const getting_identifer = `
 from kivymd.app import MDApp
@@ -184,7 +193,7 @@ const NOTIFICATION_METHODS = {
 
         ]
     },
-    addButton:{
+    addButton: {
         signature: 'addButton(text, on_release)',
         description: 'Adds an action button to the notification.',
         args: [
@@ -192,11 +201,11 @@ const NOTIFICATION_METHODS = {
             { name: 'on_release', desc: 'Callback invoked when the button is tapped.' }
         ]
     },
-    removeButtons:{
+    removeButtons: {
         signature: 'removeButtons()',
         description: 'Removes all action buttons from the notification.'
     },
-    removeProgressBar:{
+    removeProgressBar: {
         signature: 'removeProgressBar(message?, show_on_update?, title?)',
         description:
             'Removes the progress bar and (optionally) updates the title/message.',
@@ -209,7 +218,7 @@ const NOTIFICATION_METHODS = {
             { name: 'title', desc: '(Optional) New title; defaults to last.' }
         ]
     },
-    send:{
+    send: {
         signature: 'send(silent?, persistent?, close_on_click?)',
         description: 'Dispatches the notification.',
         args: [
@@ -218,12 +227,12 @@ const NOTIFICATION_METHODS = {
             { name: 'close_on_click', desc: 'If true, tapping the notification dismisses it.' }
         ]
     },
-    showInfiniteProgressBar:{
+    showInfiniteProgressBar: {
         signature: 'showInfiniteProgressBar()',
         description:
             'Shows an indeterminate progress bar. Remove with `removeProgressBar()` or update with `updateProgressBar()`.'
     },
-    updateMessage:{
+    updateMessage: {
         signature: 'updateMessage(new_message)',
         description: 'Updates the notification message.',
         args: [
@@ -231,7 +240,7 @@ const NOTIFICATION_METHODS = {
         ]
     },
 
-    addNotificationStyle:{
+    addNotificationStyle: {
         signature: 'addNotificationStyle(style, already_sent?)',
         description:
             'Applies or updates a notification style (big_text, inbox, images, etc.).',
@@ -247,7 +256,7 @@ const NOTIFICATION_METHODS = {
             }
         ]
     },
-    updateProgressBar:{
+    updateProgressBar: {
         signature: 'updateProgressBar(current_value, message?, title?, cooldown?)',
         description:
             'Updates a determinate progress bar (0 – max). Internally throttled to 0.5 s.',
@@ -258,7 +267,7 @@ const NOTIFICATION_METHODS = {
             { name: 'cooldown', desc: "Defaults to 0.5secs,buffer time for when changes happen too fast, shouldn't be changed unless tested on specific device" }
         ]
     },
-    updateTitle:{
+    updateTitle: {
         signature: 'updateTitle(new_title)',
         description: 'Updates the notification title.',
         args: [
@@ -357,11 +366,11 @@ const advanced_methods_page = {
 
 
 const reference_page: IReferencePage = {
-  NOTIFICATION_METHODS,
+    NOTIFICATION_METHODS,
 
-  HANDLER_METHODS,
+    HANDLER_METHODS,
 
-  STYLE_ATTRIBUTES,
+    STYLE_ATTRIBUTES,
 };
 
 

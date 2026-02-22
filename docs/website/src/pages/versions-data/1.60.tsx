@@ -1,6 +1,8 @@
 import { IReferencePage } from "../../assets/js/mytypes";
 
-const subtextcode = `notification = Notification(
+const subtextcode = `from android_notify import Notification
+
+notification = Notification(
     title="Downloading...",
     message="70% downloaded",
     progress_max_value=100
@@ -46,7 +48,9 @@ const an_colored_basic_large = `<?xml version="1.0" encoding="utf-8"?>
     />
 
 </LinearLayout>`
-const colored_text_code = `Notification(title="Title Color", message="Testing Color",title_color="red").send()`
+const colored_text_code = `from android_notify import Notification
+
+Notification(title="Title Color", message="Testing Color",title_color="red").send()`
 
 const component_page = {
     sub_text_code: subtextcode,
@@ -177,7 +181,7 @@ const HANDLER_METHODS = [
 ];
 
 
-export const getting_identifer =`
+export const getting_identifer = `
 from kivymd.app import MDApp
 from android_notify import Notification, NotificationHandler
 
@@ -227,9 +231,9 @@ const advanced_methods_page = {
 
 
 const reference_page: IReferencePage = {
-  NOTIFICATION_METHODS,
-  HANDLER_METHODS,
-  STYLE_ATTRIBUTES: undefined
+    NOTIFICATION_METHODS,
+    HANDLER_METHODS,
+    STYLE_ATTRIBUTES: undefined
 };
 
 export { component_page, reference_page, advanced_methods_page }

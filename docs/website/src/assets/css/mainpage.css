@@ -4,9 +4,10 @@
     /* border: 1px solid rgb(9, 234, 1); */
 }
 
-.main-page li{
+.main-page li {
     line-height: 25px;
 }
+
 .main-page h2 {
     margin-top: 20px;
     font-size: 26px;
@@ -20,13 +21,15 @@
 .main-page .inner-section-1 {
     margin-left: 10px;
 }
+
 .main-page .inner-section-2 {
     margin-left: 20px;
 }
 
-.main-page section{
+.main-page section {
     /* min-height: 40vh; */
 }
+
 .main-page section#features .inner-section-1 {
     margin-left: 25px;
 }
@@ -35,7 +38,8 @@
     color: rgb(234, 234, 234);
 }
 
-.main-page p,.main-page li {
+.main-page p,
+.main-page li {
     color: rgb(222, 222, 222);
 }
 
@@ -62,7 +66,8 @@
     .main-page section#features p {
         font-size: 13px;
     }
-    .main-page h2.long-title{
+
+    .main-page h2.long-title {
         font-size: 20px;
     }
 }

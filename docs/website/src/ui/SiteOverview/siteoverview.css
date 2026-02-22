@@ -87,6 +87,7 @@
 }
 
 @media screen and (max-width:500px) {
+
     #site-overview p,
     #site-overview li {
         font-size: 14px;

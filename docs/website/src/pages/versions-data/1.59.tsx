@@ -8,7 +8,8 @@ notification = Notification(
 notification.setBigPicture("assets/imgs/photo.png")
 notification.send()`
 
-const progressbarcode = `from kivy.clock import Clock
+const progressbarcode = `from android_notify import Notification
+from kivy.clock import Clock
 
 progress = 0
 
@@ -43,7 +44,9 @@ notification = Notification(
 )
 notification.setLargeIcon("assets/imgs/profile.png")
 notification.send()`
-const inboxcode = `notification = Notification(
+const inboxcode = `from android_notify import Notification
+
+notification = Notification(
     title="5 New mails from Frank",
     message="Check them out",
 )
@@ -54,14 +57,18 @@ notification.send()
 `
 // TODO : add a gif for big-text notification
 // FIXME : type loerm ipsum typos
-const bigtextcode = `notification = Notification(
+const bigtextcode = `from android_notify import Notification
+
+notification = Notification(
     title="Article",
     message="Histroy of Loerm Ipsuim",
 )
 notification.setBigText("Lorem Ipsum is simply dummy text of the printing and ...")
 notification.send()`
 
-const appiconcode = `notification = Notification(
+const appiconcode = `from android_notify import Notification
+
+notification = Notification(
     title="custom icon notification",
     message="using .setSmallIcon to set notification icon"
 )
@@ -73,7 +80,8 @@ notification.send(persistent=True) # how to persistent notification`
 // Advanced Methods Page
 
 
-export const adding_image_code = `from kivy.clock import Clock
+export const adding_image_code = `from android_notify import Notification
+from kivy.clock import Clock
 
 notification = Notification(
     title="title",
@@ -88,16 +96,18 @@ def addImg(dt):
 Clock.schedule_once(addImg,5)
 `
 
-export const channel_management_code = `Notification.createChannel(
+export const channel_management_code = `from android_notify import Notification
+
+Notification.createChannel(
     channel_id="downloads_notifications",
-    channel_name="Download Notifications"  # Will create User-visible name "Download Notifications"
+    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
     description="For Receiving download info" # v1.59
 )
 Notification(
     title="Download finished",
     message="How to Catch a Fish.mp4",
     channel_id="downloads_notifications"
-)
+).send()
 `
 export const getting_identifer = `
 from kivymd.app import MDApp
@@ -133,16 +143,16 @@ class Myapp(MDApp):
 const NOTIFICATION_METHODS = {
     init: {
         args: [
- { name: 'id', desc: "a unique integer less than 2_147_483_647 that can be used to reference specific notification or handly to reference old notification instance (Optional, it's created by default)." }, 
-            { name: 'body', desc: " -- use setBigText() instead." },            
+            { name: 'id', desc: "a unique integer less than 2_147_483_647 that can be used to reference specific notification or handly to reference old notification instance (Optional, it's created by default)." },
+            { name: 'body', desc: " -- use setBigText() instead." },
             { name: 'lines_txt', desc: " -- use addLine() instead." },
             { name: 'big_picture_path', desc: "-- use setBigPicture() instead." },
             { name: 'large_icon_path', desc: "-- use setLargeIcon() instead." },
             { name: 'style', desc: "use ['addLine()','setBigText()','setLargeIcon()','setBigPicture()'] instead." },
         ]
     },
-    
-    addLine:{
+
+    addLine: {
         signature: 'addLine(text)',
         description: 'sets text for new line for inbox-style notification',
         args: [
@@ -156,28 +166,28 @@ const NOTIFICATION_METHODS = {
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    setLargeIcon:{
+    setLargeIcon: {
         signature: 'setLargeIcon(path)',
         description: 'sets Large icon to the right.',
         args: [
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    setSmallIcon:{
+    setSmallIcon: {
         signature: 'setSmallIcon(path)',
         description: 'sets small icon to the top left.',
         args: [
             { name: 'path', desc: 'Image can be `Relative Path` or `URL`.' }
         ]
     },
-    setBigText:{
+    setBigText: {
         signature: 'setBigText(body)',
         description: 'Sets a big text for when drop down button is pressed.',
         args: [
             { name: 'body', desc: 'The big text that will be displayed.' }
         ]
     },
-    setLines:{
+    setLines: {
         signature: 'setLines(lines)',
         description: 'Sets a inbox lines texts for when drop down button is pressed, each string will be in a new line',
         args: [
@@ -185,7 +195,7 @@ const NOTIFICATION_METHODS = {
         ]
     },
 
-    createChannel:{
+    createChannel: {
         signature: 'createChannel(id, name:str, description?,importance:Importance?)',
         description: 'Creates a user visible toggle button for specific notifications, Required For Android 8.0+',
         args: [
@@ -196,31 +206,31 @@ const NOTIFICATION_METHODS = {
         ]
     },
 
-    deleteChannel:{
+    deleteChannel: {
         signature: 'deleteChannel(channel_id)',
         description: 'Uses channel_id to delete notification channel',
         args: [
             { name: 'channel_id', desc: "id for specific channel" }
         ]
     },
-    deleteAllChannel:{
+    deleteAllChannel: {
         signature: 'deleteAllChannel()',
         description: 'Delete All notification channels',
         args: []
     },
-    cancel:{
+    cancel: {
         signature: 'cancel(_id)',
         description: 'Removes Notification instance from tray.',
         args: [
             { name: '_id', desc: "Not required uses instance id as default" }
         ]
     },
-    cancelAll:{
+    cancelAll: {
         signature: 'cancelAll()',
         description: 'Removes App Notifications from tray.',
         args: []
     },
-    setPriority:{
+    setPriority: {
         signature: 'setPriority(importance)',
         description: 'Sets <div className="reference">Importance</div> For devices less than android 8.',
         args: [
@@ -317,9 +327,9 @@ const advanced_methods_page = {
 
 
 const reference_page: IReferencePage = {
-  NOTIFICATION_METHODS,
-  HANDLER_METHODS,
-  STYLE_ATTRIBUTES
+    NOTIFICATION_METHODS,
+    HANDLER_METHODS,
+    STYLE_ATTRIBUTES
 };
 
 export { component_page, advanced_methods_page, reference_page }

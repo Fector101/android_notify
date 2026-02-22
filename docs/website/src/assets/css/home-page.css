@@ -7,17 +7,20 @@
     /* font-family: 'Poppins', sans-serif; */
 
 }
-.version-deatils{
+
+.version-deatils {
     margin-top: 20px;
     padding: 10px;
     border: 1px solid grey;
 
 }
+
 .version-deatils:open {
     border: none;
     background-color: rgba(114, 114, 112, 0.082);
 
 }
+
 .version-deatils summary {
     color: rgb(250, 250, 91);
 }
