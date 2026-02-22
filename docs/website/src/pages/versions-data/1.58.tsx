@@ -118,7 +118,7 @@ from kivy.clock import Clock
 
 notification = Notification(
     title="title",
-    style="message"
+    message="message"
 )
 notification.send()
 
