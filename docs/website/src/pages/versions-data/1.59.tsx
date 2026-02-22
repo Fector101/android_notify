@@ -85,7 +85,7 @@ from kivy.clock import Clock
 
 notification = Notification(
     title="title",
-    style="message"
+    message="message"
 )
 notification.send()
 
@@ -99,8 +99,8 @@ Clock.schedule_once(addImg,5)
 export const channel_management_code = `from android_notify import Notification
 
 Notification.createChannel(
-    channel_id="downloads_notifications",
-    channel_name="Download Notifications",  # Will create User-visible name "Download Notifications"
+    id="downloads_notifications",
+    name="Download Notifications",  # Will create User-visible name "Download Notifications"
     description="For Receiving download info" # v1.59
 )
 Notification(
