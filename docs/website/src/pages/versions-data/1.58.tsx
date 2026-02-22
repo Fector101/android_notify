@@ -106,7 +106,7 @@ notification.updateMessage("New Message")`
 export const progress_bar_update = `import time
 from android_notify import Notification
 
-notification = Notification(title="Waiting...")
+notification = Notification(title="Waiting...",progress_max_value=100)
 notification.send()
 time.sleep(2)
 
