@@ -103,7 +103,9 @@ notification.updateTitle("New Title")
 # Update message
 notification.updateMessage("New Message")`
 
-export const progress_bar_update = `# Changes progress-bar values
+export const progress_bar_update = `from android_notify import Notification
+
+notification = Notification(title="Waiting...")# Changes progress-bar values
 notification.updateProgressBar(
     current_value=30,
     message="30KB/100KB",
