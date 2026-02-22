@@ -103,28 +103,34 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     <p>Strings <span className="code yellow">(red, green, blue)</span> work without hex code.</p>
                     {
                         <CodeBlock code={`from android_notify import Notification
-Notification(
+notification = Notification(
     title="Emergency 🚨🚨",
     message="Check out now!"
-).setColor("red") # or "#FF0000"
+)
+notification.setColor("red") # or "#FF0000"
+notification.send()
 `} title="Coloured App Icon" img={customColorIconImg} />
                     }
 
                     {
                         isLegacyVersion(version) ?
                             <CodeBlock code={`from android_notify import Notification
-Notification(
+notification = Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage",
     style=NotificationStyles.BIG_PICTURE,
-    big_picture_path="https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
+    big_picture_path="https://www.python.org/static/img/python-logo.png")
+notification.send()
+`} title='Online Image' img={onlineBigPicImg} />
 
                             :
                             <CodeBlock code={`from android_notify import Notification
-Notification(
+notification = Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage"
-).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
+)
+notification.setBigPicture("https://www.python.org/static/img/python-logo.png")
+notification.send()`} title='Online Image' img={onlineBigPicImg} />
 
                     }
 
