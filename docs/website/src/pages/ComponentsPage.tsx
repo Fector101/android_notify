@@ -34,9 +34,9 @@ interface IComponentPage {
     inbox_style_code: string;
     big_text_style_code: string
     sub_text_code: string
-    an_colored_basic_small:string
-    an_colored_basic_large:string
-    colored_text_code:string
+    an_colored_basic_small: string
+    an_colored_basic_large: string
+    colored_text_code: string
 }
 type set_version = React.Dispatch<React.SetStateAction<string>>
 
@@ -102,26 +102,34 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     <p className='paragraph'> You can specify the color using a hex code (e.g., "#FF0000" for red).</p>
                     <p>Strings <span className="code yellow">(red, green, blue)</span> work without hex code.</p>
                     {
-                        <CodeBlock code={`Notification(
+                        <CodeBlock code={`from android_notify import Notification
+notification = Notification(
     title="Emergency 🚨🚨",
     message="Check out now!"
-).setColor("red") # or "#FF0000"
+)
+notification.setColor("red") # or "#FF0000"
+notification.send()
 `} title="Coloured App Icon" img={customColorIconImg} />
                     }
 
                     {
                         isLegacyVersion(version) ?
-                            <CodeBlock code={`Notification(
+                            <CodeBlock code={`from android_notify import Notification
+Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage",
     style=NotificationStyles.BIG_PICTURE,
-    big_picture_path="https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
+    big_picture_path="https://www.python.org/static/img/python-logo.png").send()
+`} title='Online Image' img={onlineBigPicImg} />
 
                             :
-                            <CodeBlock code={`Notification(
+                            <CodeBlock code={`from android_notify import Notification
+notification = Notification(
     title="Using Online Image",
     message="Pass image URL as path to setBigImage"
-).setBigPicture("https://www.python.org/static/img/python-logo.png")`} title='Online Image' img={onlineBigPicImg} />
+)
+notification.setBigPicture("https://www.python.org/static/img/python-logo.png")
+notification.send()`} title='Online Image' img={onlineBigPicImg} />
 
                     }
 
@@ -146,7 +154,8 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                     </p>
                 </div>
                 <CodeBlock title='Button Example' img={btnsImg} code={data?.buttons_code || ''} />
-                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p>
+                {/* <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p> */}
+                <p className='paragraph inner-section-1'>For Steps to Create BroadCast Buttons Visit: <Link target='_blank' rel='noopener noreferrer' to='https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener'>android-notify-wiki</Link> - make things happen without opening app.</p>
             </section>
 
             <section tabIndex={0} className="page-section" id="progress-bars">
@@ -165,7 +174,7 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                         You can customize the displayed message and title while the progress bar updates.
                     </p>
                 </div>
-                <CodeBlock title='Progress Bar Style' img={version == "1.58"?progressbarImg:progressbarGif} code={data?.progressbar_code || ''} />
+                <CodeBlock title='Progress Bar Style' img={version == "1.58" ? progressbarImg : progressbarGif} code={data?.progressbar_code || ''} />
             </section>
 
 
@@ -201,28 +210,28 @@ export default function ComponentsPage({ version, setVersion }: { version: Ivers
                 <h3 className='paragraph'>Colored Texts [dev]</h3>
                 <ol>
                     <li className='paragraph'> Create a path named <span>res/layout</span> </li>
-                    <li className='paragraph'> Copy these files using exact names 
-                        
-                    
-                    <details>
-                        <summary><InlineCode code="an_colored_basic_small.xml"/></summary>
-                        <CodeBlock code={data?.an_colored_basic_small || '# No available in version: ' + version} lang='xml'/>
-                    </details>
-                    <details>
-                        <summary><InlineCode code="an_colored_basic_large.xml"/></summary>
-                        <CodeBlock code={data?.an_colored_basic_large || '# No available in version: ' + version} lang='xml'/>
-                    </details>
+                    <li className='paragraph'> Copy these files using exact names
+
+
+                        <details>
+                            <summary><InlineCode code="an_colored_basic_small.xml" /></summary>
+                            <CodeBlock code={data?.an_colored_basic_small || '# No available in version: ' + version} lang='xml' />
+                        </details>
+                        <details>
+                            <summary><InlineCode code="an_colored_basic_large.xml" /></summary>
+                            <CodeBlock code={data?.an_colored_basic_large || '# No available in version: ' + version} lang='xml' />
+                        </details>
                     </li>
                     <li className='paragraph'>
-                        In your `buildozer.spec` file add these: 
-                        <br/>
+                        In your `buildozer.spec` file add these:
+                        <br />
                         <p >- `source.include_exts = xml` and `android.add_resources = res`
-                            </p>
+                        </p>
                     </li>
 
                 </ol>
-                <p className='paragraph'>Use params <InlineCode code='title_color'/> and/or <InlineCode code='message_color'/> with hex color codes to control colors.</p>
-                <CodeBlock title='Colored Texts' code={data?.colored_text_code || '# No available in version: ' + version} />
+                <p className='paragraph'>Use params <InlineCode code='title_color' /> and/or <InlineCode code='message_color' /> with hex color codes to control colors.</p>
+                <CodeBlock title='Colored Texts' has_pydroid_support={false} code={data?.colored_text_code || '# No available in version: ' + version} />
 
             </section>
 

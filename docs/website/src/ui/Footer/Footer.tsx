@@ -23,7 +23,8 @@ export default function Footer(): JSX.Element {
             {/* <p>Documentation hosted on <Link to='https://vercel.com/'>Vercel</Link></p> */}
             <div className="flex fd-column gap-10">
                 <p>Thoroughly Tested and supported by <Link to='https://github.com/Fector101/laner'>Laner</Link> </p>
-                <p>Last Updated: {date}, © {new Date().getFullYear()} Fabian</p>
+                <p>Last Updated: {date}, © Fabian</p>
+                {/* <p>Last Updated: {date}, © {new Date().getFullYear()} Fabian</p> */}
             </div>
 
             <div className='support-links-box flex fd-column justify-content-cen text-align-center'>
