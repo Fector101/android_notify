@@ -11,7 +11,9 @@ import { copyText } from '../../assets/js/helper';
 export function InlineCode({ code }: { code: string }) {
     return <span className='code'>{code}</span>
 }
-export function CodeBlock({ title, img = '', code, lang = 'python', pydroid = `` }: { title?: string, img?: string, code: string; lang?: string; pydroid?: string; }) {
+export function CodeBlock(
+    { title, img = '', code, lang = 'python', pydroid = ``, has_pydroid_support = true }: { title?: string, img?: string, code: string; lang?: string; pydroid?: string; has_pydroid_support?: boolean }
+) {
 
     const [fontSize, setFontSize] = useState<string>(getFontSize());
 
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     MainApp().run()`
 
             copyText(pydroidTemplate)
-        }else{
+        } else {
             copyText(txt)
         }
 
@@ -88,8 +90,8 @@ if __name__ == '__main__':
                         <Check className='check-icon display-none' size={16} />
                         <span className="btn-text">Copy</span>
                     </button>
-                    {lang === 'python' && (
-                        <button onClick={(e) => copyPydroidAction(pydroid || code, e,Boolean(pydroid))} title="Copy for Pydroid 3">
+                    {has_pydroid_support && lang === 'python' && (
+                        <button onClick={(e) => copyPydroidAction(pydroid || code, e, Boolean(pydroid))} title="Copy for Pydroid 3">
                             <Smartphone className='copy-icon' size={16} />
                             <Check className='check-icon display-none' size={16} />
                             <span className="btn-text">Pydroid</span>

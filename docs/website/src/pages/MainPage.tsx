@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router'
 import { ScrollToSection } from '../ui/ScrollAssist';
 import { CodeBlock, InlineCode } from '../ui/CodeBlock/CodeBlock';
@@ -189,7 +189,14 @@ if __name__ == "__main__":
 
                 </div>
             </section>
-
+            <span className='flex next-page-btns-box space-between'>
+            <Link className='next-page-btn' to='/'>
+                <ChevronLeft />
+                <span>
+                    <p className='next-txt'>Previous</p>
+                    <p className='page-name'>Home</p>
+                </span>
+            </Link>
             <Link className='next-page-btn' to='/components'>
                 <span>
                     <p className='next-txt'>Next</p>
@@ -197,6 +204,7 @@ if __name__ == "__main__":
                 </span>
                 <ChevronRight />
             </Link>
+            </span>
 
         </div>
     )

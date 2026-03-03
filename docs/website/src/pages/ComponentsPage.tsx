@@ -154,7 +154,8 @@ notification.send()`} title='Online Image' img={onlineBigPicImg} />
                     </p>
                 </div>
                 <CodeBlock title='Button Example' img={btnsImg} code={data?.buttons_code || ''} />
-                <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p>
+                {/* <p className='paragraph inner-section-1'>For more on functions and callbacks see the <Link to='/advanced-methods#functions'>Advanced</Link> section</p> */}
+                <p className='paragraph inner-section-1'>For Steps to Create BroadCast Buttons Visit: <Link target='_blank' rel='noopener noreferrer' to='https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener'>android-notify-wiki</Link> - make things happen without opening app.</p>
             </section>
 
             <section tabIndex={0} className="page-section" id="progress-bars">
@@ -230,7 +231,7 @@ notification.send()`} title='Online Image' img={onlineBigPicImg} />
 
                 </ol>
                 <p className='paragraph'>Use params <InlineCode code='title_color' /> and/or <InlineCode code='message_color' /> with hex color codes to control colors.</p>
-                <CodeBlock title='Colored Texts' code={data?.colored_text_code || '# No available in version: ' + version} />
+                <CodeBlock title='Colored Texts' has_pydroid_support={false} code={data?.colored_text_code || '# No available in version: ' + version} />
 
             </section>
 
