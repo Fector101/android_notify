@@ -181,7 +181,7 @@ const HANDLER_METHODS = [
 ];
 
 
-export const getting_identifer = `
+export const getting_identifer =`
 from kivymd.app import MDApp
 from android_notify import Notification, NotificationHandler
 
