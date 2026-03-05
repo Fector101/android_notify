@@ -180,3 +180,24 @@ def force_vibrate(repeat=False):
     else:
         vibrator.vibrate(pattern, -1 if not repeat else 0)
         return None
+
+
+def get_active_notification_ids(notification_manager=None) -> list:
+    """
+        Returns the IDS of all currently active notifications for your app.
+        Android 6+
+    """
+    active_notification_ids = []
+    if not on_android_platform():
+        return active_notification_ids
+
+    if BuildVersion.SDK_INT < 23:
+        return active_notification_ids
+
+    notification_manager = notification_manager or get_notification_manager()
+    activeNotifications = notification_manager.getActiveNotifications()
+
+    for status_bar_notification in activeNotifications:
+        active_notification_ids.append(status_bar_notification.getId())
+
+    return active_notification_ids
