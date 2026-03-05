@@ -77,6 +77,7 @@ class Notification(BaseNotification):
 
         self.__called_set_data = None
         self.data_object = None
+        self.obey_user_clear = False # if to allow content after Users clear it form Tray, So it doesn't pop up again which becomes annoying
         self.__id = self.id or self.__get_unique_id()  # Different use from self.name all notifications require `integers` id's not `strings`
         self.id = self.__id  # To use same Notification in different instances
 
@@ -182,7 +183,7 @@ class Notification(BaseNotification):
 
     def refresh(self):
         """TO apply new components on notification"""
-        if self.__generic_parameters_filled:
+        if not self.obey_user_clear and self.__generic_parameters_filled:
             # Don't dispatch before filling required values `self.__create_basic_notification`, Shouldn't dispatch till .send() is called
             self.__applyNewLinesIfAny()
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
@@ -359,7 +360,7 @@ class Notification(BaseNotification):
         In-Built Delay of 0.5 sec According to Android Docs Don't Update Progressbar too Frequently
         """
 
-        # To Cancel any queued timer from `updateProgressBar` method and to avoid race effect incase it somehow gets called while in this method
+        # To Cancel any queued timer from `updateProgressBar` method and to avoid race effect in case it somehow gets called while in this method
         # Avoiding Running `updateProgressBar.delayed_update` at all
         # so didn't just set `self.__progress_bar_title` and `self.progress_current_value` to 0
         if self.__update_timer:
@@ -758,6 +759,15 @@ class Notification(BaseNotification):
     def isUsingCustom(self):
         self.__using_custom = self.title_color or self.message_color
         return bool(self.__using_custom)
+
+    def setObeyUserClear(self, state: bool):
+        """
+        Set to True so notification does not receive updates after User Clears it From Tray
+
+        If False notification will appear in Tray when updated, Even after user clears it.
+        :param state: boolean if to update after User Cleared From Tray
+        """
+        self.obey_user_clear = state
     # TODO method to create channel groups
 
 
@@ -782,7 +792,7 @@ class NotificationHandler:
 
         saved_intent = cls.__name
         cls.__name = None  # so value won't be set when opening app not from notification
-        # drint('saved_intent ',saved_intent)
+        # rint('saved_intent ',saved_intent)
         # if not saved_intent or (isinstance(saved_intent, str) and saved_intent.startswith("android.intent")):
         # Below action is always None
         # __PythonActivity = autoclass(ACTIVITY_CLASS_NAME)
@@ -791,8 +801,8 @@ class NotificationHandler:
         # __Intent = autoclass('android.content.Intent')
         # __intent = __Intent(__context, __PythonActivity)
         # action = __intent.getAction()
-        # drint('Start up Intent ----', action)
-        # drint('start Up Title --->',__intent.getStringExtra("title"))
+        # rint('Start up Intent ----', action)
+        # rint('start Up Title --->',__intent.getStringExtra("title"))
 
         if on_start:    # Using `on_start` arg because no way to know if opening from `Recents` only `Home Screen`
         # if not saved_intent and cls.opened_from_notification:
@@ -921,3 +931,4 @@ if on_android_platform():
         NotificationHandler.bindNotifyListener()
     except Exception as notification_listener_bind_error:
         logger.exception(notification_listener_bind_error)
+
