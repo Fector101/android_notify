@@ -8,7 +8,8 @@ from .internal.helper import generate_channel_id
 from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
     get_python_activity_context, on_android_platform
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
-    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance, force_vibrate
+    set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance, force_vibrate, \
+    get_active_notification_ids
 
 # Types
 from .internal.an_types import Importance
@@ -183,7 +184,12 @@ class Notification(BaseNotification):
 
     def refresh(self):
         """TO apply new components on notification"""
-        if not self.obey_user_clear and self.__generic_parameters_filled:
+        if not on_android_platform():
+            return
+
+        in_tray = self.isInTray() if self.obey_user_clear else True
+
+        if in_tray and self.__generic_parameters_filled:
             # Don't dispatch before filling required values `self.__create_basic_notification`, Shouldn't dispatch till .send() is called
             self.__applyNewLinesIfAny()
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
@@ -762,12 +768,24 @@ class Notification(BaseNotification):
 
     def setObeyUserClear(self, state: bool):
         """
-        Set to True so notification does not receive updates after User Clears it From Tray
+        Control whether the notification reappears when updated by the app
+        after the user clears it.
 
-        If False notification will appear in Tray when updated, Even after user clears it.
-        :param state: boolean if to update after User Cleared From Tray
+        Android 6+.
         """
         self.obey_user_clear = state
+
+    def isInTray(self) -> bool:
+        """
+        Check whether this notification is currently present in the system tray.
+
+        Android 6+.
+        :return: True if the notification is active in the tray, otherwise False.
+        """
+        if not on_android_platform():
+            return False
+        return self.id in get_active_notification_ids(notification_manager = self.notification_manager)
+
     # TODO method to create channel groups
 
 
@@ -931,4 +949,3 @@ if on_android_platform():
         NotificationHandler.bindNotifyListener()
     except Exception as notification_listener_bind_error:
         logger.exception(notification_listener_bind_error)
-
