@@ -1,6 +1,7 @@
 """Assists Notification Class with Args keeps subclass cleaner"""
 from dataclasses import dataclass, fields
 import difflib
+from .styles import NotificationStyles
 # For Dev when creating new attr use have to set type for validate_args to work
 
 @dataclass
@@ -10,10 +11,15 @@ class BaseNotification:
     # Basic options
     title: str = ''
     message: str = ''
+    style: str = 'simple'
 
     # Style-specific attributes
+    big_picture_path: str = ''
+    large_icon_path: str = ''
     progress_max_value: int = 0
     progress_current_value: float = 0.0 # Also Takes in Ints
+    body: str = ''
+    lines_txt: str = ''
 
     # Notification Functions
     name: str = ''
@@ -22,6 +28,7 @@ class BaseNotification:
     # Advanced Options
     id: int = 0
     app_icon: str = 'Defaults to package app icon'
+    sub_text: str=''
 
     # Channel related
     channel_name: str = 'Default Channel'
@@ -30,6 +37,7 @@ class BaseNotification:
     """Used to reference notification channel"""
 
     silent: bool = False
+    logs: bool = False
 
     # Custom Notification Attrs
     title_color: str = ''
@@ -77,3 +85,13 @@ class BaseNotification:
             else:
                 if not isinstance(actual_value, expected_type):
                     raise TypeError(f"Expected '{each_arg}' to be {expected_type}, got {type(actual_value)} instead.")
+
+        # Validate `style` values
+        style_values = [value for key, value in vars(NotificationStyles).items() if not key.startswith("__")]
+        if 'style' in inputted_kwargs and inputted_kwargs['style'] not in ['',*style_values]:
+            inputted_style=inputted_kwargs['style']
+            allowed_styles=', '.join(style_values)
+            raise ValueError(
+                f"Invalid style '{inputted_style}'. Allowed styles: {allowed_styles}"
+            )
+

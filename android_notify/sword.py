@@ -40,21 +40,25 @@ class Notification(BaseNotification):
     :param title: Title of the notification.
     :param message: Message body.
     ---
-
     (Style Options)
+    :param style: Style of the notification ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
+    :param big_picture_path: Relative Path to the image resource.
+    :param large_icon_path: Relative Path to the image resource.
     :param progress_current_value: Integer To set progress bar current value.
     :param progress_max_value: Integer To set Max range for progress bar.
-    :param app_icon: Defaults to packaged app icon.
+    :param body: Large text For `big_Text` style, while `message` acts as subtitle.
+    :param lines_txt: text separated by newLine symbol For `inbox` style `use addLine method instead`
     ---
-
     (Advance Options)
+    :param sub_text: str for additional information next to title
     :param id: Pass in Old 'id' to use old instance
     :param callback: Function for notification Click.
-    :param name: str for NotificationHandler.get_name(), use to get notification used to open app.
     :param channel_name: - str Defaults to "Default Channel"
     :param channel_id: - str Defaults to "default_channel"
     ---
-
+    (Options during Dev On PC)
+    :param logs: - Bool Defaults to True
+    ---
     (Custom Style Options)
     :param title_color: title color str (to be safe use hex code)
     :param message_color: message color str (to be safe use hex code)
@@ -65,6 +69,9 @@ class Notification(BaseNotification):
     btns_box = {}
     main_functions = {}
     passed_check = False
+
+    # During Development (When running on PC)
+    BaseNotification.logs = not on_android_platform()
 
     def __init__(self, **kwargs):  # @dataclass already does work
         super().__init__(**kwargs)
@@ -86,11 +93,6 @@ class Notification(BaseNotification):
         self.__only_alert_once_state = True  # controls heads up use .setOnlyAlertOnce()
 
         # For components
-        # These are for reference use setBigPicture(), setLargeIcon(), setSubText() to change
-        self.big_picture_path = ""
-        self.large_icon_path = ""
-        self.sub_text = ""
-
         self.__lines = []
         self.__has_small_icon = False  # important notification can't send without
         self.__using_custom = self.message_color or self.title_color
@@ -122,6 +124,7 @@ class Notification(BaseNotification):
         action_name = str(self.name or self.__id)
         add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
                                notification_id=self.__id, data_object=self.data_object)
+
 
     def addLine(self, text: str):
         self.__lines.append(text)
@@ -199,7 +202,6 @@ class Notification(BaseNotification):
         :return:
         """
         if on_android_platform():
-            self.big_picture_path=path
             self.__build_img(path, NotificationStyles.BIG_PICTURE)
         logger.info('Done setting big picture.')
 
@@ -221,7 +223,6 @@ class Notification(BaseNotification):
         :return:
         """
         if on_android_platform():
-            self.large_icon_path=path
             self.__build_img(path, NotificationStyles.LARGE_ICON)
         logger.info('Done setting large icon.')
 
@@ -374,9 +375,10 @@ class Notification(BaseNotification):
             self.__update_timer = None
 
         def delayed_update():
-            msg = message or self.message
-            title_ = title or self.title
-            logger.debug(f'removed progress bar with message: {msg} and title: {title_}.')
+            if self.logs:
+                msg = message or self.message
+                title_ = title or self.title
+                logger.info(f'removed progress bar with message: {msg} and title: {title_}.')
 
             if _callback:
                 try:
@@ -424,7 +426,7 @@ class Notification(BaseNotification):
             self.fill_args(persistent=persistent, close_on_click=close_on_click)
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
 
-        logger.debug(self.__get_send_logs())
+        self.__send_logs()
 
     def send_(self, silent: bool = False, persistent=False, close_on_click=True):
         """Sends notification without checking for additional notification permission
@@ -473,16 +475,19 @@ class Notification(BaseNotification):
         """
         force_vibrate()
 
-    def __get_send_logs(self) -> str:
+    def __send_logs(self):
+        if not self.logs:
+            return
         string_to_display = ''
-        string_to_display+="\n Sent Notification!!!"
+        print("\n Sent Notification!!!")
         displayed_args = [
             "title", "message",
-            "body", "large_icon_path", "big_picture_path",
+            "style", "body", "large_icon_path", "big_picture_path",
             "progress_max_value",
             'name', "channel_name",
         ]
-        is_progress_not_default = isinstance(self.progress_current_value, int) or (isinstance(self.progress_current_value, float) and self.progress_current_value != 0.0)
+        is_progress_not_default = isinstance(self.progress_current_value, int) or (
+                isinstance(self.progress_current_value, float) and self.progress_current_value != 0.0)
         for name, value in vars(self).items():
             if value and name in displayed_args:
                 if name == "progress_max_value":
@@ -494,7 +499,7 @@ class Notification(BaseNotification):
                     string_to_display += f'\n {name}: {value}'
 
         string_to_display += "\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
-        return string_to_display
+        print(string_to_display)
 
     def addButton(self, text: str, on_release=None, receiver_name=None, action=None):
         """For adding action buttons
@@ -548,6 +553,43 @@ class Notification(BaseNotification):
         remove_buttons(self.builder)
         self.refresh()
 
+    @run_on_ui_thread
+    def addNotificationStyle(self, style: str, already_sent=False):
+        """Adds Style to Notification
+
+        NOTE: This method has Deprecated Use - (setLargeIcon, setBigPicture, setBigText and setLines) Instead
+
+        --------
+        Args:
+            style (str): required style
+            already_sent (bool,False): If notification was already sent
+        """
+
+        if not on_android_platform():
+            # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and log
+            return False
+
+        if self.body:
+            self.setBigText(self.body)
+
+        elif self.lines_txt:
+            lines = self.lines_txt.split("\n")
+            self.setLines(lines)
+
+        elif self.big_picture_path or self.large_icon_path:
+            if self.big_picture_path:
+                self.setBigPicture(self.big_picture_path)
+            if self.large_icon_path:
+                self.setLargeIcon(self.large_icon_path)
+
+        elif self.progress_max_value or self.progress_current_value:
+            self.builder.setProgress(self.progress_max_value, self.progress_current_value or 0.1, False)
+
+        if already_sent:
+            self.refresh()
+
+        return True
+
     def setLines(self, lines: list):
         """Pass in a list of strings to be used for lines"""
         set_lines(builder=self.builder, lines=lines)
@@ -570,6 +612,8 @@ class Notification(BaseNotification):
         if not on_android_platform():
             return NotificationCompatBuilder  # this is just a facade
         self.__create_basic_notification(persistent, close_on_click)
+        if self.style not in ['simple', '']:
+            self.addNotificationStyle(self.style)
         self.__applyNewLinesIfAny()
 
         return self.builder
