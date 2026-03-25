@@ -744,6 +744,16 @@ class Notification(BaseNotification):
             return int(time.time() * 1000) % 2_147_483_647
 
         notification_id = self.notification_ids[-1] + 1
+        try:
+            ids_in_tray = get_active_notification_ids(notification_manager = get_notification_manager())
+            if notification_id in ids_in_tray:
+                for _ in ids_in_tray: # I am avoiding while loops
+                    notification_id = notification_id + 1
+                    if notification_id not in ids_in_tray:
+                        break
+        except Exception as error_getting_id_that_is_not_in_tray:
+            logger.exception(error_getting_id_that_is_not_in_tray)
+            traceback.print_exc()
         self.notification_ids.append(notification_id)
         return notification_id
 
