@@ -745,7 +745,7 @@ class Notification(BaseNotification):
 
         notification_id = self.notification_ids[-1] + 1
         try:
-            ids_in_tray = get_active_notification_ids(notification_manager = self.notification_manager)
+            ids_in_tray = get_active_notification_ids(notification_manager = get_notification_manager())
             if notification_id in ids_in_tray:
                 for _ in ids_in_tray: # I am avoiding while loops
                     notification_id = notification_id + 1
