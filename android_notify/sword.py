@@ -374,10 +374,9 @@ class Notification(BaseNotification):
             self.__update_timer = None
 
         def delayed_update():
-            if self.logs:
-                msg = message or self.message
-                title_ = title or self.title
-                logger.info(f'removed progress bar with message: {msg} and title: {title_}.')
+            msg = message or self.message
+            title_ = title or self.title
+            logger.debug(f'removed progress bar with message: {msg} and title: {title_}.')
 
             if _callback:
                 try:
@@ -571,8 +570,6 @@ class Notification(BaseNotification):
         if not on_android_platform():
             return NotificationCompatBuilder  # this is just a facade
         self.__create_basic_notification(persistent, close_on_click)
-        if self.style not in ['simple', '']:
-            self.addNotificationStyle(self.style)
         self.__applyNewLinesIfAny()
 
         return self.builder

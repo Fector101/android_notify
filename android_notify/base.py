@@ -1,7 +1,6 @@
 """Assists Notification Class with Args keeps subclass cleaner"""
 from dataclasses import dataclass, fields
 import difflib
-from .styles import NotificationStyles
 # For Dev when creating new attr use have to set type for validate_args to work
 
 @dataclass
