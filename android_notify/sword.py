@@ -90,6 +90,7 @@ class Notification(BaseNotification):
 
         self.__generic_parameters_filled = False
         self.__using_set_priority_method = False
+        self.__only_alert_once_state = True  # controls heads up use .setOnlyAlertOnce()
 
         # For components
         self.__lines = []
@@ -617,6 +618,13 @@ class Notification(BaseNotification):
 
         return self.builder
 
+    def setOnlyAlertOnce(self, state: bool):
+        self.__only_alert_once_state = state
+        if not on_android_platform():
+            return
+        if self.builder:
+            self.builder.setOnlyAlertOnce(self.__only_alert_once_state)
+
     def __applyNewLinesIfAny(self):
         if self.__lines:
             set_lines(builder=self.builder, lines=self.__lines)
@@ -636,7 +644,7 @@ class Notification(BaseNotification):
             self.builder.setContentText(str(self.message))
         self.__insert_app_icon()
         self.builder.setDefaults(NotificationCompat.DEFAULT_ALL)
-        self.builder.setOnlyAlertOnce(True)
+        self.builder.setOnlyAlertOnce(self.__only_alert_once_state)
         self.builder.setOngoing(persistent)
         self.builder.setAutoCancel(close_on_click)
 
