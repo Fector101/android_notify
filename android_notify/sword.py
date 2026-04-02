@@ -567,11 +567,9 @@ class Notification(BaseNotification):
         return set_sound(self.builder, res_sound_name)
 
     def fill_args(self, silent: bool = False, persistent=False, close_on_click=True):
-        """Name Makes More sense than start_building"""
-        return self.start_building(silent, persistent , close_on_click)
-
-    def start_building(self, silent: bool = False, persistent=False, close_on_click=True):
-        # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        """Name Makes More sense than start_building
+        Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        """
         self.silent = silent or self.silent
         if not on_android_platform():
             return NotificationCompatBuilder  # this is just a facade
@@ -579,6 +577,10 @@ class Notification(BaseNotification):
         self.__applyNewLinesIfAny()
 
         return self.builder
+
+    def start_building(self, silent: bool = False, persistent=False, close_on_click=True):
+        logger.warning("Please Use `fill_args` instead of `start_building`, `start_building` method will be removed in next major release")
+        return self.fill_args(silent, persistent , close_on_click)
 
     def setOnlyAlertOnce(self, state: bool):
         self.__only_alert_once_state = state
