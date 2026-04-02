@@ -41,23 +41,16 @@ class Notification(BaseNotification):
     :param message: Message body.
     ---
     (Style Options)
-    :param style: Style of the notification ('simple', 'progress', 'big_text', 'inbox', 'big_picture', 'large_icon', 'both_imgs'). both_imgs == using lager icon and big picture
-    :param big_picture_path: Relative Path to the image resource.
-    :param large_icon_path: Relative Path to the image resource.
     :param progress_current_value: Integer To set progress bar current value.
     :param progress_max_value: Integer To set Max range for progress bar.
-    :param body: Large text For `big_Text` style, while `message` acts as subtitle.
-    :param lines_txt: text separated by newLine symbol For `inbox` style `use addLine method instead`
     ---
     (Advance Options)
-    :param sub_text: str for additional information next to title
     :param id: Pass in Old 'id' to use old instance
     :param callback: Function for notification Click.
     :param channel_name: - str Defaults to "Default Channel"
     :param channel_id: - str Defaults to "default_channel"
-    ---
-    (Options during Dev On PC)
-    :param logs: - Bool Defaults to True
+    :param silent: - boolean to make notification silent
+    :param app_icon: - change default app icon
     ---
     (Custom Style Options)
     :param title_color: title color str (to be safe use hex code)
@@ -92,6 +85,12 @@ class Notification(BaseNotification):
         self.__using_set_priority_method = False
         self.__only_alert_once_state = True  # controls heads up use .setOnlyAlertOnce()
 
+        # These Attributes are for reference, For Changes Use setBigText, setSubText,setLargeIcon, setBigPicture
+        self.sub_text=""
+        self.body=""
+        self.large_icon_path=""
+        self.big_picture_path=""
+
         # For components
         self.__lines = []
         self.__has_small_icon = False  # important notification can't send without
@@ -124,7 +123,6 @@ class Notification(BaseNotification):
         action_name = str(self.name or self.__id)
         add_intent_to_open_app(builder=self.builder, action_name=action_name, notification_title=str(self.title),
                                notification_id=self.__id, data_object=self.data_object)
-
 
     def addLine(self, text: str):
         self.__lines.append(text)
@@ -201,6 +199,7 @@ class Notification(BaseNotification):
         :param path: can be `Relative Path` or `URL`
         :return:
         """
+        self.big_picture_path=path
         if on_android_platform():
             self.__build_img(path, NotificationStyles.BIG_PICTURE)
         logger.info('Done setting big picture.')
@@ -222,6 +221,7 @@ class Notification(BaseNotification):
         :param path: can be `Relative Path` or `URL`
         :return:
         """
+        self.large_icon_path = path
         if on_android_platform():
             self.__build_img(path, NotificationStyles.LARGE_ICON)
         logger.info('Done setting large icon.')
@@ -233,6 +233,7 @@ class Notification(BaseNotification):
         :param title: The big text title
         :param summary: The big text summary
         """
+        self.body = str(body)
         set_big_text(builder=self.builder, body=str(body), title=str(title), summary=str(summary))
 
     def setSubText(self, text):
@@ -482,7 +483,7 @@ class Notification(BaseNotification):
         print("\n Sent Notification!!!")
         displayed_args = [
             "title", "message",
-            "style", "body", "large_icon_path", "big_picture_path",
+            "sub_text", "body", "large_icon_path", "big_picture_path",
             "progress_max_value",
             'name', "channel_name",
         ]
@@ -553,43 +554,6 @@ class Notification(BaseNotification):
         remove_buttons(self.builder)
         self.refresh()
 
-    @run_on_ui_thread
-    def addNotificationStyle(self, style: str, already_sent=False):
-        """Adds Style to Notification
-
-        NOTE: This method has Deprecated Use - (setLargeIcon, setBigPicture, setBigText and setLines) Instead
-
-        --------
-        Args:
-            style (str): required style
-            already_sent (bool,False): If notification was already sent
-        """
-
-        if not on_android_platform():
-            # TODO for logs when not on android and style related to imgs extract app path from buildozer.spec and log
-            return False
-
-        if self.body:
-            self.setBigText(self.body)
-
-        elif self.lines_txt:
-            lines = self.lines_txt.split("\n")
-            self.setLines(lines)
-
-        elif self.big_picture_path or self.large_icon_path:
-            if self.big_picture_path:
-                self.setBigPicture(self.big_picture_path)
-            if self.large_icon_path:
-                self.setLargeIcon(self.large_icon_path)
-
-        elif self.progress_max_value or self.progress_current_value:
-            self.builder.setProgress(self.progress_max_value, self.progress_current_value or 0.1, False)
-
-        if already_sent:
-            self.refresh()
-
-        return True
-
     def setLines(self, lines: list):
         """Pass in a list of strings to be used for lines"""
         set_lines(builder=self.builder, lines=lines)
@@ -603,20 +567,20 @@ class Notification(BaseNotification):
         return set_sound(self.builder, res_sound_name)
 
     def fill_args(self, silent: bool = False, persistent=False, close_on_click=True):
-        """Name Makes More sense than start_building"""
-        return self.start_building(silent, persistent , close_on_click)
-
-    def start_building(self, silent: bool = False, persistent=False, close_on_click=True):
-        # Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        """Name Makes More sense than start_building
+        Main use is for foreground service, bypassing .notify in .send method to let service.startForeground(...) send it
+        """
         self.silent = silent or self.silent
         if not on_android_platform():
             return NotificationCompatBuilder  # this is just a facade
         self.__create_basic_notification(persistent, close_on_click)
-        if self.style not in ['simple', '']:
-            self.addNotificationStyle(self.style)
         self.__applyNewLinesIfAny()
 
         return self.builder
+
+    def start_building(self, silent: bool = False, persistent=False, close_on_click=True):
+        logger.warning("Please Use `fill_args` instead of `start_building`, `start_building` method will be removed in next major release")
+        return self.fill_args(silent, persistent , close_on_click)
 
     def setOnlyAlertOnce(self, state: bool):
         self.__only_alert_once_state = state
