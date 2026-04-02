@@ -85,7 +85,7 @@ class Notification(BaseNotification):
         self.__using_set_priority_method = False
         self.__only_alert_once_state = True  # controls heads up use .setOnlyAlertOnce()
 
-        # For reference
+        # These Attributes are for reference, For Changes Use setBigText, setSubText,setLargeIcon, setBigPicture
         self.sub_text=""
         self.body=""
         self.large_icon_path=""
