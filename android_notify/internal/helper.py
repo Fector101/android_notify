@@ -55,3 +55,6 @@ def execute_callback(callback,arg, from_who="user"):
             callback()
     except Exception as on_permissions_result_callback_error:
         logger.exception(on_permissions_result_callback_error)
+
+def on_pydroid_app():
+    return "ru.iiec.pydroid3" in os.path.dirname(os.path.abspath(__file__))

@@ -6,7 +6,7 @@ import os.path
 from .logger import logger
 from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context
 from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat
-from android_notify.internal.helper import execute_callback
+from android_notify.internal.helper import execute_callback, on_pydroid_app
 
 
 def has_notification_permission():
@@ -80,7 +80,7 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
         execute_callback(callback, grants[0])
         execute_callback(set_requesting_state, False,from_who="package")
 
-    if legacy or on_flet_app():
+    if legacy or on_flet_app() or on_pydroid_app():
         # TODO Handle activity with request code
         permission = Manifest.POST_NOTIFICATIONS
         context.requestPermissions([permission], 101)
