@@ -462,10 +462,10 @@ class Notification(BaseNotification):
             >>> self.setVibrate()
             >>> self.setVibrate([0, 500, 200, 500])
         """
-        if on_android_platform() and BuildVersion < 26:
+        if on_android_platform() and BuildVersion.SDK_INT < 26:
             pattern = pattern or [0, 500]
             self.builder.setVibrate(pattern)
-        if not on_android_platform() or BuildVersion < 26:
+        if not on_android_platform() or BuildVersion.SDK_INT < 26:
             logger.info(f"Vibration pattern set to {pattern}")
 
     @staticmethod
