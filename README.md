@@ -72,6 +72,24 @@ android.api = 35
 
 </details>
 
+<details>
+<summary><b>Desktop</b></summary>
+<br/>
+
+For IDE IntelliSense Can be installed via `pip install`:
+
+```bash
+pip install android_notify
+android-notify -v
+```
+
+</details>
+
+------
+## Installing without Androidx
+How to use without `gradle_dependencies`
+Use `android-notify==1.61.0.dev0` to install via `pip`
+
 
 <details>
 <summary><b>Flet apps:</b></summary>
@@ -92,25 +110,6 @@ dependencies = [
 - example of [complete flet pyproject.toml](https://github.com/Fector101/flet-app/blob/main/pyproject.toml)
 
 </details>
-
-<details>
-
-<summary><b>Desktop</b></summary>
-<br/>
-
-For IDE IntelliSense Can be installed via `pip install`:
-
-```bash
-pip install android_notify
-android-notify -v
-```
-
-</details>
-
-------
-## Installing without Androidx
-How to use without `gradle_dependencies`
-Use `android-notify==1.61.0.dev0` to install via `pip`
 
 <details>
 <summary><b>In Kivy</b></summary>
