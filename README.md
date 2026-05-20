@@ -31,6 +31,8 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Persistent notifications
   - Click handlers and callbacks
   - Cancel Notifications
+  - Use [Custom Sound](https://android-notify.vercel.app/advanced-methods#custom-sound)
+  - Vibration (section)[https://android-notify.vercel.app/advanced-methods#vibration]
 
 ## Quick Start
 
@@ -202,53 +204,6 @@ n.send()
 
 </details>
 
-<details>
-<summary> <b>To use Custom Sounds </b> </summary>
-
-- Put audio files in `res/raw` folder,
-- Then from `buildozer.spec` point to res folder `android.add_resources = res`
-- and includes it's format `source.include_exts = wav`.
-
-Lastly From the code 
-```py
-# Create a custom notification channel with a unique sound resource for android 8+
-Notification.createChannel(
-    id="weird_sound_tester",
-    name="Weird Sound Tester",
-    description="A test channel for custom sounds from the res/raw folder.",
-    res_sound_name="sneeze" # file name without .wav or .mp3
-)
-
-# Send a notification through the created channel
-n=Notification(
-    title="Custom Sound Notification",
-    message="This tests playback of a custom sound (sneeze.wav) stored in res/raw.",
-    channel_id="weird_sound_tester" # important tells notification to use right channel
-)
-n.setSound("sneeze")# for android 7 below 
-n.send()
-```
-</details>
-
-
-<details>
-<summary> <b> Vibrate feature</b> </summary>
-
-```ini
-# buildozer.spec
-android.permissions = VIBRATE
-```
-
-```python
-Notification.createChannel(id='shake', name="Shake Passage", vibrate=True)
-
-n=Notification(title='Vibrate',channel_id='shake')
-n.setVibrate() # for less than android 8
-n.fVibrate() # To Force Vibrate
-n.send()
-```
-
-</details>
 
 
 <details>
