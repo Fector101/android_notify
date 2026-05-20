@@ -209,3 +209,17 @@ from android_notify import Notification, NotificationHandler
 
 If you find this project helpful, your support would help me continue working on open-source projects
 [donate](https://www.buymeacoffee.com/fector101)
+
+
+## Bug Reports & Feature Requests
+
+Found a bug or have an idea for a new feature?  
+Feel free to open an issue [here](https://reference-url-citation.invalid/0)
+
+When reporting a bug, try to include:
+- Device name
+- Android version
+- Steps to reproduce the issue
+- Screenshots or logs (if possible)
+
+Feature suggestions are also welcome.
