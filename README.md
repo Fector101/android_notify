@@ -32,7 +32,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Click handlers and callbacks
   - Cancel Notifications
   - Use [Custom Sound](https://android-notify.vercel.app/advanced-methods#custom-sound)
-  - Vibration (section)[https://android-notify.vercel.app/advanced-methods#vibration]
+  - Vibration [section](https://android-notify.vercel.app/advanced-methods#vibration)
 
 ## Quick Start
 
@@ -176,35 +176,6 @@ For Dev Version usage
 ```ini
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
-
-<details>
-<summary> <b> To talk to BroadCast Listener From Buttons </b> </summary>
-
-- Make things happen without being in your app
-```python
-from android_notify import Notification
-notification = Notification(title="Reciver Notification")
-notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
-notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
-```
-You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) as a guide create a broadcast listener
-</details>
-
-<details>
-<summary> <b> To use colored text in your notifications </b> </summary>
-
-- Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
-- Lastly in your `buildozer.spec` file  
-Add `source.include_exts = xml` and `android.add_resources = # path you pasted`
-```python
-# Use Hex Code to be Safe
-n = Notification(title="Title and Message Color", message="Testing",title_color="red")
-n.send()
-```
-
-</details>
-
-
 
 <details>
 <summary> <b> Add Data to Notification</b> </summary>
