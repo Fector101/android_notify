@@ -5,9 +5,9 @@ from typing import Any
 
 from android_notify.config import get_notification_manager, on_android_platform
 
-from android_notify.internal.java_classes import BuildVersion, NotificationChannel
+from android_notify.internal.java_classes import BuildVersion, NotificationChannel, AudioAttributes, AudioAttributesBuilder
 from android_notify.internal.an_types import Importance
-from android_notify.internal.android import get_sound_uri, get_android_importance
+from android_notify.internal.android import get_sound_uri, get_sound_uri_from_path, get_android_importance
 from android_notify.internal.logger import logger
 
 def does_channel_exist(channel_id):
@@ -24,7 +24,7 @@ def does_channel_exist(channel_id):
     return False
 
 
-def create_channel(id__, name: str, description='', importance: Importance = 'urgent', res_sound_name=None,vibrate=False):
+def create_channel(id__, name: str, description='', importance: Importance = 'urgent', res_sound_name=None, sound_path=None, vibrate=False):
     """
     Creates a user visible toggle button for specific notifications, Required For Android 8.0+
     :param id__: Used to send other notifications later through same channel.
@@ -32,12 +32,13 @@ def create_channel(id__, name: str, description='', importance: Importance = 'ur
     :param description: user-visible detail about channel (Not required defaults to empty str).
     :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
     :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+    :param sound_path: local file path or uri string
     :param vibrate: if channel notifications should vibrate or not
     :return: boolean if channel created
     """
     def info_log():
         logger.info(
-            f"Created {name} channel, id: {id__}, description: {description}, res_sound_name: {res_sound_name},vibrate: {vibrate}")
+            f"Created {name} channel, id: {id__}, description: {description}, res_sound_name: {res_sound_name}, sound_path: {sound_path}, vibrate: {vibrate}")
 
     if not on_android_platform():
         info_log()
@@ -45,14 +46,26 @@ def create_channel(id__, name: str, description='', importance: Importance = 'ur
 
     notification_manager = get_notification_manager()
     android_importance_value = get_android_importance(importance)
-    sound_uri = get_sound_uri(res_sound_name)
+    
+    if sound_path:
+        sound_uri = get_sound_uri_from_path(sound_path)
+    else:
+        sound_uri = get_sound_uri(res_sound_name)
 
     if not does_channel_exist(id__):
         channel = NotificationChannel(id__, name, android_importance_value)
         if description:
             channel.setDescription(description)
         if sound_uri:
-            channel.setSound(sound_uri, None)
+            try:
+                aa_builder = AudioAttributesBuilder()
+                aa_builder.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                aa_builder.setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                audio_attributes = aa_builder.build()
+                channel.setSound(sound_uri, audio_attributes)
+            except Exception as sound_attributes_error:
+                logger.warning(f"Could not build AudioAttributes, falling back to None: {sound_attributes_error}")
+                channel.setSound(sound_uri, None)
         if vibrate:
             # channel.setVibrationPattern([0, 500, 200, 500]) # Using Phone's default pattern
             # Android 15 ignored long patterns, didn't vibrate when not in silent and
