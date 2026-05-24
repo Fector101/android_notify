@@ -40,6 +40,9 @@ if on_android_platform():
         Color = autoclass('android.graphics.Color')
         Context = autoclass('android.content.Context')
         PackageManager = autoclass("android.content.pm.PackageManager")
+        AudioAttributes = autoclass('android.media.AudioAttributes')
+        AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+        File = autoclass('java.io.File')
     except Exception as e:
         from .facade import *
         logger.exception("Didn't get Basic Java Classes")

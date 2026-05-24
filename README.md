@@ -186,6 +186,8 @@ n.send()
 <details>
 <summary> <b>To use Custom Sounds </b> </summary>
 
+**Option 1: Audio files bundled in `res/raw`**
+
 - Put audio files in `res/raw` folder,
 - Then from `buildozer.spec` point to res folder `android.add_resources = res`
 - and includes it's format `source.include_exts = wav`.
@@ -209,6 +211,37 @@ n=Notification(
 n.setSound("sneeze")# for android 7 below 
 n.send()
 ```
+
+**Option 2: Local file path or URI (`sound_path`)**
+
+You can use a local audio file, a `content://`, `file://`, or `android.resource://` URI directly:
+
+```py
+# Using a local file path
+Notification.createChannel(
+    id="local_sound",
+    name="Local Sound",
+    sound_path="/storage/emulated/0/Download/alert.mp3"
+)
+
+# Using a content URI (e.g., from media store)
+Notification.createChannel(
+    id="uri_sound",
+    name="URI Sound",
+    sound_path="content://media/external/audio/media/123"
+)
+
+# Send notification with custom sound path
+n = Notification(
+    title="Custom Sound",
+    message="Playing from local path",
+    channel_id="local_sound"
+)
+n.setSound(sound_path="/storage/emulated/0/Download/alert.mp3")
+n.send()
+```
+
+Private files (e.g., in app's `data/` directory) are automatically copied to external storage before playing.
 </details>
 
 

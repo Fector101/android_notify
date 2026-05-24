@@ -1,14 +1,14 @@
 """
 Android related logic
 """
-import time
+import time, os
 
 from .logger import logger
 from ..config import get_notification_manager, on_android_platform, from_service_file, on_flet_app, \
     get_python_activity_context
 from .permissions import has_notification_permission
 from .java_classes import autoclass, BuildVersion, Uri, NotificationCompat, NotificationManagerCompat, \
-    NotificationManager, Context
+    NotificationManager, Context, File
 from .an_types import Importance
 
 
@@ -98,22 +98,72 @@ def get_sound_uri(res_sound_name):
     return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
 
 
-def set_sound(builder, res_sound_name):
+def get_sound_uri_from_path(sound_path):
+    if not on_android_platform() or not sound_path:
+        return None
+
+    if sound_path.startswith("content://") or sound_path.startswith("file://") or sound_path.startswith("android.resource://"):
+        try:
+            return Uri.parse(sound_path)
+        except Exception as e:
+            logger.exception(f"Error parsing sound URI: {sound_path}")
+            return None
+
+    # Resolve relative paths
+    abs_path = os.path.abspath(sound_path)
+    if not os.path.exists(abs_path):
+        logger.warning(f"Sound file does not exist: {sound_path} (resolved to {abs_path})")
+        return None
+
+    # Check if the file is in private storage (contains /data/)
+    if "/data/" in abs_path or not (abs_path.startswith("/storage") or abs_path.startswith("/sdcard")):
+        try:
+            context = get_python_activity_context()
+            ext_files = context.getExternalFilesDir("Notifications")
+            if ext_files:
+                ext_files_path = ext_files.getAbsolutePath()
+                dest_file = os.path.join(ext_files_path, os.path.basename(abs_path))
+
+                # Copy if destination doesn't exist or is older than the source
+                if not os.path.exists(dest_file) or os.path.getmtime(abs_path) > os.path.getmtime(dest_file):
+                    import shutil
+                    shutil.copy2(abs_path, dest_file)
+                abs_path = dest_file
+        except Exception as copy_error:
+            logger.exception(f"Failed to copy private sound file {abs_path} to external files: {copy_error}")
+
+    try:
+        java_file = File(abs_path)
+        return Uri.fromFile(java_file)
+    except Exception as e:
+        logger.exception(f"Error generating Uri from file path: {abs_path}")
+        return None
+
+
+def set_sound(builder, res_sound_name=None, sound_path=None):
     """
     Sets sound for devices less than android 8 (For 8+ use createChannel)
     :param builder: builder instance
     :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+    :param sound_path: local file path or uri string
     """
 
     if not on_android_platform():
         return None
 
-    if res_sound_name and BuildVersion.SDK_INT < 26:
-        try:
-            builder.setSound(get_sound_uri(res_sound_name))
-            return True
-        except Exception as failed_adding_sound_for_devices_below_android8:
-            logger.exception(failed_adding_sound_for_devices_below_android8)
+    if BuildVersion.SDK_INT < 26:
+        sound_uri = None
+        if sound_path:
+            sound_uri = get_sound_uri_from_path(sound_path)
+        elif res_sound_name:
+            sound_uri = get_sound_uri(res_sound_name)
+
+        if sound_uri:
+            try:
+                builder.setSound(sound_uri)
+                return True
+            except Exception as failed_adding_sound_for_devices_below_android8:
+                logger.exception(failed_adding_sound_for_devices_below_android8)
     return None
 
 

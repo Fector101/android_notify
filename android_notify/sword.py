@@ -149,7 +149,7 @@ class Notification(BaseNotification):
         return does_channel_exist(channel_id=channel_id)
 
     @classmethod
-    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None, vibrate=False):
+    def createChannel(cls, id, name: str, description='', importance: Importance = 'urgent', res_sound_name=None, sound_path=None, vibrate=False):
         """
         Creates a user visible toggle button for specific notifications, Required For Android 8.0+
         :param id: Used to send other notifications later through same channel.
@@ -157,10 +157,11 @@ class Notification(BaseNotification):
         :param description: user-visible detail about channel (Not required defaults to empty str).
         :param importance: ['urgent', 'high', 'medium', 'low', 'none'] defaults to 'urgent' i.e. makes a sound and shows briefly
         :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+        :param sound_path: local file path or uri string
         :param vibrate: if channel notifications should vibrate or not
         :return: boolean if channel created
         """
-        return create_channel(id__=id, name=name, description=description, importance=importance, res_sound_name=res_sound_name, vibrate=vibrate)
+        return create_channel(id__=id, name=name, description=description, importance=importance, res_sound_name=res_sound_name, sound_path=sound_path, vibrate=vibrate)
 
     @classmethod
     def deleteChannel(cls, channel_id):
@@ -558,13 +559,14 @@ class Notification(BaseNotification):
         """Pass in a list of strings to be used for lines"""
         set_lines(builder=self.builder, lines=lines)
 
-    def setSound(self, res_sound_name):
+    def setSound(self, res_sound_name=None, sound_path=None):
         """
         Sets sound for devices less than android 8 (For 8+ use createChannel)
         :param res_sound_name: audio file name (without .wav or .mp3) locate in res/raw/
+        :param sound_path: local file path or uri string
         """
 
-        return set_sound(self.builder, res_sound_name)
+        return set_sound(self.builder, res_sound_name=res_sound_name, sound_path=sound_path)
 
     def fill_args(self, silent: bool = False, persistent=False, close_on_click=True):
         """Name Makes More sense than start_building
