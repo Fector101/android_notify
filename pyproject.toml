@@ -11,7 +11,7 @@ authors = [
     { name = "Fabian", email = "fector101@yahoo.com" }
 ]
 license = "MIT"
-requires-python = ">=3.6"
+requires-python = ">=3.6,<3.14"
 dependencies = [
     "pyjnius>=1.4.2"
 ]
