@@ -1,19 +1,23 @@
 [build-system]
-requires = ["setuptools>=77.0.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-notify"
-version = "1.61.2.dev0"
+version = "1.61.3.dev0"
 description = "A Python package that simplifies creating Android notifications in Kivy and Flet apps."
 readme = { file = "README.md", content-type = "text/markdown" }
+
 authors = [
     { name = "Fabian", email = "fector101@yahoo.com" }
 ]
+
 license = "MIT"
+
 dependencies = [
     "pyjnius"
 ]
+
 keywords = [
     "android",
     "notifications",
@@ -29,6 +33,7 @@ keywords = [
     "mobile-app",
     "kivy-application"
 ]
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: Android",
@@ -46,7 +51,7 @@ Funding = "https://www.buymeacoffee.com/fector101"
 
 [project.optional-dependencies]
 dev = [
-    "kivy>=2.0.0"
+    "kivy"
 ]
 
 [tool.setuptools.package-data]
