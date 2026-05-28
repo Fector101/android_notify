@@ -4,8 +4,10 @@ import shutil
 from .config import __version__
 
 BUILD_PATHS = [
-    ".buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/python-installs",
-    ".buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists",
+    os.path.join(".buildozer", "android", "platform", "build-arm64-v8a_armeabi-v7a", "build", "python-installs"),
+    os.path.join(".buildozer", "android", "platform", "build-arm64-v8a_armeabi-v7a", "dists"),
+# ".buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/python-installs",
+# ".buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists",
 ]
 
 def print_version():
@@ -16,15 +18,15 @@ def print_version():
     print(border)
 
 def cmd_prune(args):
-    project_path = os.path.abspath(args.path)
+    project_path = str(os.path.abspath(args.path))
     items = []
 
     for rel in BUILD_PATHS:
         root = os.path.join(project_path, rel)
         if not os.path.isdir(root):
             continue
-        for dirpath, dirnames, filenames in os.walk(root):
-            for name in dirnames + filenames:
+        for dirpath, dir_names, filenames in os.walk(root):
+            for name in dir_names + filenames:
                 if name.startswith("android_notify"):
                     items.append(os.path.join(dirpath, name))
 
