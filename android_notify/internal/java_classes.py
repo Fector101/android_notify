@@ -59,7 +59,7 @@ if on_android_platform():
     except Exception as dependencies_import_error:
         logger.exception("""
         Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core-ktx:1.15.0, androidx.core:core:1.6.0
+        * android.gradle_dependencies = androidx.core:core:1.12.0
         * android.enable_androidx = True
         """)
 
