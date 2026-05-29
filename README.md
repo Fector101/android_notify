@@ -65,7 +65,7 @@ requirements = python3, kivy, pyjnius, android-notify
 android.permissions = POST_NOTIFICATIONS
 
 # Required dependency (write exactly as shown, no quotation marks)
-android.gradle_dependencies = androidx.core:core-ktx:1.15.0
+android.gradle_dependencies = androidx.core:core:1.12.0
 android.enable_androidx = True
 android.api = 35
 ```
