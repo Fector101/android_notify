@@ -102,7 +102,7 @@ class AndroidNotifyDemoApp(MDApp):
 
                 def get_free_port_():
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.bind(("", 0))  # bind to a random free port
+                    s.bind(("127.0.0.1", 0))  # bind to a random free port on loopback only
                     port = s.getsockname()[1]
                     s.close()
                     return port
