@@ -7,13 +7,16 @@ name = "android-notify"
 version = "1.61.3"
 description = "A Python package that simplifies creating Android notifications in Kivy and Flet apps."
 readme = { file = "README.md", content-type = "text/markdown" }
+
 authors = [
     { name = "Fabian", email = "fector101@yahoo.com" }
 ]
+
 license = "MIT"
 dependencies = [
     "pyjnius"
 ]
+
 keywords = [
     "android",
     "notifications",
@@ -29,6 +32,7 @@ keywords = [
     "mobile-app",
     "kivy-application"
 ]
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: Android",

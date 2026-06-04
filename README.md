@@ -63,45 +63,21 @@ In your **`buildozer.spec`** file, ensure you include the following:
 requirements = python3, kivy, pyjnius, android-notify
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
-
-# Required dependency (write exactly as shown, no quotation marks)
-android.gradle_dependencies = androidx.core:core:1.12.0
-android.enable_androidx = True
-android.api = 35
 ```
 
 </details>
-
-<details>
-<summary><b>Desktop</b></summary>
-<br/>
-
-For IDE IntelliSense Can be installed via `pip install`:
-
-```bash
-pip install android_notify
-android-notify -v
-```
-
-</details>
-
-------
-## Installing without Androidx
-How to use without `gradle_dependencies`
-Use `android-notify==1.61.3.dev0` to install via `pip`
-
 
 <details>
 <summary><b>Flet apps:</b></summary>
 <br/>
 
- In your `pyproject.toml` file, ensure you include the following:
+In your `pyproject.toml` file, ensure you include the following:
 
 
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.61.3.dev0"
+  "pyjnius","android-notify"
 ]
 
 [tool.flet.android.permission]
@@ -112,26 +88,14 @@ dependencies = [
 </details>
 
 <details>
-<summary><b>In Kivy</b></summary>
-<br/>
-
-```ini
-# buildozer.spec
-requirements = python3, kivy, pyjnius, android-notify==1.61.3.dev0
-```
-
-</details>
-
-<details>
 
 <summary><b>On Pydroid 3</b></summary>
 <br/>
 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.61.3.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify`
 - Minimal working example 
 ```py
-# Testing with `android-notify==1.61.3.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -169,12 +133,86 @@ if __name__ == "__main__":
 </details>
 
 
+<details>
+
+<summary><b>Desktop</b></summary>
+<br/>
+
+For IDE IntelliSense Can be installed via `pip install`:
+
+```bash
+pip install android_notify
+android-notify -v
+```
+</details>
 
 ## Documentation
 For Dev Version usage
 ```ini
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
+
+<details>
+<summary> <b>To use Custom Sounds </b> </summary>
+
+**Option 1: Audio files bundled in `res/raw`**
+
+- Put audio files in `res/raw` folder,
+- Then from `buildozer.spec` point to res folder `android.add_resources = res`
+- and includes it's format `source.include_exts = wav`.
+
+Lastly From the code 
+```py
+# Create a custom notification channel with a unique sound resource for android 8+
+Notification.createChannel(
+    id="weird_sound_tester",
+    name="Weird Sound Tester",
+    description="A test channel for custom sounds from the res/raw folder.",
+    res_sound_name="sneeze" # file name without .wav or .mp3
+)
+
+# Send a notification through the created channel
+n=Notification(
+    title="Custom Sound Notification",
+    message="This tests playback of a custom sound (sneeze.wav) stored in res/raw.",
+    channel_id="weird_sound_tester" # important tells notification to use right channel
+)
+n.setSound("sneeze")# for android 7 below 
+n.send()
+```
+
+**Option 2: Local file path or URI (`sound_path`)**
+
+You can use a local audio file, a `content://`, `file://`, or `android.resource://` URI directly:
+
+```py
+# Using a local file path
+Notification.createChannel(
+    id="local_sound",
+    name="Local Sound",
+    sound_path="/storage/emulated/0/Download/alert.mp3"
+)
+
+# Using a content URI (e.g., from media store)
+Notification.createChannel(
+    id="uri_sound",
+    name="URI Sound",
+    sound_path="content://media/external/audio/media/123"
+)
+
+# Send notification with custom sound path
+n = Notification(
+    title="Custom Sound",
+    message="Playing from local path",
+    channel_id="local_sound"
+)
+n.setSound(sound_path="/storage/emulated/0/Download/alert.mp3")
+n.send()
+```
+
+Private files (e.g., in app's `data/` directory) are automatically copied to external storage before playing.
+</details>
+
 
 <details>
 <summary> <b> Add Data to Notification</b> </summary>
@@ -207,9 +245,12 @@ from android_notify import Notification, NotificationHandler
 
 ## ☕ Support the Project
 
-If you find this project helpful, your support would help me continue working on open-source projects
-[donate](https://www.buymeacoffee.com/fector101)
+If you find this project helpful, consider buying me a coffee! 😊  
+Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify/) Your support helps maintain and improve the project.
 
+<a href="https://www.buymeacoffee.com/fector101" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">
+</a>
 
 ## Bug Reports & Feature Requests
 
