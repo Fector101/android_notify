@@ -2,7 +2,6 @@
 
 import inspect, os, re
 from .logger import logger, on_android_platform
-from android_notify.config import get_package_name
 
 def can_accept_arguments(func, *args, **kwargs):
     try:
@@ -63,6 +62,7 @@ def on_pydroid_app():
     elif package_name in os.path.dirname(os.path.abspath(__file__)):
         return True
     elif on_android_platform():
+        from android_notify.config import get_package_name
         return package_name == get_package_name()
     return False
 
