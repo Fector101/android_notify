@@ -189,10 +189,10 @@ class NotificationChannel:
         logger.debug(f"[MOCK] NotificationChannel.setVibrationPattern called, list_of_numbers={list_of_numbers}")
 
 
-class IconCompat:
+class IconClass:
     @classmethod
     def createWithBitmap(cls, bitmap):
-        logger.debug(f"[MOCK] IconCompat.createWithBitmap called with bitmap={bitmap}")
+        logger.debug(f"[MOCK] IconClass.createWithBitmap called with bitmap={bitmap}")
 
 
 class Color:

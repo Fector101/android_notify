@@ -37,11 +37,12 @@ if on_android_platform():
         Settings = autoclass("android.provider.Settings")
         Uri = autoclass("android.net.Uri")
         Manifest = autoclass('android.Manifest$permission')
-        Color = autoclass('android.graphics.Color')
         Context = autoclass('android.content.Context')
         PackageManager = autoclass("android.content.pm.PackageManager")
         AudioAttributes = autoclass('android.media.AudioAttributes')
         AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+        Color = autoclass('android.graphics.Color')
+        IconClass = autoclass('android.graphics.drawable.Icon')
         File = autoclass('java.io.File')
     except Exception as e:
         from .facade import *
