@@ -3,15 +3,13 @@ import random
 import os
 
 from android_notify.internal.logger import logger
-from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context
+from android_notify.internal.helper import on_pydroid_app
+
+from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context, on_flet_app
 from android_notify.internal.permissions import has_notification_permission, ask_notification_permission
 from android_notify.internal.java_classes import autoclass, BuildVersion, BitmapFactory, NotificationChannel, NotificationManagerCompat, NotificationCompat, NotificationCompatBuilder, \
     NotificationCompatBigTextStyle, NotificationCompatBigPictureStyle, NotificationCompatInboxStyle, IconClass
 
-
-
-def on_flet_app():
-    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
 
 if on_android_platform():
@@ -114,7 +112,8 @@ def send_notification(
         return None
     context = get_python_activity_context()
 
-    asks_permission_if_needed(legacy=True)
+    use_legacy =  on_flet_app() or on_pydroid_app()
+    asks_permission_if_needed(legacy=use_legacy)
     channel_id = channel_name.replace(' ', '_').lower().lower() if not channel_id else channel_id
     # Get notification manager
     notification_manager = context.getSystemService(context.NOTIFICATION_SERVICE)
