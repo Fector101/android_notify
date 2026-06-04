@@ -106,6 +106,49 @@ class Uri:
     def __init__(self, package_name):
         logger.debug("FACADE_URI")
 
+    @classmethod
+    def parse(cls, uri_string):
+        logger.debug(f"[MOCK] Uri.parse called with uri_string={uri_string}")
+        return cls
+
+    @classmethod
+    def fromFile(cls, java_file):
+        logger.debug(f"[MOCK] Uri.fromFile called with file={java_file}")
+        return cls
+
+
+class AudioAttributes:
+    CONTENT_TYPE_SONIFICATION = 4
+    USAGE_NOTIFICATION = 5
+    USAGE_ALARM = 4
+
+
+class AudioAttributesBuilder:
+    def __init__(self):
+        logger.debug("[MOCK] AudioAttributesBuilder initialized")
+
+    def setContentType(self, content_type):
+        logger.debug(f"[MOCK] AudioAttributesBuilder.setContentType called with content_type={content_type}")
+        return self
+
+    def setUsage(self, usage):
+        logger.debug(f"[MOCK] AudioAttributesBuilder.setUsage called with usage={usage}")
+        return self
+
+    def build(self):
+        logger.debug("[MOCK] AudioAttributesBuilder.build called")
+        return AudioAttributes()
+
+
+class File:
+    def __init__(self, path):
+        self.path = path
+        logger.debug(f"[MOCK] File initialized with path={path}")
+
+    def getAbsolutePath(self):
+        logger.debug(f"[MOCK] File.getAbsolutePath called, returning {self.path}")
+        return self.path
+
 
 class NotificationManager:
     pass
@@ -146,10 +189,10 @@ class NotificationChannel:
         logger.debug(f"[MOCK] NotificationChannel.setVibrationPattern called, list_of_numbers={list_of_numbers}")
 
 
-class IconCompat:
+class IconClass:
     @classmethod
     def createWithBitmap(cls, bitmap):
-        logger.debug(f"[MOCK] IconCompat.createWithBitmap called with bitmap={bitmap}")
+        logger.debug(f"[MOCK] IconClass.createWithBitmap called with bitmap={bitmap}")
 
 
 class Color:
@@ -401,6 +444,16 @@ class Context:
     def getPackageName():
         logger.debug("[MOCK] Context.getPackageName called")
         return None  # TODO get package name from buildozer.spec file
+
+    @staticmethod
+    def getExternalFilesDir(directory_type):
+        logger.debug(f"[MOCK] Context.getExternalFilesDir called with type={directory_type}")
+        return File("mock_external_files_dir")
+
+    @staticmethod
+    def getExternalCacheDir():
+        logger.debug("[MOCK] Context.getExternalCacheDir called")
+        return File("mock_external_cache_dir")
 
 
 class PackageManager:

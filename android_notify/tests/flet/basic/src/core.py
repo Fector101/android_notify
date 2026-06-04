@@ -105,10 +105,10 @@ def get_image_uri(relative_path):
 
 def get_icon_object(uri):
     BitmapFactory = autoclass('android.graphics.BitmapFactory')
-    IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
+    IconClass = autoclass('android.graphics.drawable.Icon')
 
     bitmap= BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
-    return IconCompat.createWithBitmap(bitmap)
+    return IconClass.createWithBitmap(bitmap)
 
 def insert_app_icon(builder,custom_icon_path):
     if custom_icon_path:

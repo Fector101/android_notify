@@ -37,8 +37,9 @@ if on_android_platform():
         Settings = autoclass("android.provider.Settings")
         Uri = autoclass("android.net.Uri")
         Manifest = autoclass('android.Manifest$permission')
-        Color = autoclass('android.graphics.Color')
         Context = autoclass('android.content.Context')
+        Color = autoclass('android.graphics.Color')
+        IconClass = autoclass('androidx.core.graphics.drawable.IconCompat')
     except Exception as e:
         from .facade import *
         logger.exception("Didn't get Basic Java Classes")
@@ -48,7 +49,6 @@ if on_android_platform():
         NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
         NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
         NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
-        IconCompat = autoclass('androidx.core.graphics.drawable.IconCompat')
 
         # Notification Design
         NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')

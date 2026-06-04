@@ -6,7 +6,7 @@ from android_notify.internal.logger import logger
 from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context
 from android_notify.internal.permissions import has_notification_permission, ask_notification_permission
 from android_notify.internal.java_classes import autoclass, BuildVersion, BitmapFactory, NotificationChannel, NotificationManagerCompat, NotificationCompat, NotificationCompatBuilder, \
-    NotificationCompatBigTextStyle, NotificationCompatBigPictureStyle, NotificationCompatInboxStyle, IconCompat
+    NotificationCompatBigTextStyle, NotificationCompatBigPictureStyle, NotificationCompatInboxStyle, IconClass
 
 
 
@@ -61,7 +61,7 @@ def get_image_uri(relative_path):
 def get_icon_object(uri):
     context = get_python_activity_context()
     bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri))
-    return IconCompat.createWithBitmap(bitmap)
+    return IconClass.createWithBitmap(bitmap)
 
 
 def insert_app_icon(builder, custom_icon_path):

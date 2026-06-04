@@ -4,7 +4,7 @@ For image related things
 import os
 
 from android_notify.config import app_storage_path, on_flet_app, on_android_platform, get_python_activity_context
-from android_notify.internal.java_classes import autoclass, BitmapFactory, Uri, BuildVersion, Color, IconCompat
+from android_notify.internal.java_classes import autoclass, BitmapFactory, Uri, BuildVersion, Color, IconClass
 from android_notify.internal.helper import get_package_path
 from android_notify.internal.logger import logger
 
@@ -128,7 +128,7 @@ def set_small_icon_with_bitmap(bitmap, builder):
         logger.warning("Bitmap Insert as Icon Not available below Android 6")
         return False
     try:
-        icon = IconCompat.createWithBitmap(bitmap)
+        icon = IconClass.createWithBitmap(bitmap)
         builder.setSmallIcon(icon)
         return True
     except Exception as autoclass_icon_error:
