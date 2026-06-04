@@ -56,6 +56,8 @@ if on_android_platform():
         NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
         NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
         NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
+        NotificationCompatDecoratedCustomViewStyle = autoclass('android.app.Notification$DecoratedCustomViewStyle')
+
 
     except Exception as styles_import_error:
         logger.exception(styles_import_error)

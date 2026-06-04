@@ -106,7 +106,7 @@ def set_lines(builder, lines):
 
 
 
-from android_notify.internal.java_classes import Color, RemoteViews
+from android_notify.internal.java_classes import Color, RemoteViews, NotificationCompatDecoratedCustomViewStyle
 from android_notify.internal.logger import logger
 from android_notify.config import get_python_activity_context
 
@@ -121,10 +121,6 @@ def setLayoutText(layout, text_id, text, color):
 
 def set_custom_colors(builder, title, message, title_color, message_color):
     # Load layout
-    from android_notify.internal.java_classes import autoclass
-    NotificationCompatDecoratedCustomViewStyle = autoclass(
-        'android.app.Notification$DecoratedCustomViewStyle')
-
     context = get_python_activity_context()
     resources = context.getResources()
     package_name = context.getPackageName()
