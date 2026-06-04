@@ -99,8 +99,7 @@ On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
-from android_notify import Notification
-from android_notify.core import asks_permission_if_needed
+from android_notify import Notification, NotificationHandler
 
 
 class AndroidNotifyDemoApp(App):
