@@ -31,6 +31,8 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Persistent notifications
   - Click handlers and callbacks
   - Cancel Notifications
+  - Use [Custom Sound](https://android-notify.vercel.app/advanced-methods#custom-sound)
+  - Vibration [section](https://android-notify.vercel.app/advanced-methods#vibration)
 
 ## Quick Start
 
@@ -58,13 +60,12 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add pyjnius so ensure it's packaged with the build
-requirements = python3, kivy, pyjnius, android-notify==1.61.3.dev0
+requirements = python3, kivy, pyjnius, android-notify
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
 ```
 
 </details>
-
 
 <details>
 <summary><b>Flet apps:</b></summary>
@@ -76,7 +77,7 @@ In your `pyproject.toml` file, ensure you include the following:
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify==1.61.3.dev0"
+  "pyjnius","android-notify"
 ]
 
 [tool.flet.android.permission]
@@ -86,18 +87,15 @@ dependencies = [
 
 </details>
 
-
-
 <details>
 
 <summary><b>On Pydroid 3</b></summary>
 <br/>
 
 On the [pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) mobile app for running python code you can test some features.
-- In pip section where you're asked to insert `Libary name` paste `android-notify==1.61.3.dev0`
+- In pip section where you're asked to insert `Libary name` paste `android-notify`
 - Minimal working example 
 ```py
-# Testing with `android-notify==1.61.3.dev0` on pydroid
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -124,9 +122,7 @@ class AndroidNotifyDemoApp(App):
     def send_notification(self, *args):
         Notification(
             title="Hello from Android Notify",
-            message="This is a basic notification.",
-            channel_id="android_notify_demo",
-            channel_name="Android Notify Demo"
+            message="This is a basic notification."
         ).send()
 
 
@@ -151,37 +147,10 @@ android-notify -v
 </details>
 
 ## Documentation
-For Dev Version use
+For Dev Version usage
 ```ini
-requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/without-androidx.zip
+requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
-
-<details>
-<summary> <b> To talk to BroadCast Listener From Buttons </b> </summary>
-
-- Make things happen without being in your app
-```python
-from android_notify import Notification
-notification = Notification(title="Receiver Notification")
-notification.addButton(text="Stop", receiver_name="CarouselReceiver", action="ACTION_STOP")
-notification.addButton(text="Skip", receiver_name="CarouselReceiver", action="ACTION_SKIP")
-```
-You can use this [wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) as a guide create a broadcast listener
-</details>
-
-<details>
-<summary> <b> To use colored text in your notifications </b> </summary>
-
-- Copy the [res](https://github.com/Fector101/android_notify/tree/main/android_notify/res) folder to your app path.  
-- Lastly in your `buildozer.spec` file  
-Add `source.include_exts = xml` and `android.add_resources = # path you pasted`
-```python
-# Use Hex Code to be Safe
-n = Notification(title="Title and Message Color", message="Testing",title_color="red")
-n.send()
-```
-
-</details>
 
 <details>
 <summary> <b>To use Custom Sounds </b> </summary>
@@ -246,26 +215,6 @@ Private files (e.g., in app's `data/` directory) are automatically copied to ext
 
 
 <details>
-<summary> <b> Vibrate feature</b> </summary>
-
-```ini
-# buildozer.spec
-android.permissions = VIBRATE
-```
-
-```python
-Notification.createChannel(id='shake', name="Shake Passage", vibrate=True)
-
-n=Notification(title='Vibrate',channel_id='shake')
-n.setVibrate() # for less than android 8
-n.fVibrate() # To Force Vibrate (when user turned off in settings)
-n.send()
-```
-
-</details>
-
-
-<details>
 <summary> <b> Add Data to Notification</b> </summary>
 
 
@@ -302,3 +251,16 @@ Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify
 <a href="https://www.buymeacoffee.com/fector101" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60">
 </a>
+
+## Bug Reports & Feature Requests
+
+Found a bug or have an idea for a new feature?  
+Feel free to open an issue [here](https://reference-url-citation.invalid/0)
+
+When reporting a bug, try to include:
+- Device name
+- Android version
+- Steps to reproduce the issue
+- Screenshots or logs (if possible)
+
+Feature suggestions are also welcome.
