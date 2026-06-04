@@ -116,7 +116,7 @@ class AndroidNotifyDemoApp(App):
         return layout
 
     def request_permission(self, *args):
-        asks_permission_if_needed(legacy=True)
+        NotificationHandler.asks_permission()
 
     def send_notification(self, *args):
         Notification(
@@ -254,7 +254,7 @@ Or Giving it a star on 🌟 [GitHub](https://github.com/Fector101/android_notify
 ## Bug Reports & Feature Requests
 
 Found a bug or have an idea for a new feature?  
-Feel free to open an issue [here](https://reference-url-citation.invalid/0)
+Feel free to open an issue [here](https://github.com/Fector101/android_notify/issues)
 
 When reporting a bug, try to include:
 - Device name
