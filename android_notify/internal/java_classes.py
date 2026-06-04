@@ -1,20 +1,6 @@
-import os
 
-from .helper import has_androidx_dependency, on_pydroid_app
+from android_notify.config import has_androidx_dependency,on_pydroid_app, on_android_platform,on_flet_app
 from .logger import logger
-
-def on_android_platform():
-    kivy_build = os.environ.get('KIVY_BUILD', '')
-    if kivy_build in {'android'}:
-        return True
-    elif 'P4A_BOOTSTRAP' in os.environ:
-        return True
-    elif 'ANDROID_ARGUMENT' in os.environ:
-        return True
-    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
-
-def on_flet_app():
-    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
 if on_android_platform():
     try:

@@ -3,9 +3,8 @@ import random
 import os
 
 from android_notify.internal.logger import logger
-from android_notify.internal.helper import on_pydroid_app
 
-from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context, on_flet_app
+from android_notify.config import get_python_activity, on_android_platform, get_python_activity_context, on_flet_app, on_pydroid_app
 from android_notify.internal.permissions import has_notification_permission, ask_notification_permission
 from android_notify.internal.java_classes import autoclass, BuildVersion, BitmapFactory, NotificationChannel, NotificationManagerCompat, NotificationCompat, NotificationCompatBuilder, \
     NotificationCompatBigTextStyle, NotificationCompatBigPictureStyle, NotificationCompatInboxStyle, IconClass
