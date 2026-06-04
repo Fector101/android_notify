@@ -1,5 +1,6 @@
 import os
 
+from .helper import has_androidx_dependency, on_pydroid_app
 from .logger import logger
 
 def on_android_platform():
@@ -12,6 +13,8 @@ def on_android_platform():
         return True
     return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
+def on_flet_app():
+    return os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
 
 if on_android_platform():
     try:
@@ -19,7 +22,7 @@ if on_android_platform():
     except ModuleNotFoundError:
         cast = lambda x, y: x
         autoclass = lambda x: None
-        logger.exception("run pip install pyjnius")
+        logger.exception("add pyjnius to dependencies list")
 
     # Leaving this as a broad Exception for unforeseen case so apps don't crash
     # noinspection PyBroadException
@@ -38,32 +41,55 @@ if on_android_platform():
         Uri = autoclass("android.net.Uri")
         Manifest = autoclass('android.Manifest$permission')
         Context = autoclass('android.content.Context')
+        PackageManager = autoclass("android.content.pm.PackageManager")
+        AudioAttributes = autoclass('android.media.AudioAttributes')
+        AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+        File = autoclass('java.io.File')
         Color = autoclass('android.graphics.Color')
-        IconClass = autoclass('androidx.core.graphics.drawable.IconCompat')
     except Exception as e:
         from .facade import *
         logger.exception("Didn't get Basic Java Classes")
 
-    # noinspection PyBroadException
-    try:
-        NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
-        NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-        NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
+    if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
+        # Leaving this as a broad Exception for unforeseen case so apps don't crash
+        # noinspection PyBroadException
+        try:
+            IconClass = autoclass('android.graphics.drawable.Icon')
+            NotificationCompat = autoclass("android.app.Notification")
+            NotificationManagerCompat = autoclass('android.app.NotificationManager')
+            NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
 
-        # Notification Design
-        NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-        NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-        NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-        NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+            NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
+            NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
+            NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
+            NotificationCompatDecoratedCustomViewStyle = autoclass('android.app.Notification$DecoratedCustomViewStyle')
+        except Exception as styles_import_error:
+            logger.exception(styles_import_error)
+            from .facade import *
+    elif has_androidx_dependency():
 
-    except Exception as dependencies_import_error:
-        logger.exception("""
-        Dependency Error: Add the following in buildozer.spec:
-        * android.gradle_dependencies = androidx.core:core:1.12.0
-        * android.enable_androidx = True
-        """)
+        # Leaving this as a broad Exception for unforeseen case so apps don't crash
+        # noinspection PyBroadException
+        try:
+            IconClass = autoclass('androidx.core.graphics.drawable.IconCompat')
+            NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
+            NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
+            NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
 
-        from .facade import *
+            # Notification Design
+            NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
+            NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
+            NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
+            NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+
+        except Exception as dependencies_import_error:
+            logger.exception("""
+            Dependency Error: Add the following in buildozer.spec:
+            * android.gradle_dependencies = androidx.core:core:1.12.0
+            * android.enable_androidx = True
+            """)
+
+            from .facade import *
 else:
     cast = lambda x, y: x
     autoclass = lambda x: None

@@ -149,10 +149,8 @@ class File:
         logger.debug(f"[MOCK] File.getAbsolutePath called, returning {self.path}")
         return self.path
 
-
 class NotificationManager:
     pass
-
 
 class NotificationChannel:
     def __init__(self, channel_id, channel_name, importance):
