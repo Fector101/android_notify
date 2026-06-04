@@ -3,9 +3,9 @@ For image related things
 """
 import os
 
-from android_notify.config import app_storage_path, on_flet_app, on_android_platform, get_python_activity_context
+from android_notify.config import app_storage_path, on_flet_app, on_android_platform, get_python_activity_context, on_pydroid_app
 from android_notify.internal.java_classes import autoclass, BitmapFactory, Uri, BuildVersion, Color, IconClass
-from android_notify.internal.helper import get_package_path, on_pydroid_app
+from android_notify.internal.helper import get_package_path
 from android_notify.internal.logger import logger
 
 

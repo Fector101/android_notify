@@ -2,9 +2,7 @@ import os
 
 __version__ = "1.61.3"
 
-from .internal.java_classes import autoclass, cast, NotificationManager
 from .internal.logger import logger
-
 
 def on_kivy_android():
     kivy_build = os.environ.get('KIVY_BUILD', '')
@@ -24,6 +22,37 @@ def on_flet_app():
 
 def on_android_platform():
     return on_kivy_android() or on_flet_app()
+
+
+if on_android_platform():
+    try:
+        from jnius import cast, autoclass
+    except ModuleNotFoundError:
+        cast = lambda x, y: x
+        autoclass = lambda x: None
+else:
+    cast = lambda x, y: x
+    autoclass = lambda x: None
+
+
+def on_pydroid_app():
+    package_name = "ru.iiec.pydroid3"
+    if package_name in os.environ.get("PYTHONHOME",""):
+        return True
+    elif package_name in os.path.dirname(os.path.abspath(__file__)):
+        return True
+    elif on_android_platform():
+        return package_name == get_package_name()
+    return False
+
+
+def has_androidx_dependency():
+    """Check if androidx dependencies are available"""
+    try:
+        _=autoclass('androidx.core.app.NotificationCompat')
+        return True
+    except Exception:
+        return False
 
 
 def get_activity_class_name():
@@ -98,6 +127,7 @@ def get_notification_manager():
     if not on_android_platform():
         logger.warning("Can't get notification manager, Not on Android.")
         return None
+    NotificationManager = autoclass('android.app.NotificationManager')
 
     context = get_python_activity_context()
     notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)

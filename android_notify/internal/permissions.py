@@ -4,9 +4,9 @@ For Permission Related Blocks
 import os.path
 
 from .logger import logger
-from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context
+from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context, on_pydroid_app, has_androidx_dependency
 from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat
-from android_notify.internal.helper import execute_callback, on_pydroid_app, has_androidx_dependency
+from android_notify.internal.helper import execute_callback
 
 
 def check_notification_permission_legacy_android12_below():
