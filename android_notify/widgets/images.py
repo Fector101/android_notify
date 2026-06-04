@@ -5,7 +5,7 @@ import os
 
 from android_notify.config import app_storage_path, on_flet_app, on_android_platform, get_python_activity_context
 from android_notify.internal.java_classes import autoclass, BitmapFactory, Uri, BuildVersion, Color, IconClass
-from android_notify.internal.helper import get_package_path
+from android_notify.internal.helper import get_package_path, on_pydroid_app
 from android_notify.internal.logger import logger
 
 
@@ -94,7 +94,7 @@ def find_and_set_default_icon(builder):
     fallback_icon_path = None
     if on_flet_app():
         fallback_icon_path = icon_finder("flet-appicon.png")
-    elif "ru.iiec.pydroid3" in os.path.dirname(os.path.abspath(__file__)):
+    elif on_pydroid_app():
         fallback_icon_path = icon_finder("pydroid3-appicon.png")
 
     if fallback_icon_path:

@@ -6,8 +6,46 @@ import os.path
 from .logger import logger
 from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context
 from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat
-from android_notify.internal.helper import execute_callback, on_pydroid_app
+from android_notify.internal.helper import execute_callback, on_pydroid_app, has_androidx_dependency
 
+
+def check_notification_permission_legacy_android12_below():
+    # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
+    context = get_python_activity_context()
+    nm = context.getSystemService(NotificationManagerCompat)
+    return nm.areNotificationsEnabled()
+
+def check_notification_permission_androidx_android12_below():
+    context = get_python_activity_context()
+    func_from = getattr(NotificationManagerCompat, "from")
+    compat_manager = func_from(context)
+    return compat_manager.areNotificationsEnabled()
+
+def check_notification_permission_legacy_android12_above():
+    # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
+    context = get_python_activity_context()
+    permission = Manifest.POST_NOTIFICATIONS
+    return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permission)
+
+def check_notification_permission_androidx_android12_above():
+    # Unused keeping for future reference
+    context = get_python_activity_context()
+    permission = Manifest.POST_NOTIFICATIONS
+    ContextCompat = autoclass('androidx.core.content.ContextCompat')
+    # For flet
+    # if you get error `Failed to find class: androidx/core/app/ActivityCompat`
+    # in proguard-rules.pro add `-keep class androidx.core.app.ActivityCompat { *; }`
+    return ContextCompat.checkSelfPermission(context, permission)
+
+def ask_notification_permission_androidx():
+    # Unused keeping for future reference
+    # TODO Callback when user answers request question
+    # Can't bind activity result method is from p4a which is only on kivy
+    context = get_python_activity_context()
+    ActivityCompat = autoclass('androidx.core.app.ActivityCompat')
+    permission = Manifest.POST_NOTIFICATIONS
+    ActivityCompat.requestPermissions(context, [permission], 101)
+    return None
 
 def has_notification_permission():
     """
@@ -19,23 +57,19 @@ def has_notification_permission():
 
     if BuildVersion.SDK_INT < 33:  # Android 12 and below
         try:
-            # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
-            context = get_python_activity_context()
-            nm = context.getSystemService(NotificationManagerCompat)
-            return nm.areNotificationsEnabled()
+            if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
+                return check_notification_permission_legacy_android12_below()
+            elif has_androidx_dependency():
+                return check_notification_permission_androidx_android12_below()
         except Exception as error_checking_permission:
             logger.exception(f"On Android 12 and below Error checking permission: {error_checking_permission}")
             return None
 
-    if on_flet_app():
-        context = get_python_activity_context()
-        permission = Manifest.POST_NOTIFICATIONS
-
-        return PackageManager.PERMISSION_GRANTED == context.checkSelfPermission(permission)
+    if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
+        return check_notification_permission_legacy_android12_above()
     else:
         from android.permissions import Permission, check_permission  # type: ignore
         return check_permission(Permission.POST_NOTIFICATIONS)
-
 
 def ask_notification_permission(callback=None, set_requesting_state=None, legacy=False):
     if not on_android_platform():
@@ -91,7 +125,6 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
         request_permissions([Permission.POST_NOTIFICATIONS], on_permissions_result)
         return None
 
-
 def open_notification_settings_screen():
     """In MDApp().on_resume()
 
@@ -126,7 +159,6 @@ def open_notification_settings_screen():
 
     # https://stackoverflow.com/a/45192258/19961621
 
-
 def can_show_permission_request_popup():
     """
     Check if we can show permission request popup for POST_NOTIFICATIONS
@@ -142,7 +174,6 @@ def can_show_permission_request_popup():
         return False
 
     return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
-
 
 def is_first_permission_ask():
     from importlib.resources import files

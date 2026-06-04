@@ -1,8 +1,8 @@
 """Collection of useful functions"""
 
 import inspect, os, re
-from .logger import logger
-
+from .logger import logger, on_android_platform
+from android_notify.config import get_package_name
 
 def can_accept_arguments(func, *args, **kwargs):
     try:
@@ -57,4 +57,21 @@ def execute_callback(callback,arg, from_who="user"):
         logger.exception(on_permissions_result_callback_error)
 
 def on_pydroid_app():
-    return "ru.iiec.pydroid3" in os.path.dirname(os.path.abspath(__file__))
+    package_name = "ru.iiec.pydroid3"
+    if package_name in os.environ.get("PYTHONHOME",""):
+        return True
+    elif package_name in os.path.dirname(os.path.abspath(__file__)):
+        return True
+    elif on_android_platform():
+        return package_name == get_package_name()
+    return False
+
+
+def has_androidx_dependency():
+    """Check if androidx dependencies are available"""
+    try:
+        from jnius import autoclass
+        autoclass('androidx.core.app.NotificationCompat')
+        return True
+    except Exception:
+        return False

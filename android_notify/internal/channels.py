@@ -46,7 +46,7 @@ def create_channel(id__, name: str, description='', importance: Importance = 'ur
 
     notification_manager = get_notification_manager()
     android_importance_value = get_android_importance(importance)
-    
+
     if sound_path:
         sound_uri = get_sound_uri_from_path(sound_path)
     else:
