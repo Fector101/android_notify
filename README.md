@@ -240,6 +240,33 @@ from android_notify import Notification, NotificationHandler
 </details>
 
 
+<details>
+<summary> <b>How to control popups</b> </summary>
+    
+```python
+from android_notify import Notification
+import time
+
+notification = Notification(
+    title="Processing...",
+    message="Starting task"
+)
+
+notification.send()
+time.sleep(10)
+
+# show heads-up when updated
+notification.setOnlyAlertOnce(False)
+
+notification.updateTitle("Processing Complete!")
+notification.updateMessage("Task finished successfully")
+```
+
+</details>
+
+
+
+
 ### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
