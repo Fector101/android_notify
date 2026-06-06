@@ -59,8 +59,8 @@ Notification(
 In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
-# Add pyjnius so ensure it's packaged with the build
-requirements = python3, kivy, pyjnius, android-notify
+# Add requirements list
+requirements = python3, kivy, android-notify
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
 ```
