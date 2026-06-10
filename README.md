@@ -77,7 +77,7 @@ In your `pyproject.toml` file, ensure you include the following:
 ```toml
 [tool.flet.android]
 dependencies = [
-  "pyjnius","android-notify"
+  "android-notify"
 ]
 
 [tool.flet.android.permission]
