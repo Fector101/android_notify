@@ -149,9 +149,10 @@ android-notify -v
 </details>
 
 ## Common Methods
-
+For full visit [documentation](https://android-notify.vercel.app) for more examples and advanced usage.
 ### For Images
-`paths` can be local file paths or complete URLs (e.g., "https://www.python.org/static/img/python-logo.png"). The library handles downloading and caching when using URLs.
+Source can be local file paths or complete URLs (e.g. `https://www.python.org/static/img/python-logo.png`). The library handles downloading and caching when using URLs.  
+Add internet permission for URL images `android.permissions = INTERNET` in `buildozer.spec` or `pyproject.toml`
 - `setBigPicture` - shows below when user clicks drop button
 - `setLargeIcon` - appears at right side of notification content
 - `setSmallIcon` - changes app icon to a custom `png`
