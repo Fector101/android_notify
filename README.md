@@ -180,7 +180,7 @@ from android_notify import Notification
 
 notification = Notification(
     title='Custom Icon and Color',
-    message='This notification uses setColor and setSmallIcon'
+    message='This notification uses setColor and setSmallIcon.'
 )
 notification.setColor("red")
 notification.setSmallIcon("love.png")
