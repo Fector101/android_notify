@@ -151,12 +151,14 @@ android-notify -v
 ## Common Methods
 For full visit [documentation](https://android-notify.vercel.app) for more examples and advanced usage.
 ### For Images
-Source can be local file paths or complete URLs (e.g. `https://www.python.org/static/img/python-logo.png`). The library handles downloading and caching when using URLs.  
-Add internet permission for URL images `android.permissions = INTERNET` in `buildozer.spec` or `pyproject.toml`
+Source can be local file paths or complete URLs execpt `setSmallIcon` which only accepts local `png` files.
+
 - `setBigPicture` - shows below when user clicks drop button
 - `setLargeIcon` - appears at right side of notification content
 - `setSmallIcon` - changes app icon to a custom `png`
 - `setColor` - changes app icon backgroud Color
+
+For online images URL should with `https://` and you need internet permission `android.permissions = INTERNET` in `buildozer.spec` or `pyproject.toml`
 
 ```python
 from android_notify import Notification
