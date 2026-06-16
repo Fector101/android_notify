@@ -6,6 +6,9 @@
     <!-- <br> -->
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
+
+[![PyPI](https://badge.fury.io/py/android-notify.svg)](https://badge.fury.io/py/android-notify)
+
 <!-- Channel [CRUD]
 The Android Notify package provides a simple yet comprehensive way to create and manage rich notifications on Android devices directly from your Python code. This library bridges the gap between Python and Android's notification system, giving you full control over notifications with a clean, Pythonic API. -->
 
@@ -23,7 +26,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Colored texts and Icons
 
 - **Rich Functionality**:
-  - Add action buttons with custom callbacks
+  - Add action Buttons with custom callbacks - [Buttons section](https://android-notify.vercel.app/components#buttons)
   - [Update notification](https://android-notify.vercel.app/advanced-methods#updating-notification) content dynamically
   - Manage progress bars with fine-grained control
   - [Custom notification channels](https://android-notify.vercel.app/advanced-methods#channel-management) for Android 8.0+ (Creating and Deleting)
@@ -145,11 +148,113 @@ android-notify -v
 ```
 </details>
 
+## Common Methods
+
+### For Images
+`paths` can be local file paths or complete URLs (e.g., "https://www.python.org/static/img/python-logo.png"). The library handles downloading and caching when using URLs.
+- `setBigPicture` - shows below when user clicks drop button
+- `setLargeIcon` - appears at right side of notification content
+- `setSmallIcon` - changes app icon to a custom `png`
+- `setColor` - changes app icon backgroud Color
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title='Picture Alert!',
+    message='This notification includes an image.'
+)
+notification.setBigPicture("imgs/photo.png")
+notification.setLargeIcon("imgs/profile.png")
+notification.send()
+```
+
+**Sample Image:**  
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/images-methods.jpg)
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title='Custom Icon and Color',
+    message='This notification uses setColor and setSmallIcon'
+)
+notification.setColor("red")
+notification.setSmallIcon("love.png")
+notification.send()
+```
+
+**Sample Image:**  
+![basic notification img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/images-methods1.jpg)
+
+
+### For ProgressBar
+
+- `updateProgressBar(current_value, message, title)` - update progress in real-time
+- `showInfiniteProgressBar` - shows an infinite progress animation.
+- `removeProgressBar(message, show_on_update=True, title)` - Cleanly remove the progress bar.
+```python
+from android_notify import Notification
+from kivy.clock import Clock
+
+progress = 0
+
+notification = Notification(
+    title="Downloading...", message="0% downloaded",
+    progress_current_value=0, progress_max_value=100
+)
+notification.send()
+
+def update_progress(dt):
+    global progress
+    progress = min(progress + 10, 100)
+    
+    if progress==100:
+        notification.removeProgressBar(title="File Downloaded", message="super_large_file.zip")
+    elif progress >= 80:
+        notification.showInfiniteProgressBar()
+    else:
+        notification.updateProgressBar(progress, f"{progress}% downloaded")
+
+    return progress < 100  # Ends loop when reaching 100%
+
+Clock.schedule_interval(update_progress, 3)
+```
+![progressbar img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/progressbar.gif)
+
+
+### For texts
+- `addLine` - adds a line to the notification, useful for inbox style
+- `setSubText` - sets a smaller text that appears at the side of app name
+- `setBigText` - sets a longer text that appears when the notification is expanded
+- `updateTitle` - updates the title text of the notification
+- `updateMessage` - updates the main message text of the notification
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="5 New mails from Frank",
+    message="Check them out",
+)
+notification.setSubText("FabianCodes")
+notification.setLargeIcon("imgs/profile.png")
+notification.addLine("Re: Planning")
+notification.addLine("Delivery on its way")
+notification.addLine("Follow-up")
+notification.send()
+```
+![inbox-subtext img sample](https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/inbox-subtext.jpg)
+
 ## Documentation
+### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
+---
+
 For Dev Version usage
 ```ini
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
+
+### Dev Features docs
 
 <details>
 <summary> <b>To use Custom Sounds </b> </summary>
@@ -265,9 +370,6 @@ notification.updateMessage("Task finished successfully")
 </details>
 
 
-
-
-### For full documentation, examples, and advanced usage, API reference visit the [documentation](https://android-notify.vercel.app)
 
 ## ☕ Support the Project
 
