@@ -165,7 +165,7 @@ from android_notify import Notification
 
 notification = Notification(
     title='Picture Alert!',
-    message='This notification includes an image.'
+    message='This notification uses setLargelcon and setBig Picture method.'
 )
 notification.setBigPicture("imgs/photo.png")
 notification.setLargeIcon("imgs/profile.png")
