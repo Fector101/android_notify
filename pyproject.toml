@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-notify"
-version = "1.61.4"
+version = "1.61.5"
 description = "A Python package that simplifies creating Android notifications in Kivy and Flet apps."
 readme = { file = "README.md", content-type = "text/markdown" }
 
@@ -14,7 +14,7 @@ authors = [
 
 license = "MIT"
 dependencies = [
-    "pyjnius"
+#    "pyjnius"
 ]
 
 keywords = [

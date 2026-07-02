@@ -63,7 +63,7 @@ In your **`buildozer.spec`** file, ensure you include the following:
 
 ```ini
 # Add requirements list
-requirements = python3, kivy, android-notify
+requirements = python3, kivy, pyjnius, android-notify
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
 ```
@@ -80,7 +80,7 @@ In your `pyproject.toml` file, ensure you include the following:
 ```toml
 [tool.flet.android]
 dependencies = [
-  "android-notify"
+  "pyjnius", "android-notify"
 ]
 
 [tool.flet.android.permission]
