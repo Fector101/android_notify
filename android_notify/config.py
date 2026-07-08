@@ -4,6 +4,7 @@ __version__ = "1.61.5"
 
 from .internal.logger import logger
 
+
 def on_kivy_android():
     kivy_build = os.environ.get('KIVY_BUILD', '')
     if kivy_build in {'android'}:
@@ -37,19 +38,33 @@ else:
 
 def on_pydroid_app():
     package_name = "ru.iiec.pydroid3"
-    if package_name in os.environ.get("PYTHONHOME",""):
+    pyhome = os.environ.get("PYTHONHOME", "")
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Fast checks that strongly indicate running inside Pydroid3
+    if package_name in pyhome or package_name in file_dir:
+        # Try importing Kivy only when Pydroid3 is highly likely.
+        try:
+            from kivy.app import App  # type: ignore
+        except Exception:
+            # If import fails, continue — do not raise on import error
+            pass
         return True
-    elif package_name in os.path.dirname(os.path.abspath(__file__)):
-        return True
-    elif on_android_platform():
-        return package_name == get_package_name()
+
+    # If we're on an Android platform but not clearly Pydroid3, compare package names.
+    if on_android_platform():
+        try:
+            return package_name == get_package_name()
+        except Exception:
+            return False
+
     return False
 
 
 def has_androidx_dependency():
     """Check if androidx dependencies are available"""
     try:
-        _=autoclass('androidx.core.app.NotificationCompat')
+        _ = autoclass('androidx.core.app.NotificationCompat')
         return True
     except Exception:
         return False
