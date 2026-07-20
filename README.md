@@ -7,7 +7,7 @@
     <!-- <img src="https://raw.githubusercontent.com/Fector101/android_notify/main/docs/imgs/democollage.jpg"> -->
 </div>
 
-[![PyPI](https://badge.fury.io/py/android-notify.svg)](https://badge.fury.io/py/android-notify)
+[![PyPI](https://badge.fury.io/py/android-notify.svg)](https://badge.fury.io/py/android-notify) [![PyPI Downloads](https://static.pepy.tech/personalized-badge/android-notify?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/android-notify)
 
 <!-- Channel [CRUD]
 The Android Notify package provides a simple yet comprehensive way to create and manage rich notifications on Android devices directly from your Python code. This library bridges the gap between Python and Android's notification system, giving you full control over notifications with a clean, Pythonic API. -->
