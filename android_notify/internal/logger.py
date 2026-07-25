@@ -50,9 +50,10 @@ def on_pydroid_app():
 try:
     try:
         if on_pydroid_app():
-            from kivy.app import App # this patch is for when used doesn't create a running kivy app on Pydroid3
+            print("Pydroid3 Mobile detected, patching kivy no sketlon app issue")
+            import kivy._android_support
     except Exception as error_importing_kivy_on_pydroid:
-        print(f"Error importing kivy on complied Pydroid App from PlayStore {error_importing_kivy_on_pydroid}")
+        print(f"On Pydroid App from PlayStore: Error importing kivy, when No Running App: {error_importing_kivy_on_pydroid}")
     from jnius import autoclass
 except ModuleNotFoundError:
     autoclass = lambda x: None
