@@ -46,7 +46,6 @@ def on_pydroid_app():
     return False
 
 
-
 def has_androidx_dependency():
     """Check if androidx dependencies are available"""
     try:
