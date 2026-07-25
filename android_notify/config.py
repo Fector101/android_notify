@@ -24,17 +24,6 @@ def on_android_platform():
     return on_kivy_android() or on_flet_app()
 
 
-if on_android_platform():
-    try:
-        from jnius import cast, autoclass
-    except ModuleNotFoundError:
-        cast = lambda x, y: x
-        autoclass = lambda x: None
-else:
-    cast = lambda x, y: x
-    autoclass = lambda x: None
-
-
 def on_pydroid_app():
     package_name = "ru.iiec.pydroid3"
     if package_name in os.environ.get("PYTHONHOME",""):
@@ -44,6 +33,22 @@ def on_pydroid_app():
     elif on_android_platform():
         return package_name == get_package_name()
     return False
+
+
+if on_android_platform():
+    try:
+        if on_pydroid_app():
+            from kivy.app import App # this patch is for when used doesn't create a running kivy app on Pydroid3
+    except Exception as error_importing_kivy_on_pydroid:
+        logger.exception(f"Error importing kivy on complied Pydroid App from PlayStore {error_importing_kivy_on_pydroid}")
+    try:
+        from jnius import cast, autoclass
+    except ModuleNotFoundError:
+        cast = lambda x, y: x
+        autoclass = lambda x: None
+else:
+    cast = lambda x, y: x
+    autoclass = lambda x: None
 
 
 def has_androidx_dependency():
