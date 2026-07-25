@@ -1,12 +1,11 @@
+"""
+This module provides properly formatting for logs.
+Do not import anything from other modules in this module, as it is used by other modules and may cause circular imports.
+"""
+
 import logging
 import sys
 import os
-
-
-try:
-    from jnius import autoclass
-except ModuleNotFoundError:
-    autoclass = lambda x: None
 
 
 def on_kivy_android():
@@ -37,6 +36,27 @@ def android_print(msg):
         return None
     print(msg)
     return None
+
+def on_pydroid_app():
+    package_name = "ru.iiec.pydroid3"
+    if package_name in os.environ.get("PYTHONHOME",""):
+        return True
+    elif package_name in os.path.dirname(os.path.abspath(__file__)):
+        return True
+    # elif on_android_platform(): needs pyjnius to check
+        # return package_name == get_package_name()
+    return False
+
+try:
+    try:
+        if on_pydroid_app():
+            from kivy.app import App # this patch is for when used doesn't create a running kivy app on Pydroid3
+    except Exception as error_importing_kivy_on_pydroid:
+        print(f"Error importing kivy on complied Pydroid App from PlayStore {error_importing_kivy_on_pydroid}")
+    from jnius import autoclass
+except ModuleNotFoundError:
+    autoclass = lambda x: None
+
 
 
 def kivy_logger_patch():
