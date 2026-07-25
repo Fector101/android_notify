@@ -90,9 +90,29 @@ def remove_buttons(builder):
     logger.info('Removed Notification Buttons.')
 
 
+def _strip_audio_extension(res_sound_name):
+    try:
+        from pathlib import PurePosixPath
+        p = PurePosixPath(res_sound_name)
+        if p.suffix:
+            stripped = p.stem
+            logger.warning(
+                f"res_sound_name '{res_sound_name}' includes a file extension. "
+                f"Android raw resource URIs do not use extensions. "
+                f"Stripping to '{stripped}'."
+            )
+            return stripped
+    except Exception as e:
+        logger.exception(f"Failed to strip extension from '{res_sound_name}': {e}")
+    return res_sound_name
+
+
 def get_sound_uri(res_sound_name):
     if not on_android_platform() or not res_sound_name:
         return None
+
+    res_sound_name = _strip_audio_extension(res_sound_name)
+
     context = get_python_activity_context()
     package_name = context.getPackageName()
     return Uri.parse(f"android.resource://{package_name}/raw/{res_sound_name}")
