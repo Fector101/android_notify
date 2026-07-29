@@ -148,6 +148,12 @@ android-notify -v
 ```
 </details>
 
+<details>
+    <summary>For Agents </summary>
+    Full Api Reference:
+    https://android-notify.vercel.app/api/android-notify-v1.60-api.md
+</details>
+
 ## Common Methods
 For full visit [documentation](https://android-notify.vercel.app) for more examples and advanced usage.
 ### For Images
