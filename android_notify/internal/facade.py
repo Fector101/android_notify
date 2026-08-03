@@ -28,6 +28,13 @@ class Intent(IntFlag):
     FLAG_ACTIVITY_CLEAR_TOP = auto()
     FLAG_ACTIVITY_NEW_TASK = auto()
     FLAG_ACTIVITY_SINGLE_TOP = auto()
+    EXTRA_ALLOW_MULTIPLE = auto()
+    ACTION_GET_CONTENT = auto()
+    CATEGORY_OPENABLE = auto()
+    FLAG_GRANT_READ_URI_PERMISSION = auto()
+    ACTION_SEND = auto()
+    ACTION_SEND_MULTIPLE = auto()
+    EXTRA_STREAM = auto()
 
     def __init__(self, context='', activity=''):
         self.IS = "FACADE"
@@ -70,6 +77,22 @@ class Intent(IntFlag):
         self.obj['bundle'] = bundle
         logger.debug(f"[MOCK] Intent.putExtras called with bundle={bundle}")
 
+    def setType(self, char_sequence:String):
+        self.obj['char_sequence'] = char_sequence
+        logger.debug(f"[MOCK] Intent.setType called with char_sequence={char_sequence}")
+
+    @classmethod
+    def createChooser(cls, intent, char_sequence:String):
+        logger.debug(f"[MOCK] Intent.createChooser called with intent={intent}, char_sequence={char_sequence}")
+
+    @classmethod
+    def setClipData(cls, clip):
+        logger.debug(f"[MOCK] Intent.setClipData called with clip={clip}")
+
+    @classmethod
+    def putParcelableArrayListExtra(cls, flag, uris:list):
+        logger.debug(f"[MOCK] Intent.putParcelableArrayListExtra called with flag={flag} and uris={uris}")
+
 
 class PendingIntent:
     FLAG_IMMUTABLE = ''
@@ -86,6 +109,9 @@ class BitmapFactory:
     @classmethod
     def decodeStream(cls, stream):
         logger.debug(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
+    @classmethod
+    def decodeFile(cls, src_path,opts=None):
+        logger.debug(f"[MOCK] BitmapFactory.decodeFile called with src_path={src_path} and opts={opts}")
 
 
 class BuildVersion:
@@ -114,6 +140,11 @@ class Uri:
     @classmethod
     def fromFile(cls, java_file):
         logger.debug(f"[MOCK] Uri.fromFile called with file={java_file}")
+        return cls
+
+    @classmethod
+    def withAppendedPath(cls, base_uri, path_segment:String):
+        logger.debug(f"[MOCK] Uri.withAppendedPath called with base_uri={base_uri} and path_segment={path_segment}")
         return cls
 
 
