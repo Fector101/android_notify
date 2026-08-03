@@ -28,6 +28,10 @@ class Intent(IntFlag):
     FLAG_ACTIVITY_CLEAR_TOP = auto()
     FLAG_ACTIVITY_NEW_TASK = auto()
     FLAG_ACTIVITY_SINGLE_TOP = auto()
+    EXTRA_ALLOW_MULTIPLE = auto()
+    ACTION_GET_CONTENT = auto()
+    CATEGORY_OPENABLE = auto()
+    FLAG_GRANT_READ_URI_PERMISSION = auto()
 
     def __init__(self, context='', activity=''):
         self.IS = "FACADE"
@@ -69,6 +73,16 @@ class Intent(IntFlag):
     def putExtras(self, bundle: Bundle):
         self.obj['bundle'] = bundle
         logger.debug(f"[MOCK] Intent.putExtras called with bundle={bundle}")
+
+    def setType(self, char_sequence:String):
+        self.obj['char_sequence'] = char_sequence
+        logger.debug(f"[MOCK] Intent.setType called with char_sequence={char_sequence}")
+
+    @classmethod
+    def createChooser(cls, intent: Intent, char_sequence:String):
+        logger.debug(f"[MOCK] Intent.createChooser called with intent={intent}, char_sequence={char_sequence}")
+
+
 
 
 class PendingIntent:
@@ -114,6 +128,11 @@ class Uri:
     @classmethod
     def fromFile(cls, java_file):
         logger.debug(f"[MOCK] Uri.fromFile called with file={java_file}")
+        return cls
+
+    @classmethod
+    def withAppendedPath(cls, base_uri:Uri, path_segment:String):
+        logger.debug(f"[MOCK] Uri.withAppendedPath called with base_uri={base_uri} and path_segment={path_segment}")
         return cls
 
 
