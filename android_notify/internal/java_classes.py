@@ -1,5 +1,8 @@
 
-from android_notify.config import has_androidx_dependency,on_pydroid_app, on_android_platform,on_flet_app
+import importlib
+import threading
+
+from android_notify.config import has_androidx_dependency, on_pydroid_app, on_android_platform, on_flet_app
 from .logger import logger
 
 if on_android_platform():
@@ -10,76 +13,151 @@ if on_android_platform():
         autoclass = lambda x: None
         logger.exception("add pyjnius to dependencies list")
 
-    # Leaving this as a broad Exception for unforeseen case so apps don't crash
-    # noinspection PyBroadException
-    try:
-        # Get the required Java classes needs to run on android to import
-        Bundle = autoclass('android.os.Bundle')
-        String = autoclass('java.lang.String')
-        Intent = autoclass('android.content.Intent')
-        PendingIntent = autoclass('android.app.PendingIntent')
-        BitmapFactory = autoclass('android.graphics.BitmapFactory')
-        BuildVersion = autoclass('android.os.Build$VERSION')
-        NotificationManager = autoclass('android.app.NotificationManager')
-        NotificationChannel = autoclass('android.app.NotificationChannel')
-        RemoteViews = autoclass('android.widget.RemoteViews')
-        Settings = autoclass("android.provider.Settings")
-        Uri = autoclass("android.net.Uri")
-        Manifest = autoclass('android.Manifest$permission')
-        Context = autoclass('android.content.Context')
-        PackageManager = autoclass("android.content.pm.PackageManager")
-        AudioAttributes = autoclass('android.media.AudioAttributes')
-        AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
-        File = autoclass('java.io.File')
-        Color = autoclass('android.graphics.Color')
-    except Exception as e:
-        from .facade import *
-        logger.exception("Didn't get Basic Java Classes")
+    # Java classes are loaded lazily (only on first use) instead of eagerly at
+    # import time. Each `autoclass()` call finds the class on the JVM and
+    # enumerates ALL of its methods/fields, which is expensive at startup. By
+    # deferring that to the moment a class is actually used we only pay for the
+    # classes the app really touches. The fallback (.facade) is used if a class
+    # can't be loaded.
+    #
+    # NOTE: these are module-level _LazyJavaClass instances (NOT a module-level
+    # __getattr__). A module __getattr__ here made importlib's _handle_fromlist
+    # probe `module.__path__` on deferred imports and crash the app (SIGABRT).
+    _ANDROID_NOTIFICATION_CLASSES = {
+        "IconClass": "android.graphics.drawable.Icon",
+        "NotificationCompat": "android.app.Notification",
+        "NotificationManagerCompat": "android.app.NotificationManager",
+        "NotificationCompatBuilder": "android.app.Notification$Builder",
+        "NotificationCompatBigTextStyle": "android.app.Notification$BigTextStyle",
+        "NotificationCompatBigPictureStyle": "android.app.Notification$BigPictureStyle",
+        "NotificationCompatInboxStyle": "android.app.Notification$InboxStyle",
+        "NotificationCompatDecoratedCustomViewStyle": "android.app.Notification$DecoratedCustomViewStyle",
+    }
 
-    if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
-        # Leaving this as a broad Exception for unforeseen case so apps don't crash
-        # noinspection PyBroadException
-        try:
-            IconClass = autoclass('android.graphics.drawable.Icon')
-            NotificationCompat = autoclass("android.app.Notification")
-            NotificationManagerCompat = autoclass('android.app.NotificationManager')
-            NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+    _ANDROIDX_NOTIFICATION_CLASSES = {
+        "IconClass": "androidx.core.graphics.drawable.IconCompat",
+        "NotificationCompat": "androidx.core.app.NotificationCompat",
+        "NotificationManagerCompat": "androidx.core.app.NotificationManagerCompat",
+        "NotificationCompatBuilder": "androidx.core.app.NotificationCompat$Builder",
+        "NotificationCompatBigTextStyle": "androidx.core.app.NotificationCompat$BigTextStyle",
+        "NotificationCompatBigPictureStyle": "androidx.core.app.NotificationCompat$BigPictureStyle",
+        "NotificationCompatInboxStyle": "androidx.core.app.NotificationCompat$InboxStyle",
+        "NotificationCompatDecoratedCustomViewStyle": "androidx.core.app.NotificationCompat$DecoratedCustomViewStyle",
+    }
 
-            NotificationCompatBigTextStyle = autoclass('android.app.Notification$BigTextStyle')
-            NotificationCompatBigPictureStyle = autoclass('android.app.Notification$BigPictureStyle')
-            NotificationCompatInboxStyle = autoclass('android.app.Notification$InboxStyle')
-            NotificationCompatDecoratedCustomViewStyle = autoclass('android.app.Notification$DecoratedCustomViewStyle')
-        except Exception as styles_import_error:
-            logger.exception(styles_import_error)
-            from .facade import *
-    elif has_androidx_dependency():
+    _notification_class_map = None
+    _lock = threading.Lock()
+    _cache = {}
 
-        # Leaving this as a broad Exception for unforeseen case so apps don't crash
-        # noinspection PyBroadException
-        try:
-            IconClass = autoclass('androidx.core.graphics.drawable.IconCompat')
-            NotificationCompat = autoclass('androidx.core.app.NotificationCompat')
-            NotificationManagerCompat = autoclass('androidx.core.app.NotificationManagerCompat')
-            NotificationCompatBuilder = autoclass('androidx.core.app.NotificationCompat$Builder')
+    def _get_notification_class_map():
+        global _notification_class_map
+        if _notification_class_map is None:
+            if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
+                _notification_class_map = _ANDROID_NOTIFICATION_CLASSES
+            else:
+                _notification_class_map = _ANDROIDX_NOTIFICATION_CLASSES
+        return _notification_class_map
 
-            # Notification Design
-            NotificationCompatBigTextStyle = autoclass('androidx.core.app.NotificationCompat$BigTextStyle')
-            NotificationCompatBigPictureStyle = autoclass('androidx.core.app.NotificationCompat$BigPictureStyle')
-            NotificationCompatInboxStyle = autoclass('androidx.core.app.NotificationCompat$InboxStyle')
-            NotificationCompatDecoratedCustomViewStyle = autoclass('androidx.core.app.NotificationCompat$DecoratedCustomViewStyle')
+    class _LazyJavaClass:
+        __slots__ = ("_python_name", "_java_name")
 
-        except Exception as dependencies_import_error:
-            logger.exception("""
-            Dependency Error: Add the following in buildozer.spec:
-            * android.gradle_dependencies = androidx.core:core:1.12.0
-            * android.enable_androidx = True
-            """)
+        def __init__(self, python_name, java_name=None):
+            self._python_name = python_name
+            self._java_name = java_name
 
-            from .facade import *
+        def _resolve_name(self):
+            if self._java_name is not None:
+                return self._java_name
+            return _get_notification_class_map()[self._python_name]
+
+        def _get(self):
+            with _lock:
+                name = self._python_name
+                if name not in _cache:
+                    _cache[name] = self._autoclass_or_facade()
+                return _cache[name]
+
+        def _autoclass_or_facade(self):
+            try:
+                return autoclass(self._resolve_name())
+            except Exception:
+                facade = importlib.import_module(".facade", package=__package__)
+                return getattr(facade, self._python_name, None)
+
+        def __getattr__(self, item):
+            return getattr(self._get(), item)
+
+        def __call__(self, *args, **kwargs):
+            return self._get()(*args, **kwargs)
+
+        def __repr__(self):
+            return repr(self._get())
+
+        def __bool__(self):
+            return bool(self._get())
+
+        def __eq__(self, other):
+            if isinstance(other, _LazyJavaClass):
+                return self._get() is other._get() or self._get() == other._get()
+            return self._get() == other
+
+        def __hash__(self):
+            return hash(self._get())
+
+    Bundle = _LazyJavaClass("Bundle", "android.os.Bundle")
+    String = _LazyJavaClass("String", "java.lang.String")
+    Intent = _LazyJavaClass("Intent", "android.content.Intent")
+    PendingIntent = _LazyJavaClass("PendingIntent", "android.app.PendingIntent")
+    BitmapFactory = _LazyJavaClass("BitmapFactory", "android.graphics.BitmapFactory")
+    BuildVersion = _LazyJavaClass("BuildVersion", "android.os.Build$VERSION")
+    NotificationManager = _LazyJavaClass("NotificationManager", "android.app.NotificationManager")
+    NotificationChannel = _LazyJavaClass("NotificationChannel", "android.app.NotificationChannel")
+    RemoteViews = _LazyJavaClass("RemoteViews", "android.widget.RemoteViews")
+    Settings = _LazyJavaClass("Settings", "android.provider.Settings")
+    Uri = _LazyJavaClass("Uri", "android.net.Uri")
+    Manifest = _LazyJavaClass("Manifest", "android.Manifest$permission")
+    Context = _LazyJavaClass("Context", "android.content.Context")
+    PackageManager = _LazyJavaClass("PackageManager", "android.content.pm.PackageManager")
+    AudioAttributes = _LazyJavaClass("AudioAttributes", "android.media.AudioAttributes")
+    AudioAttributesBuilder = _LazyJavaClass("AudioAttributesBuilder", "android.media.AudioAttributes$Builder")
+    File = _LazyJavaClass("File", "java.io.File")
+    Color = _LazyJavaClass("Color", "android.graphics.Color")
+
+    IconClass = _LazyJavaClass("IconClass")
+    NotificationCompat = _LazyJavaClass("NotificationCompat")
+    NotificationManagerCompat = _LazyJavaClass("NotificationManagerCompat")
+    NotificationCompatBuilder = _LazyJavaClass("NotificationCompatBuilder")
+    NotificationCompatBigTextStyle = _LazyJavaClass("NotificationCompatBigTextStyle")
+    NotificationCompatBigPictureStyle = _LazyJavaClass("NotificationCompatBigPictureStyle")
+    NotificationCompatInboxStyle = _LazyJavaClass("NotificationCompatInboxStyle")
+    NotificationCompatDecoratedCustomViewStyle = _LazyJavaClass("NotificationCompatDecoratedCustomViewStyle")
 else:
     cast = lambda x, y: x
     autoclass = lambda x: None
+
+    class _LazyJavaClass:
+        __slots__ = ("_python_name", "_java_name")
+
+        def __init__(self, python_name, java_name=None):
+            self._python_name = python_name
+            self._java_name = java_name
+
+        def _get(self):
+            facade = importlib.import_module(".facade", package=__package__)
+            return getattr(facade, self._python_name, None)
+
+        def __getattr__(self, item):
+            return getattr(self._get(), item)
+
+        def __call__(self, *args, **kwargs):
+            return self._get()(*args, **kwargs)
+
+        def __repr__(self):
+            return repr(self._get())
+
+        def __bool__(self):
+            return bool(self._get())
+
     # noinspection PyUnresolvedReferences
     from .facade import *
     logger.warning("Did not initialize java classes, Not on Android")
-
