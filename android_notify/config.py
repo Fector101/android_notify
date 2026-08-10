@@ -1,6 +1,6 @@
 import os
 
-__version__ = "1.61.5"
+__version__ = "1.61.6"
 
 from .internal.logger import logger
 
