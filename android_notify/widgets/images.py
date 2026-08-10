@@ -66,20 +66,51 @@ def get_bitmap_from_path(img_full_path):
         logger.exception(extracting_bitmap_frm_path_error)
         return False
 
+def extract_package_resource(package, resource_path):
+    """
+    Extract a package resource to Android application storage.
+
+    Works with both normal filesystem packages and packages
+    stored inside ZIP files such as Flet's sitepackages.zip.
+    """
+    from importlib.resources import files
+
+    resource = files(package).joinpath(*resource_path.split("/"))
+
+    output_dir = os.path.join(
+        app_storage_path(),
+        package,
+    )
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    output_path = os.path.join(
+        output_dir,
+        *resource_path.split("/"),
+    )
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    if not os.path.exists(output_path):
+        with open(output_path, "wb") as f:
+            f.write(resource.read_bytes())
+
+    return output_path
 
 def icon_finder(icon_name):
     """Get the full path to an icon file."""
-    # Leaving this as a broad Exception for unforeseen case so apps don't crash
-    # noinspection PyBroadException
     try:
-        # noinspection PyPackageRequirements
-        from importlib.resources import files
-        return str(files("android_notify")/"fallback-icons"/icon_name)
-    except Exception:
-        # Fallback if pkg_resources not available
+        return extract_package_resource(
+            "android_notify",
+            f"fallback-icons/{icon_name}",
+        )
+    except Exception as error:
+        logger.exception(
+            f"Couldn't find fallback icon {icon_name}: {error}"
+        )
         package_dir = get_package_path()
         return os.path.join(package_dir, "fallback-icons", icon_name)
-
+        
 
 def set_default_small_icon(builder):
     context = get_python_activity_context()
