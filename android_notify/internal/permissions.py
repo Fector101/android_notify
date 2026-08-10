@@ -176,11 +176,24 @@ def can_show_permission_request_popup():
     return context.shouldShowRequestPermissionRationale(Manifest.POST_NOTIFICATIONS)
 
 def is_first_permission_ask():
-    from importlib.resources import files
     buffer_file_name = "ASKED_PERMISSION.txt"
-    absolute_buffer_file_path = str(files("android_notify") / buffer_file_name) # Making sure one path is always used
+
+    context = get_python_activity_context()
+    if not context:
+        logger.warning("Can't check permission ask state, no Android context")
+        return True
+
+    files_dir = str(context.getFilesDir().getAbsolutePath())
+    absolute_buffer_file_path = os.path.join(
+        files_dir,
+        "android_notify",
+        buffer_file_name,
+    )
+
+    os.makedirs(os.path.dirname(absolute_buffer_file_path), exist_ok=True)
 
     if os.path.exists(absolute_buffer_file_path):
         return False
-    open(absolute_buffer_file_path,'w').close()
+
+    open(absolute_buffer_file_path, "w").close()
     return True
