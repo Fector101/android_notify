@@ -69,7 +69,7 @@ class Notification(BaseNotification):
     def __init__(self, **kwargs):  # @dataclass already does work
         super().__init__(**kwargs)
 
-        self.__dispatched = None
+        self.__dispatched = False # assigned when notification is dispatched and notification permission is true, setObeyUserClear helper
         self.__called_set_data = None
         self.data_object = None
         self.obey_user_clear = False # if to allow content after Users clear it form Tray, So it doesn't pop up again which becomes annoying
@@ -188,12 +188,14 @@ class Notification(BaseNotification):
         if not on_android_platform():
             return
 
-        in_tray = self.isInTray() if self.__dispatched and self.obey_user_clear else True
+        in_tray = self.isInTray() if self.obey_user_clear and self.__dispatched else True
 
         if in_tray and self.__generic_parameters_filled:
             # Don't dispatch before filling required values `self.__create_basic_notification`, Shouldn't dispatch till .send() is called
             self.__applyNewLinesIfAny()
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
+            if self.obey_user_clear and not self.__dispatched:  # avoiding needless checks to android API so checking self.obey_user_clear first, self.__dispatched can also be called "do we have notification permission and has been dispatched at least once"
+                self.__dispatched = has_notification_permission()
 
     def setBigPicture(self, path):
         """
