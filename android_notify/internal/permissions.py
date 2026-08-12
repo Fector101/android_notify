@@ -9,6 +9,10 @@ from android_notify.internal.java_classes import autoclass, BuildVersion, Manife
 from android_notify.internal.helper import execute_callback
 
 
+PERMISSION_GRANTED = 0
+PERMISSION_DENIED = -1
+
+
 def check_notification_permission_legacy_android12_below():
     # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
     context = get_python_activity_context()
@@ -63,13 +67,13 @@ def has_notification_permission():
                 return check_notification_permission_androidx_android12_below()
         except Exception as error_checking_permission:
             logger.exception(f"On Android 12 and below Error checking permission: {error_checking_permission}")
-            return None
+            return True  # Assuming permission is granted if error occurs
 
-    if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
-        return check_notification_permission_legacy_android12_above()
-    else:
-        from android.permissions import Permission, check_permission  # type: ignore
-        return check_permission(Permission.POST_NOTIFICATIONS)
+    # if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():
+    return check_notification_permission_legacy_android12_above()
+    # else:
+        # from android.permissions import Permission # type: ignore
+        # return check_permission(Permission.POST_NOTIFICATIONS) # failed in kivy service file: AttributeError: 'NoneType' object has no attribute 'checkCurrentPermission'
 
 def ask_notification_permission(callback=None, set_requesting_state=None, legacy=False):
     if not on_android_platform():
@@ -197,3 +201,13 @@ def is_first_permission_ask():
 
     open(absolute_buffer_file_path, "w").close()
     return True
+
+
+
+
+# TODO: Experiment with this data from google
+# | Method Name | Targets Self? | Targets External Caller? | Best Used For |
+# |---|---|---|---|
+# | ContextCompat.checkSelfPermission | Yes | No | Standard internal features (Local Service/Activity). |
+# | checkCallingPermission | No | Yes | Remote Service endpoints / AIDL binders. |
+# | checkCallingOrSelfPermission | Yes (as fallback) | Yes (during IPC) | Dual-purpose local/remote operations (Use with caution). |
