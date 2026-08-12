@@ -9,10 +9,6 @@ from android_notify.internal.java_classes import autoclass, BuildVersion, Manife
 from android_notify.internal.helper import execute_callback
 
 
-PERMISSION_GRANTED = 0
-PERMISSION_DENIED = -1
-
-
 def check_notification_permission_legacy_android12_below():
     # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
     context = get_python_activity_context()
