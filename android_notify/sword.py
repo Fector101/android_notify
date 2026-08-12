@@ -69,6 +69,7 @@ class Notification(BaseNotification):
     def __init__(self, **kwargs):  # @dataclass already does work
         super().__init__(**kwargs)
 
+        self.__dispatched = None
         self.__called_set_data = None
         self.data_object = None
         self.obey_user_clear = False # if to allow content after Users clear it form Tray, So it doesn't pop up again which becomes annoying
@@ -187,7 +188,7 @@ class Notification(BaseNotification):
         if not on_android_platform():
             return
 
-        in_tray = self.isInTray() if self.obey_user_clear else True
+        in_tray = self.isInTray() if self.__dispatched and self.obey_user_clear else True
 
         if in_tray and self.__generic_parameters_filled:
             # Don't dispatch before filling required values `self.__create_basic_notification`, Shouldn't dispatch till .send() is called
@@ -427,6 +428,7 @@ class Notification(BaseNotification):
         if on_android_platform():
             self.fill_args(persistent=persistent, close_on_click=close_on_click)
             dispatch_notification(notification_id=self.__id, builder=self.builder, passed_check=self.passed_check)
+            self.__dispatched = has_notification_permission()
 
         self.__send_logs()
 
