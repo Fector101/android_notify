@@ -7,92 +7,101 @@ from .internal.logger import logger
 __version__ = "1.61.6"
 
 
-# ---------------------------------------------------------------------------
-# Cached platform/environment state
-# ---------------------------------------------------------------------------
+# ============================================================================
+# Lazy cached state
+# ============================================================================
 
-_KIVY_ANDROID = (
-    os.environ.get("KIVY_BUILD") == "android"
-    or "P4A_BOOTSTRAP" in os.environ
-    or "ANDROID_ARGUMENT" in os.environ
-)
-
-_FLET_ACTIVITY_CLASS_NAME = os.environ.get("MAIN_ACTIVITY_HOST_CLASS_NAME")
-
-_ANDROID_PLATFORM = _KIVY_ANDROID or bool(_FLET_ACTIVITY_CLASS_NAME)
-
-_FROM_SERVICE_FILE = "PYTHON_SERVICE_ARGUMENT" in os.environ
-
-
-# ---------------------------------------------------------------------------
-# Lazy JNI imports
-# ---------------------------------------------------------------------------
-
-_cast = None
-_autoclass = None
-
-
-def _load_jnius():
-    """Load pyjnius lazily.
-
-    Importing pyjnius can be relatively expensive, so don't do it during
-    module import unless it is actually needed.
-    """
-    global _cast, _autoclass
-
-    if _cast is not None:
-        return _cast, _autoclass
-
-    try:
-        from jnius import cast, autoclass
-    except ModuleNotFoundError:
-        # Preserve the old fallback behavior.
-        _cast = lambda obj, cls: obj
-        _autoclass = lambda cls: None
-    else:
-        _cast = cast
-        _autoclass = autoclass
-
-    return _cast, _autoclass
-
-
-# ---------------------------------------------------------------------------
-# Java object caches
-# ---------------------------------------------------------------------------
+_kivy_android = None
+_flet_app = None
+_android_platform = None
+_from_service_file = None
 
 _activity_class_name = None
-_python_activity_class = None
-_python_service_class = None
+
+_jnius = None
+_python_activity = None
+_python_service = None
 _activity_context = None
 _notification_manager = None
+_app_storage_path = None
+_package_name = None
 
 
-# ---------------------------------------------------------------------------
+# ============================================================================
 # Platform detection
-# ---------------------------------------------------------------------------
+# ============================================================================
 
 def on_kivy_android():
-    return _KIVY_ANDROID
+    global _kivy_android
+
+    if _kivy_android is None:
+        _kivy_android = (
+            os.environ.get("KIVY_BUILD") == "android"
+            or "P4A_BOOTSTRAP" in os.environ
+            or "ANDROID_ARGUMENT" in os.environ
+        )
+
+    return _kivy_android
 
 
 def on_flet_app():
-    return _FLET_ACTIVITY_CLASS_NAME
+    global _flet_app
+
+    if _flet_app is None:
+        _flet_app = os.getenv("MAIN_ACTIVITY_HOST_CLASS_NAME")
+
+    return _flet_app
 
 
 def on_android_platform():
-    return _ANDROID_PLATFORM
+    global _android_platform
+
+    if _android_platform is None:
+        _android_platform = (
+            on_kivy_android() or bool(on_flet_app())
+        )
+
+    return _android_platform
 
 
 def from_service_file():
-    return _FROM_SERVICE_FILE
+    global _from_service_file
 
+    if _from_service_file is None:
+        _from_service_file = (
+            "PYTHON_SERVICE_ARGUMENT" in os.environ
+        )
+
+    return _from_service_file
+
+
+# ============================================================================
+# Lazy pyjnius loading
+# ============================================================================
+
+def _get_jnius():
+    global _jnius
+
+    if _jnius is None:
+        try:
+            from jnius import cast, autoclass
+        except ModuleNotFoundError:
+            cast = lambda obj, cls: obj
+            autoclass = lambda cls: None
+
+        _jnius = (cast, autoclass)
+
+    return _jnius
+
+
+# ============================================================================
+# Pydroid
+# ============================================================================
 
 def on_pydroid_app():
     package_name = "ru.iiec.pydroid3"
 
-    python_home = os.environ.get("PYTHONHOME", "")
-
-    if package_name in python_home:
+    if package_name in os.environ.get("PYTHONHOME", ""):
         return True
 
     if package_name in os.path.dirname(os.path.abspath(__file__)):
@@ -104,9 +113,9 @@ def on_pydroid_app():
     return False
 
 
-# ---------------------------------------------------------------------------
-# Android helpers
-# ---------------------------------------------------------------------------
+# ============================================================================
+# Android class information
+# ============================================================================
 
 def get_activity_class_name():
     global _activity_class_name
@@ -114,39 +123,66 @@ def get_activity_class_name():
     if _activity_class_name is not None:
         return _activity_class_name
 
-    if _FLET_ACTIVITY_CLASS_NAME:
-        _activity_class_name = _FLET_ACTIVITY_CLASS_NAME
-        return _activity_class_name
+    activity_class_name = os.getenv(
+        "MAIN_ACTIVITY_HOST_CLASS_NAME"
+    )
 
-    try:
-        # noinspection PyPackageRequirements
-        from android import config  # type: ignore
+    if not activity_class_name:
+        try:
+            # noinspection PyPackageRequirements
+            from android import config  # type: ignore
 
-        _activity_class_name = config.JAVA_NAMESPACE
-    except (ImportError, AttributeError):
-        _activity_class_name = "org.kivy.android"
+            activity_class_name = config.JAVA_NAMESPACE
+
+        except (ImportError, AttributeError):
+            activity_class_name = "org.kivy.android"
+
+    _activity_class_name = activity_class_name
 
     return _activity_class_name
 
 
+# ============================================================================
+# UI thread
+# ============================================================================
+
+if on_flet_app() or from_service_file() or not on_android_platform():
+
+    def run_on_ui_thread(func):
+        """Fallback for development/non-Kivy environments."""
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logger.warning("Simulating run on UI thread")
+            return func(*args, **kwargs)
+
+        return wrapper
+
+elif on_kivy_android():
+
+    # noinspection PyPackageRequirements
+    from android.runnable import run_on_ui_thread  # type: ignore
+
+
+# ============================================================================
+# Python Activity
+# ============================================================================
+
 def get_python_activity():
-    """Return the PythonActivity Java class.
+    global _python_activity
 
-    The Java class is resolved only on the first call and then cached.
-    """
-    global _python_activity_class
-
-    if _python_activity_class is not None:
-        return _python_activity_class
+    if _python_activity is not None:
+        return _python_activity
 
     if not on_android_platform():
         logger.warning("Can't get python activity, Not on Android.")
+
         from .internal.facade import PythonActivity
 
-        _python_activity_class = PythonActivity
-        return _python_activity_class
+        _python_activity = PythonActivity
+        return _python_activity
 
-    _, autoclass = _load_jnius()
+    _, autoclass = _get_jnius()
 
     activity_class_name = get_activity_class_name()
 
@@ -155,44 +191,45 @@ def get_python_activity():
     else:
         class_name = activity_class_name + ".PythonActivity"
 
-    _python_activity_class = autoclass(class_name)
+    _python_activity = autoclass(class_name)
 
-    return _python_activity_class
+    return _python_activity
 
+
+# ============================================================================
+# Python Service
+# ============================================================================
 
 def get_python_service():
-    """Return the PythonService.mService instance.
+    global _python_service
 
-    The service class and service instance are resolved lazily.
-    """
-    global _python_service_class
-
-    if _python_service_class is not None:
-        return _python_service_class
+    if _python_service is not None:
+        return _python_service
 
     if not on_android_platform():
         logger.warning("Can't get python service, Not on Android.")
+
         from .internal.facade import PythonActivity
 
-        _python_service_class = PythonActivity
-        return _python_service_class
+        _python_service = PythonActivity
+        return _python_service
 
-    _, autoclass = _load_jnius()
+    _, autoclass = _get_jnius()
 
     class_name = get_activity_class_name() + ".PythonService"
-    service_class = autoclass(class_name)
 
-    _python_service_class = service_class.mService
+    PythonService = autoclass(class_name)
 
-    return _python_service_class
+    _python_service = PythonService.mService
 
+    return _python_service
+
+
+# ============================================================================
+# Activity Context
+# ============================================================================
 
 def get_python_activity_context():
-    """Return the Android activity/application context.
-
-    The resulting context is cached because it does not need to be resolved
-    repeatedly during the lifetime of the Python process.
-    """
     global _activity_context
 
     if _activity_context is not None:
@@ -200,6 +237,7 @@ def get_python_activity_context():
 
     if not on_android_platform():
         logger.warning("Can't get python context, Not on Android.")
+
         from .internal.facade import Context
 
         _activity_context = Context
@@ -207,11 +245,13 @@ def get_python_activity_context():
 
     if from_service_file():
         service = get_python_service()
+
         _activity_context = (
             service
             .getApplication()
             .getApplicationContext()
         )
+
     else:
         PythonActivity = get_python_activity()
         _activity_context = PythonActivity.mActivity
@@ -219,9 +259,9 @@ def get_python_activity_context():
     return _activity_context
 
 
-# ---------------------------------------------------------------------------
-# Android services
-# ---------------------------------------------------------------------------
+# ============================================================================
+# Notification Manager
+# ============================================================================
 
 def get_notification_manager():
     global _notification_manager
@@ -233,9 +273,11 @@ def get_notification_manager():
         logger.warning("Can't get notification manager, Not on Android.")
         return None
 
-    cast, autoclass = _load_jnius()
+    cast, autoclass = _get_jnius()
 
-    NotificationManager = autoclass("android.app.NotificationManager")
+    NotificationManager = autoclass(
+        "android.app.NotificationManager"
+    )
 
     context = get_python_activity_context()
 
@@ -251,29 +293,30 @@ def get_notification_manager():
     return _notification_manager
 
 
+# ============================================================================
+# AndroidX
+# ============================================================================
+
 def has_androidx_dependency():
-    """Check whether AndroidX NotificationCompat is available."""
+    """Check if AndroidX dependencies are available."""
     try:
-        _, autoclass = _load_jnius()
-        autoclass("androidx.core.app.NotificationCompat")
+        _, autoclass = _get_jnius()
+
+        autoclass(
+            "androidx.core.app.NotificationCompat"
+        )
+
         return True
+
     except Exception:
         return False
 
 
-# ---------------------------------------------------------------------------
-# Storage
-# ---------------------------------------------------------------------------
-
-_app_storage_path = None
-
+# ============================================================================
+# Application storage
+# ============================================================================
 
 def app_storage_path():
-    """Return the application-specific storage path.
-
-    The result is cached because the application storage location does not
-    normally change during a process lifetime.
-    """
     global _app_storage_path
 
     if _app_storage_path is not None:
@@ -301,12 +344,9 @@ def app_storage_path():
     return _app_storage_path
 
 
-# ---------------------------------------------------------------------------
-# Package information
-# ---------------------------------------------------------------------------
-
-_package_name = None
-
+# ============================================================================
+# Package name
+# ============================================================================
 
 def get_package_name():
     global _package_name
@@ -314,28 +354,9 @@ def get_package_name():
     if _package_name is not None:
         return _package_name
 
-    _package_name = get_python_activity_context().getPackageName()
+    _package_name = (
+        get_python_activity_context()
+        .getPackageName()
+    )
 
     return _package_name
-
-
-# ---------------------------------------------------------------------------
-# UI-thread decorator
-# ---------------------------------------------------------------------------
-
-if on_flet_app() or from_service_file() or not on_android_platform():
-
-    def run_on_ui_thread(func):
-        """Fallback implementation for non-Kivy environments."""
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            logger.warning("Simulating run on UI thread")
-            return func(*args, **kwargs)
-
-        return wrapper
-
-elif on_kivy_android():
-
-    # noinspection PyPackageRequirements
-    from android.runnable import run_on_ui_thread  # type: ignore
