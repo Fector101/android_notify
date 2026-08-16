@@ -1,6 +1,8 @@
-"""Configuration for android_notify package.
+"""Environment detection and Android component accessors.
+
 This module provides functions to determine the environment in which the code is running (e.g., Kivy on Android, Flet app, etc.) 
 And to access Android-specific components like the activity, service, notification manager, and storage paths.
+
 It uses lazy initialization to keep the startup time at 0 and avoid errors in non-Android environments.
 """
 
