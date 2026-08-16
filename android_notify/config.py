@@ -18,7 +18,6 @@ _jnius = None
 _python_activity = None
 _python_service = None
 _activity_context = None
-_notification_manager = None
 _app_storage_path = None
 _package_name = None
 _androidx_dependency = None
@@ -79,6 +78,10 @@ def has_androidx_dependency():
     global _androidx_dependency
 
     if _androidx_dependency is not None:
+        return _androidx_dependency
+
+    if not on_android_platform():
+        _androidx_dependency = False
         return _androidx_dependency
 
     try:
@@ -194,11 +197,6 @@ def get_python_activity_context():
 
 
 def get_notification_manager():
-    global _notification_manager
-
-    if _notification_manager is not None:
-        return _notification_manager
-
     if not on_android_platform():
         logger.warning("Can't get notification manager, Not on Android.")
         return None
@@ -207,8 +205,7 @@ def get_notification_manager():
 
     context = get_python_activity_context()
     notification_service = context.getSystemService(context.NOTIFICATION_SERVICE)
-    _notification_manager = cast(NotificationManager, notification_service)
-    return _notification_manager
+    return cast(NotificationManager, notification_service)
 
 
 def app_storage_path():
