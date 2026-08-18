@@ -116,10 +116,37 @@ def delete_all_channels():
 
 def get_channels() -> list[Any] | Any:
     """Return all existing channels"""
+    useful_objs=[]
     if not on_android_platform():
-        return []
+        return {}
 
-    return get_notification_manager().getNotificationChannels()
+    useful_values = [
+    "id",
+    "name",
+    "description",
+    "state",
+    "importance",
+    "sound",
+    "vibration",
+    #"lights",
+    #"badge",
+    #"bubbles",
+    #"lockscreen_visibility",
+    #"group", add in next version along with ability to create groups 
+    #"deleted",
+    "j_obj",
+    ]
+
+    j_obj = get_notification_manager().getNotificationChannels()
+    
+    for x in range(0,len(j_obj)):
+        obj ={}
+        for each_value in range(0,len(useful_values)):
+            obj[each_value]=#hot damn
+        useful_objs
+        
+
+    return useful_objs
 
 
 def do_channels_exist(ids):
