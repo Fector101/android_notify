@@ -84,6 +84,8 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
 # Android's MediaSession APIs MUST be created/accessed from the
 # main/UI thread. This wraps a Python function in a java.lang.Runnable
 # so it can be passed to Activity.runOnUiThread().
+# TODO remove on kivy new version release it exists in kivy/mobile/_platform/android.py and is used in kivy/core/clipboard/clipboard_android.py
+# test if this pattern also works for Flet if so then do not delete it
 class AndroidRunnable(PythonJavaClass):
     __javainterfaces__ = ['java/lang/Runnable']
     __javacontext__ = 'app'
