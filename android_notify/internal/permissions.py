@@ -2,18 +2,20 @@
 For Permission Related Blocks
 """
 import os.path
+import traceback
 
 from .logger import logger
 from android_notify.config import on_android_platform, on_flet_app, get_python_activity_context, on_pydroid_app, has_androidx_dependency
-from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat
+from android_notify.internal.java_classes import autoclass, BuildVersion, Manifest, Intent, String, Settings, Uri, PackageManager, NotificationManagerCompat, Context
 from android_notify.internal.helper import execute_callback
 
 
 def check_notification_permission_legacy_android12_below():
-    # NotificationManagerCompat is actually NotificationManager from android_notify.internal.java_classes
+    # Below Android 13 there is no POST_NOTIFICATIONS runtime permission
+    # so check the per-app notification enabled state instead.
     context = get_python_activity_context()
-    nm = context.getSystemService(NotificationManagerCompat)
-    return nm.areNotificationsEnabled()
+    notification_service = context.getSystemService(Context.NOTIFICATION_SERVICE)
+    return notification_service.areNotificationsEnabled()
 
 def check_notification_permission_androidx_android12_below():
     context = get_python_activity_context()
@@ -63,6 +65,7 @@ def has_notification_permission():
                 return check_notification_permission_androidx_android12_below()
         except Exception as error_checking_permission:
             logger.exception(f"On Android 12 and below Error checking permission: {error_checking_permission}")
+            traceback.print_exc()
             return True  # Assuming permission is granted if error occurs
 
     # if on_flet_app() or on_pydroid_app() or not has_androidx_dependency():

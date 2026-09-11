@@ -455,6 +455,9 @@ class DummyIcon:
 
 
 class Context:
+    NOTIFICATION_SERVICE = "notification"
+    VIBRATOR_SERVICE = "vibrator"
+
     def __init__(self):
         logger.debug("[MOCK] Context initialized")
         pass
