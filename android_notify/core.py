@@ -126,7 +126,13 @@ def send_notification(
         notification_manager.createNotificationChannel(channel)
 
     # Build the notification
-    builder = NotificationCompatBuilder(context, channel_id)
+    if BuildVersion.SDK_INT >= 26:
+        builder = NotificationCompatBuilder(context, channel_id)
+    else:
+        # Before Android 8.0 the platform Notification$Builder only has the
+        # (Context) constructor; the (Context, String channelId) overload
+        # requires API 26+. The androidx Builder accepts both forms on all APIs.
+        builder = NotificationCompatBuilder(context)
     builder.setContentTitle(title)
     builder.setContentText(message)
     insert_app_icon(builder, custom_app_icon_path)

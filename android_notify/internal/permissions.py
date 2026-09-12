@@ -13,11 +13,19 @@ from android_notify.internal.helper import execute_callback
 def check_notification_permission_legacy_android12_below():
     # Below Android 13 there is no POST_NOTIFICATIONS runtime permission
     # so check the per-app notification enabled state instead.
+    if BuildVersion.SDK_INT < 24:
+        # NotificationManager.areNotificationsEnabled() only exists on API 24+
+        # (before that there is no per-app notification toggle -> always on).
+        return True
     context = get_python_activity_context()
     notification_service = context.getSystemService(Context.NOTIFICATION_SERVICE)
     return notification_service.areNotificationsEnabled()
 
 def check_notification_permission_androidx_android12_below():
+    if BuildVersion.SDK_INT < 24:
+        # NotificationManagerCompat.areNotificationsEnabled() delegates to the
+        # platform API-24+ method; before that notifications are always enabled.
+        return True
     context = get_python_activity_context()
     func_from = getattr(NotificationManagerCompat, "from")
     compat_manager = func_from(context)
