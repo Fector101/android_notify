@@ -109,7 +109,13 @@ class Notification(BaseNotification):
 
         self.notification_manager = get_notification_manager()
         context = get_python_activity_context()
-        self.builder = NotificationCompatBuilder(context, self.channel_id)
+        if BuildVersion.SDK_INT >= 26:
+            self.builder = NotificationCompatBuilder(context, self.channel_id)
+        else:
+            # Before Android 8.0 the platform Notification$Builder only has the
+            # (Context) constructor; the (Context, String channelId) overload
+            # requires API 26+.
+            self.builder = NotificationCompatBuilder(context)
 
     def setData(self, data_object:dict):
         """
