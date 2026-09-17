@@ -211,6 +211,7 @@ class SoundLoader(EventDispatcher):
         if not self._player:
             return
         self._player.stop()
+        self.state = 'stop'
 
     def _get_length(self):
         if not self._player or not self._player_ready:

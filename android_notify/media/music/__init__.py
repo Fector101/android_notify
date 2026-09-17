@@ -3,94 +3,60 @@ import traceback
 
 from jnius import PythonJavaClass, java_method
 
-from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
-from android_notify.internal.android import get_unique_id
-from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
-
-
-from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
-    get_notification_manager, get_python_activity
-
-from android_notify.internal.channels import create_channel
-from android_notify.widgets.texts import set_title, set_message
 from android_notify.internal.logger import logger
+from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
+from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
+from android_notify.internal.android import get_unique_id
+from android_notify.internal.intents import add_intent_to_open_app
+from android_notify.internal.channels import create_channel
+from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
+from android_notify.widgets.texts import set_title, set_message
 
 
-JAVA_FILE_NAME = "MyMediaCallback" # For Java <-> Python bridge
+JAVA_FILE_NAME = "MyMediaCallback"
 
-NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+if on_android_platform():
+    NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+    R_drawable = autoclass('android.R$drawable')
+    ActionBuilder = autoclass('android.app.Notification$Action$Builder')
 
-KeyEvent = autoclass('android.view.KeyEvent')
-MediaSession = autoclass('android.media.session.MediaSession')
-PlaybackState = autoclass('android.media.session.PlaybackState')
-PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
-MediaMetadata = autoclass('android.media.MediaMetadata')
-MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
-MediaStyle = autoclass('android.app.Notification$MediaStyle')
+    KeyEvent = autoclass('android.view.KeyEvent')
+    MediaSession = autoclass('android.media.session.MediaSession')
+    PlaybackState = autoclass('android.media.session.PlaybackState')
+    PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
+    MediaMetadata = autoclass('android.media.MediaMetadata')
+    MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
+    MediaStyle = autoclass('android.app.Notification$MediaStyle')
 
-#
-# MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
-# PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
-# PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
-# MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
-# MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
-# MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
-#
+    #
+    # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
+    # PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
+    # PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
+    # MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
+    # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
+    # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
+    #
 
-java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
-try:
-    MyMediaCallback = autoclass(java_bridge_class)
-    logger.info(f"Successfully loaded MyMediaCallback: {java_bridge_class}")
-except jnius.jnius.JavaException as e:
-    MyMediaCallback = None
-    if e.classname == 'java.lang.ClassNotFoundException':
-        logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
-    else:
-        logger.error(e)
-        traceback.print_exc()
-
-def get_intent_for_launching_app():
+    java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
     try:
-        context = get_python_activity_context()
-        package_manager = context.getPackageManager()
-        package_name = context.getPackageName()
-        return package_manager.getLaunchIntentForPackage(package_name)
-    except Exception as error_getting_default_intent_for_launching_app:
-        logger.error(error_getting_default_intent_for_launching_app)
-        traceback.print_exc()
-        return None
-
-def add_intent_to_open_app(builder, action_name, notification_title, notification_id, data_object,_ignore_data=False):
-    context = get_python_activity_context()
-    PythonActivity = get_python_activity()
-    intent = get_intent_for_launching_app() or Intent(context, PythonActivity)
-    intent.setFlags(
-        Intent.FLAG_ACTIVITY_CLEAR_TOP |  # Makes Sure tapping notification always brings the existing instance of app forward.
-        Intent.FLAG_ACTIVITY_SINGLE_TOP |  # If the activity is already at the top, reuse it instead of creating a new instance.
-        Intent.FLAG_ACTIVITY_NEW_TASK
-        # Required when starting an Activity from a Service; ignored when starting from another Activity.
-    )
-    if not _ignore_data:
-        pass
-        # add_data_to_intent(intent, notification_title, notification_id, str(action_name), data_object)
-    pending_intent = PendingIntent.getActivity(
-        context, notification_id,
-        intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    builder.setContentIntent(pending_intent)
-    if not _ignore_data:
-        logger.debug(
-            f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
+        MyMediaCallback = autoclass(java_bridge_class)
+        logger.info(f"Successfully loaded MyMediaCallback: {java_bridge_class}")
+    except jnius.jnius.JavaException as e:
+        MyMediaCallback = None
+        if e.classname == 'java.lang.ClassNotFoundException':
+            logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
+        else:
+            logger.error(e)
+            traceback.print_exc()
+else:
+    from android_notify.internal.facade import NotificationCompatBuilder
 
 
-# ---------------------------------------------------
-# AndroidRunnable - run code on Android's main (UI) thread
-# ---------------------------------------------------
-# Android's MediaSession APIs MUST be created/accessed from the
-# main/UI thread. This wraps a Python function in a java.lang.Runnable
-# so it can be passed to Activity.runOnUiThread().
-# TODO remove on kivy new version release it exists in kivy/mobile/_platform/android.py and is used in kivy/core/clipboard/clipboard_android.py
-# test if this pattern also works for Flet if so then do not delete it
+# AndroidRunnable - run code on Android's main (UI) thread Android's MediaSession APIs MUST be created/accessed from
+# the main/UI thread. This wraps a Python function in a java.lang.Runnable so it can be passed to Activity.runOnUiThread().
+# TODO remove on kivy new version release it exists in kivy/mobile/_platform/android.py and
+#  is used in kivy/core/clipboard/clipboard_android.py
+#  Test if this pattern also works for Flet if so then do not delete it
 class AndroidRunnable(PythonJavaClass):
     __javainterfaces__ = ['java/lang/Runnable']
     __javacontext__ = 'app'
@@ -107,6 +73,8 @@ class AndroidRunnable(PythonJavaClass):
             logger.error(error_running_callback)
             traceback.print_exc()
 
+
+_active_music_notification = None
 class Listener(PythonJavaClass):
     __javainterfaces__ = [
         get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
@@ -178,14 +146,11 @@ class Listener(PythonJavaClass):
         else:
             logger.warning("No prev music callback was found")
 
-_active_music_notification = None
-
 
 class MusicNotification:
     listener = Listener # so users can switch listener Class
     soundLoader = None
     notification_id = None
-    builder = None
 
     def __init__(self, on_next=None, on_previous = None):
         self.already_built = False
@@ -278,8 +243,7 @@ class MusicNotification:
         # Prev/next are only added when a track exists in that direction.
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
-        R_drawable = autoclass('android.R$drawable')
-        ActionBuilder = autoclass('android.app.Notification$Action$Builder')
+
 
         action_intents = []
         if self._has_prev:
@@ -309,7 +273,8 @@ class MusicNotification:
         for action in actions:
             self.builder.addAction(action)
 
-    def _parse_state(self, loader_instance,state):
+    def _parse_state(self, _,state):
+        #_ is loader_instance
         logger.debug(f'sound load state changed: {state}')
         if self.already_built:
             if state == 'play':
@@ -457,7 +422,7 @@ class MusicNotification:
         build_notification() on state changes.
         """
         if self.session is None:
-            return
+            return None
 
         if not self.soundLoader:
             return None
