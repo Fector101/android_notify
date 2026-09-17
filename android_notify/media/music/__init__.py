@@ -138,7 +138,7 @@ class Listener(PythonJavaClass):
         if self.play_music:
             self.play_music()
         else:
-            logger.warning("No play music callback was found")
+            logger.debug("No play music callback was found")
 
     @java_method('()V')
     def onPause(self):
@@ -150,15 +150,20 @@ class Listener(PythonJavaClass):
         if self.pause_music:
             self.pause_music()
         else:
-            logger.warning("No pause music callback was found")
+            logger.debug("No pause music callback was found")
 
     @java_method('(J)V')
     def onSeekTo(self, pos):
         logger.debug(f"nEventListener - SEEK EVENT RECEIVED: {pos}")
+        if _active_music_notification is not None:
+            # _active_music_notification.showPlayIcon() # comment out because bound soundLoader pause event to notification, leaving this comment for future reference when implement on Flet Apps
+            _active_music_notification.soundLoader.seek(pos / 1000.0)
+            # Sync MediaSession immediately after seek to update system position anchor
+            _active_music_notification.updateProgressBar()
         if self.seek_music:
             self.seek_music(pos / 1000.0)
         else:
-            logger.warning("No seek music callback was found")
+            logger.debug("No seek music callback was found")
 
     @java_method('()V')
     def onSkipToNext(self):
