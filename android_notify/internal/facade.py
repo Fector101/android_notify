@@ -93,6 +93,8 @@ class Intent(IntFlag):
     def putParcelableArrayListExtra(cls, flag, uris:list):
         logger.debug(f"[MOCK] Intent.putParcelableArrayListExtra called with flag={flag} and uris={uris}")
 
+    def setPackage(self, param):
+        pass
 
 class PendingIntent:
     FLAG_IMMUTABLE = ''
@@ -109,9 +111,11 @@ class BitmapFactory:
     @classmethod
     def decodeStream(cls, stream):
         logger.debug(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
+
     @classmethod
-    def decodeFile(cls, src_path,opts=None):
-        logger.debug(f"[MOCK] BitmapFactory.decodeFile called with src_path={src_path} and opts={opts}")
+    def decodeByteArray(cls, art_bytes, art_bytes_start, art_bytes_len):
+        logger.debug(f"[MOCK] BitmapFactory.decodeStream called with art_bytes={art_bytes},art_bytes_start={art_bytes_start}, art_bytes_len={art_bytes_len}")
+
 
 
 class BuildVersion:
@@ -368,6 +372,11 @@ class NotificationCompatBuilder:
     @classmethod
     def setVibrate(cls, state) -> None:
         logger.debug(f"[MOCK] setVibrate called with state={state}")
+
+
+    @classmethod
+    def setVisibility(cls, state) -> None:
+        logger.debug(f"[MOCK] setVisibility called with state={state}")
 
 
 class NotificationCompatBigTextStyle:

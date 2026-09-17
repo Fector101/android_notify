@@ -1,19 +1,15 @@
 import jnius.jnius
-import time
 import traceback
 
+from jnius import PythonJavaClass, java_method
 
 from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
+from android_notify.internal.android import get_unique_id
+from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
 
-from jnius import autoclass, cast, PythonJavaClass, java_method
-
-from android_notify.internal.android import get_active_notification_ids, get_unique_id
-from android_notify.internal.java_classes import Intent, PendingIntent, BuildVersion, String, BitmapFactory
-
-NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
 
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
-    get_notification_manager, from_service_file, get_python_activity
+    get_notification_manager, get_python_activity
 
 from android_notify.internal.channels import create_channel
 from android_notify.widgets.texts import set_title, set_message
@@ -22,9 +18,9 @@ from android_notify.internal.logger import logger
 
 JAVA_FILE_NAME = "MyMediaCallback" # For Java <-> Python bridge
 
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
-KeyEvent = autoclass('android.view.KeyEvent')
+NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
 
+KeyEvent = autoclass('android.view.KeyEvent')
 MediaSession = autoclass('android.media.session.MediaSession')
 PlaybackState = autoclass('android.media.session.PlaybackState')
 PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
@@ -192,7 +188,7 @@ class MusicNotification:
     builder = None
 
     def __init__(self, on_next=None, on_previous = None):
-        self.already_built = None
+        self.already_built = False
         global _active_music_notification
         _active_music_notification = self
 
@@ -257,6 +253,89 @@ class MusicNotification:
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
         logger.debug("MediaSession initialization and callback setup complete!")
 
+    def __create_media_button_intent(self, key_code):
+        """Creates a PendingIntent for a notification action button.
+
+        Each button (prev, play/pause, next) sends a broadcast with a
+        KeyEvent matching the desired action. MediaStyle.setMediaSession()
+        routes the tap through MediaSession.Callback instead.
+        """
+        if not self.context:
+            return None
+        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
+        intent.setPackage(self.context.getPackageName())
+
+        event = KeyEvent(KeyEvent.ACTION_DOWN, key_code)
+        parcelable_event = cast('android.os.Parcelable', event)
+        intent.putExtra(Intent.EXTRA_KEY_EVENT, parcelable_event)
+
+        flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
+        return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
+
+    def _add_buttons(self, is_playing):
+        # Add prev, play/pause, and next action buttons using Android
+        # built-in media icons from android.R$drawable.
+        # Prev/next are only added when a track exists in that direction.
+        play_or_pause_text = "Pause" if is_playing else "Play"
+        play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
+        R_drawable = autoclass('android.R$drawable')
+        ActionBuilder = autoclass('android.app.Notification$Action$Builder')
+
+        action_intents = []
+        if self._has_prev:
+            action_intents.append(
+                (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            )
+        self._play_pause_index = len(action_intents)
+        action_intents.append(
+            (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
+             String(play_or_pause_text), play_pause_code)
+        )
+        if self._has_next:
+            action_intents.append(
+                (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
+            )
+
+        actions = [
+            ActionBuilder(icon, title, self.__create_media_button_intent(key_code)).build()
+            for icon, title, key_code in action_intents
+        ]
+
+        # android.app.Notification$Builder appends to mActions on every setActions() / addAction()
+        # Clear the internal ArrayList to avoid action duplication
+        self.builder.mActions.clear()
+
+        # Re-add the updated actions
+        for action in actions:
+            self.builder.addAction(action)
+
+    def _parse_state(self, loader_instance,state):
+        logger.debug(f'sound load state changed: {state}')
+        if self.already_built:
+            if state == 'play':
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval is None:
+                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
+                self.showPauseIcon()
+            elif state == 'pause':
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval:
+                #     self._update_interval.cancel()
+                #     self._update_interval = None
+                self.showPlayIcon()
+        else:
+            logger.error("Not built but trying play or pause")
+
+    def setSoundLoader(self, sound_load_instance):
+        self.soundLoader = sound_load_instance
+        self.soundLoader.bind(
+            state=self._parse_state,
+            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
+            on_seek=lambda _,pos:self.updateProgressBar()
+        )
+
+        # TODO Receive on seek
+
     def build_notification(self, is_playing):
     # def build_notification(self, title, artist, is_playing, current_ms, duration_ms):
         """Fully builds and dispatches the media notification.
@@ -309,6 +388,60 @@ class MusicNotification:
         # elif self._update_interval:
         #     self._update_interval.cancel()
 
+    def set_skip_available(self, has_next, has_prev):
+        """Tell the notification whether prev/next tracks exist around the current one."""
+        self._has_next = bool(has_next)
+        self._has_prev = bool(has_prev)
+        if not self.already_built or not self.soundLoader:
+            return
+        is_playing = self.soundLoader.state == "play"
+        self._add_buttons(is_playing)
+        self.updateProgressBar()
+        self.refresh()
+
+    def showPauseIcon(self):
+        logger.debug("showing pause icon")
+        self._add_buttons(True)
+        # On Android 13+, MediaSession playback state needs sync to display buttons properly
+        self.updateProgressBar()
+        self.refresh()
+
+    def showPlayIcon(self):
+        logger.debug("showing play icon")
+        self._add_buttons(False)
+        # On Android 13+, MediaSession playback state needs sync to display buttons properly
+        self.updateProgressBar()
+        self.refresh()
+
+    def setTitle(self,title:str):
+        self._title = title
+        pass
+
+    def setArtist(self,artist:str):
+        self._artist = artist
+        pass
+
+    def setLargeIcon(self,music_path=None,img_path=None):
+        if img_path:
+            image_absolute_path = get_img_absolute_path(img_path)
+            bitmap = get_bitmap_from_path(image_absolute_path)
+            if bitmap:
+                self.builder.setLargeIcon(bitmap)
+            else:
+                logger.error("Failed getting bitmap from path")
+        elif music_path:
+            try:
+                MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
+                retriever = MediaMetadataRetriever()
+                retriever.setDataSource(music_path)
+                art_bytes = retriever.getEmbeddedPicture()
+                if art_bytes:
+                    bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
+                    self.builder.setLargeIcon(bitmap)
+            except Exception as error_getting_art_bytes:
+                logger.exception(error_getting_art_bytes)
+                traceback.print_exc()
+
     def updateProgressBar(self, _=None):
         """Call every ~1 second by Kivy Clock to keep seekbar updated.
 
@@ -352,150 +485,15 @@ class MusicNotification:
         self.session.setPlaybackState(state_builder.build())
         return None
 
+    def refresh(self):
+        """Refresh the notification."""
+        if self.already_built:
+            get_notification_manager().notify(self.notification_id,self.builder.build())
+        else:
+            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MusicNotification.build_notification")
+
     def release(self):
         """Clean up resources when the app shuts down."""
         if self.session:
             self.session.setActive(False)
             self.session.release()
-
-    def __create_media_button_intent(self, key_code):
-        """Creates a PendingIntent for a notification action button.
-
-        Each button (prev, play/pause, next) sends a broadcast with a
-        KeyEvent matching the desired action. MediaStyle.setMediaSession()
-        routes the tap through MediaSession.Callback instead.
-        """
-        if not self.context:
-            return None
-        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        intent.setPackage(self.context.getPackageName())
-
-        event = KeyEvent(KeyEvent.ACTION_DOWN, key_code)
-        parcelable_event = cast('android.os.Parcelable', event)
-        intent.putExtra(Intent.EXTRA_KEY_EVENT, parcelable_event)
-
-        flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
-        return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
-
-    def refresh(self):
-        """Refresh the notification."""
-        get_notification_manager().notify(self.notification_id,self.builder.build())
-
-    def _add_buttons(self, is_playing):
-        # Add prev, play/pause, and next action buttons using Android
-        # built-in media icons from android.R$drawable.
-        # Prev/next are only added when a track exists in that direction.
-        play_or_pause_text = "Pause" if is_playing else "Play"
-        play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
-        R_drawable = autoclass('android.R$drawable')
-        ActionBuilder = autoclass('android.app.Notification$Action$Builder')
-
-        action_intents = []
-        if self._has_prev:
-            action_intents.append(
-                (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-            )
-        self._play_pause_index = len(action_intents)
-        action_intents.append(
-            (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
-             String(play_or_pause_text), play_pause_code)
-        )
-        if self._has_next:
-            action_intents.append(
-                (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
-            )
-
-        actions = [
-            ActionBuilder(icon, title, self.__create_media_button_intent(key_code)).build()
-            for icon, title, key_code in action_intents
-        ]
-
-        # android.app.Notification$Builder appends to mActions on every setActions() / addAction()
-        # Clear the internal ArrayList to avoid action duplication
-        self.builder.mActions.clear()
-
-        # Re-add the updated actions
-        for action in actions:
-            self.builder.addAction(action)
-
-    def setLargeIcon(self,music_path=None,img_path=None):
-        if img_path:
-            image_absolute_path = get_img_absolute_path(img_path)
-            bitmap = get_bitmap_from_path(image_absolute_path)
-            if bitmap:
-                self.builder.setLargeIcon(bitmap)
-            else:
-                logger.error("Failed getting bitmap from path")
-        elif music_path:
-            try:
-                MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
-                retriever = MediaMetadataRetriever()
-                retriever.setDataSource(music_path)
-                art_bytes = retriever.getEmbeddedPicture()
-                if art_bytes:
-                    bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
-                    self.builder.setLargeIcon(bitmap)
-            except Exception as error_getting_art_bytes:
-                logger.exception(error_getting_art_bytes)
-                traceback.print_exc()
-
-    def setSoundLoader(self, sound_load_instance):
-        self.soundLoader = sound_load_instance
-        self.soundLoader.bind(
-            state=self._parse_state,
-            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
-            on_seek=lambda _,pos:self.updateProgressBar()
-        )
-
-        # TODO Receive on seek
-
-    def set_skip_available(self, has_next, has_prev):
-        """Tell the notification whether prev/next tracks exist around the current one."""
-        self._has_next = bool(has_next)
-        self._has_prev = bool(has_prev)
-        if not self.already_built or not self.soundLoader:
-            return
-        is_playing = self.soundLoader.state == "play"
-        self._add_buttons(is_playing)
-        self.updateProgressBar()
-        self.refresh()
-
-    def _parse_state(self, loader_instance,state):
-        logger.debug(f'sound load state changed: {state}')
-        if self.already_built:
-            if state == 'play':
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval is None:
-                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
-                self.showPauseIcon()
-            elif state == 'pause':
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval:
-                #     self._update_interval.cancel()
-                #     self._update_interval = None
-                self.showPlayIcon()
-        else:
-            logger.error("Not built but trying play or pause")
-
-    def showPauseIcon(self):
-        logger.debug("showing pause icon")
-        self._add_buttons(True)
-        # On Android 13+, MediaSession playback state needs sync to display buttons properly
-        self.updateProgressBar()
-        self.refresh()
-
-    def showPlayIcon(self):
-        logger.debug("showing play icon")
-        self._add_buttons(False)
-        # On Android 13+, MediaSession playback state needs sync to display buttons properly
-        self.updateProgressBar()
-        self.refresh()
-
-    def setTitle(self,title:str):
-        self._title = title
-        pass
-
-    def setArtist(self,artist:str):
-        self._artist = artist
-        pass
-
