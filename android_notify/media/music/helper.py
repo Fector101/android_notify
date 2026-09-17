@@ -1,14 +1,14 @@
-import os
-import traceback
-from typing import Callable, Optional
+"""
+Version: 0.1
+Author: Fabian
+"""
 
+import os
 from kivy.properties import ObjectProperty
 
 from android_notify.internal.logger import logger
-from kivy.clock import Clock
 from jnius import autoclass, PythonJavaClass, java_method
-from android_notify.internal.java_classes import Intent
-from android_notify.config import get_python_activity_context, on_android_platform
+from android_notify.config import on_android_platform
 from kivy.event import EventDispatcher
 
 
@@ -16,6 +16,9 @@ def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
     if not on_android_platform():
         return None
+    from kivy.clock import Clock
+    from android_notify.config import get_python_activity_context
+    from android_notify.internal.java_classes import Intent
     Environment = autoclass('android.os.Environment')
     Settings = autoclass('android.provider.Settings')
     Uri = autoclass('android.net.Uri')
@@ -32,10 +35,7 @@ def requestAllFilesAccess():
     return None
 
 if on_android_platform():
-
     MediaPlayer = autoclass('android.media.MediaPlayer')
-
-
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
         __javacontext__ = 'app'
@@ -48,11 +48,27 @@ if on_android_platform():
         @java_method('(Landroid/media/MediaPlayer;)V')
         def onPrepared(self, mp):
             self.on_player_ready()
+
+
+    class CompletionListener(PythonJavaClass):
+        __javainterfaces__ = ['android/media/MediaPlayer$OnCompletionListener']
+        __javacontext__ = 'app'
+
+        def __init__(self, on_player_complete):
+            super().__init__()
+            self.on_player_complete = on_player_complete
+
+        # noinspection PyUnusedLocal
+        @java_method('(Landroid/media/MediaPlayer;)V')
+        def onCompletion(self, mp):
+            self.on_player_complete()
 else:
     class MediaPlayer:
         def setDataSource(self,path):
             pass
         def setOnPreparedListener(self,callback):
+            pass
+        def setOnCompletionListener(self,callback):
             pass
         def prepareAsync(self):
             pass
@@ -76,6 +92,9 @@ else:
     class PlayerReadyListener:
         pass
 
+    class CompletionListener:
+        pass
+
 class SoundLoader(EventDispatcher):
     _instance = None
     _player = None
@@ -89,17 +108,26 @@ class SoundLoader(EventDispatcher):
     loop=False
 
 
-    __events__ = ('on_play', 'on_stop', 'on_pause','on_load','on_seek')
-    def on_play(self,player):
+    __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
+
+    def on_play(self, player):
         pass
-    def on_pause(self,player):
+
+    def on_pause(self, player):
         pass
-    def on_stop(self,player):
+
+    def on_stop(self, player):
         pass
-    def on_load(self,player):
+
+    def on_load(self, player):
         pass
-    def on_seek(self,player):
+
+    def on_seek(self, player):
         pass
+
+    def on_complete(self, player):
+        pass
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -122,6 +150,7 @@ class SoundLoader(EventDispatcher):
         instance._player = MediaPlayer()
         instance._player.setDataSource(source)
         instance._player.setOnPreparedListener(PlayerReadyListener(instance.on_player_ready))
+        instance._player.setOnCompletionListener(CompletionListener(instance.on_player_complete))
         instance._player.prepareAsync()
         return instance._instance
 
@@ -129,6 +158,14 @@ class SoundLoader(EventDispatcher):
         """Called by PlayerReadyListener when MediaPlayer is ready."""
         self._player_ready = True
         self.dispatch("on_load",'')
+
+    def on_player_complete(self):
+        """Called by CompletionListener when the track reaches its end."""
+        logger.debug("EVENT: COMPLETE")
+        self.dispatch("on_complete", self._player)
+        if self.loop:
+            self.seek(0)
+            self._player.start()
 
     def get_pos(self):
         """Get current playback position in seconds."""
@@ -145,9 +182,6 @@ class SoundLoader(EventDispatcher):
         elif 0 < duration < pos:
             pos = duration
 
-        if pos == duration and self.loop: # under the assumption get_pos will be call every sec
-            self.seek(0)
-            pos=0
         # logger.debug(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
         return pos
 
@@ -201,3 +235,18 @@ class SoundLoader(EventDispatcher):
             self._player.release()
         else:
             print("Warning player not loaded.")
+
+    def on_play(self,player):
+        pass
+
+    def on_stop(self,player):
+        pass
+
+    def on_pause(self,player):
+        pass
+
+    def on_load(self,player):
+        pass
+
+    def on_seek(self,player):
+        pass

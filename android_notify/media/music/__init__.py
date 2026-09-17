@@ -168,6 +168,8 @@ class Listener(PythonJavaClass):
     @java_method('()V')
     def onSkipToNext(self):
         logger.debug("nEventListener -SKIP NEXT EVENT RECEIVED")
+        if _active_music_notification is not None and not _active_music_notification._has_next:
+            return
         if self.next_music:
             self.next_music()
         else:
@@ -176,6 +178,8 @@ class Listener(PythonJavaClass):
     @java_method('()V')
     def onSkipToPrevious(self):
         print("nEventListener -SKIP PREV EVENT RECEIVED")
+        if _active_music_notification is not None and not _active_music_notification._has_prev:
+            return
         if self.prev_music:
             self.prev_music()
         else:
@@ -201,8 +205,11 @@ class MusicNotification:
         self._play_music = None
         self._pause_music = None
         self._seek_music = None
-        self._next_music = None
-        self._prev_music = None
+        self._next_music = on_next
+        self._prev_music = on_previous
+        self._has_next = True
+        self._has_prev = True
+        self._play_pause_index = 1
 
         self.on_next = on_next
         self.on_previous = on_previous
@@ -283,7 +290,7 @@ class MusicNotification:
         # MediaStyle makes the notification show with a larger media layout and wires it to the MediaSession for lock-screen control
         style = MediaStyle()
         style.setMediaSession(self.session.getSessionToken())
-        style.setShowActionsInCompactView(1)
+        style.setShowActionsInCompactView(self._play_pause_index)
         self.builder.setStyle(style)
 
         # Attach metadata (title, artist, duration) to the MediaSession
@@ -337,11 +344,13 @@ class MusicNotification:
                 | PlaybackState.ACTION_PAUSE
                 | PlaybackState.ACTION_SEEK_TO
                 | PlaybackState.ACTION_PLAY_PAUSE
-                | PlaybackState.ACTION_SKIP_TO_NEXT
-                | PlaybackState.ACTION_SKIP_TO_PREVIOUS
                 | PlaybackState.ACTION_FAST_FORWARD
                 | PlaybackState.ACTION_REWIND
         )
+        if self._has_next:
+            actions |= PlaybackState.ACTION_SKIP_TO_NEXT
+        if self._has_prev:
+            actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS
         state_builder = PlaybackStateBuilder()
         state = PlaybackState.STATE_PLAYING if is_playing else PlaybackState.STATE_PAUSED
         state_builder.setState(state, current_ms, 1.0)
@@ -380,18 +389,28 @@ class MusicNotification:
 
     def _add_buttons(self, is_playing):
         # Add prev, play/pause, and next action buttons using Android
-        # built-in media icons from android.R$drawable
+        # built-in media icons from android.R$drawable.
+        # Prev/next are only added when a track exists in that direction.
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
         R_drawable = autoclass('android.R$drawable')
         ActionBuilder = autoclass('android.app.Notification$Action$Builder')
 
-        action_intents = [
-            (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS),
+        action_intents = []
+        if self._has_prev:
+            action_intents.append(
+                (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            )
+        self._play_pause_index = len(action_intents)
+        action_intents.append(
             (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
-             String(play_or_pause_text), play_pause_code),
-            (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT),
-        ]
+             String(play_or_pause_text), play_pause_code)
+        )
+        if self._has_next:
+            action_intents.append(
+                (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
+            )
+
         actions = [
             ActionBuilder(icon, title, self.__create_media_button_intent(key_code)).build()
             for icon, title, key_code in action_intents
@@ -401,7 +420,7 @@ class MusicNotification:
         # Clear the internal ArrayList to avoid action duplication
         self.builder.mActions.clear()
 
-        # Re-add the updated 3 actions
+        # Re-add the updated actions
         for action in actions:
             self.builder.addAction(action)
 
@@ -462,6 +481,17 @@ class MusicNotification:
 
         # TODO Receive on seek
 
+    def set_skip_available(self, has_next, has_prev):
+        """Tell the notification whether prev/next tracks exist around the current one."""
+        self._has_next = bool(has_next)
+        self._has_prev = bool(has_prev)
+        if not self.already_built or not self.soundLoader:
+            return
+        is_playing = self.soundLoader.state == "play"
+        self._add_buttons(is_playing)
+        self.updateProgressBar()
+        self.refresh()
+
     def _parse_state(self, loader_instance,state):
         print(f'sound load state changed: {state}')
         if self.already_built:
@@ -500,3 +530,4 @@ class MusicNotification:
     def setArtist(self,artist:str):
         self._artist = artist
         pass
+
