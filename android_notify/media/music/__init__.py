@@ -11,7 +11,6 @@ from android_notify.internal.java_classes import autoclass, cast,Intent, Pending
 from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
 from android_notify.internal.channels import create_channel
-from android_notify.media.music.helper import SoundLoader
 from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
 from android_notify.widgets.texts import set_title, set_message
 
@@ -221,7 +220,6 @@ class MusicNotification:
         self.session.setFlags(1 | 2)
 
         # Wire the Java callback (MyMediaCallback) to the Python Listener
-        # if self.listener is not None and MyMediaCallback is not None:
         self.listener = self.listener()
         self.listener.play_music = self._play_music
         self.listener.pause_music = self._pause_music
@@ -230,7 +228,7 @@ class MusicNotification:
         self.listener.prev_music = self._prev_music
 
         self.callback = MyMediaCallback(self.listener)
-        self.session.setCallsetCallbackback(self.callback)
+        self.session.setCallback(self.callback)
         self.session.setActive(True)
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
         logger.debug("MediaSession initialization and callback setup complete!")
