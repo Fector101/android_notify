@@ -1,33 +1,37 @@
-import os
 import jnius.jnius
-# noinspection PyUnusedLocal,DuplicatedCode,PyTypeChecker
 import time
 import traceback
 
-from kivy.properties import ObjectProperty
 
 from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
+
 from jnius import autoclass, cast, PythonJavaClass, java_method
 
 from android_notify.internal.android import get_active_notification_ids
-from android_notify.internal.java_classes import (  # noqa: re-exported for main.py
-    Context, Intent, PendingIntent, NotificationManager, NotificationCompatBuilder,
-    NotificationChannel, BuildVersion, String, BitmapFactory
-)
+from android_notify.internal.java_classes import Intent, PendingIntent, BuildVersion, String, BitmapFactory
+
+NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
     get_notification_manager, from_service_file, get_python_activity
 
 from android_notify.internal.channels import create_channel
 from android_notify.widgets.texts import set_title, set_message
 from android_notify.internal.logger import logger
-import logging
 
-from kivy.clock import Clock
 
 JAVA_FILE_NAME = "MyMediaCallback" # For Java <-> Python bridge
 
 PythonActivity = autoclass('org.kivy.android.PythonActivity')
 KeyEvent = autoclass('android.view.KeyEvent')
+
+MediaSession = autoclass('android.media.session.MediaSession')
+PlaybackState = autoclass('android.media.session.PlaybackState')
+PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
+MediaMetadata = autoclass('android.media.MediaMetadata')
+MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
+MediaStyle = autoclass('android.app.Notification$MediaStyle')
+
 #
 # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
 # PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
@@ -36,13 +40,6 @@ KeyEvent = autoclass('android.view.KeyEvent')
 # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
 # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
 #
-
-MediaSession = autoclass('android.media.session.MediaSession')
-PlaybackState = autoclass('android.media.session.PlaybackState')
-PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
-MediaMetadata = autoclass('android.media.MediaMetadata')
-MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
-MediaStyle = autoclass('android.app.Notification$MediaStyle')
 
 java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
 try:
