@@ -27,6 +27,7 @@ if on_android_platform():
     MediaMetadata = autoclass('android.media.MediaMetadata')
     MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
     MediaStyle = autoclass('android.app.Notification$MediaStyle')
+    MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
 
     #
     # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
@@ -49,7 +50,17 @@ if on_android_platform():
             logger.error(e)
             traceback.print_exc()
 else:
-    from android_notify.internal.facade import NotificationCompatBuilder
+    from android_notify.internal.facade import (
+        NotificationCompatBuilder, R_drawable,
+        ActionBuilder, KeyEvent,
+        MediaSession,
+        PlaybackState,
+        PlaybackStateBuilder,
+        MediaMetadata,
+        MediaMetadataBuilder,
+        MediaStyle,
+        MediaMetadataRetriever,
+    )
 
 
 # AndroidRunnable - run code on Android's main (UI) thread Android's MediaSession APIs MUST be created/accessed from
@@ -396,7 +407,6 @@ class MusicNotification:
                 logger.error("Failed getting bitmap from path")
         elif music_path:
             try:
-                MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
                 retriever = MediaMetadataRetriever()
                 retriever.setDataSource(music_path)
                 art_bytes = retriever.getEmbeddedPicture()

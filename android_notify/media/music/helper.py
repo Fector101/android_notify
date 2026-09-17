@@ -1,11 +1,11 @@
 """
-Version: 0.1
-Author: Fabian
+    SoundLoader with events
+    __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
+
 """
 
 import os
 from kivy.properties import ObjectProperty
-
 from android_notify.internal.logger import logger
 from jnius import autoclass, PythonJavaClass, java_method
 from android_notify.config import on_android_platform

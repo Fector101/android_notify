@@ -281,7 +281,8 @@ def get_unique_id(candidate_id: int = 1) -> int:
     if not on_android_platform():
         return candidate_id
 
-    if notification_id not in ids_in_tray:
+    ids_in_tray = get_active_notification_ids(notification_manager=get_notification_manager())
+    if candidate_id not in ids_in_tray:
         return candidate_id
 
     if from_service_file():
@@ -289,7 +290,6 @@ def get_unique_id(candidate_id: int = 1) -> int:
 
     notification_id = candidate_id
     try:
-        ids_in_tray = get_active_notification_ids(notification_manager=get_notification_manager())
         for _ in ids_in_tray:  # I am avoiding while loops
             notification_id = notification_id + 1
             if notification_id not in ids_in_tray:
