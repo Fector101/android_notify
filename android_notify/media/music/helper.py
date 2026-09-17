@@ -1,0 +1,203 @@
+import os
+import traceback
+from typing import Callable, Optional
+
+from kivy.properties import ObjectProperty
+
+from android_notify.internal.logger import logger
+from kivy.clock import Clock
+from jnius import autoclass, PythonJavaClass, java_method
+from android_notify.internal.java_classes import Intent
+from android_notify.config import get_python_activity_context, on_android_platform
+from kivy.event import EventDispatcher
+
+
+def requestAllFilesAccess():
+    """Requests 'All Files Access' permission for Android 11+"""
+    if not on_android_platform():
+        return None
+    Environment = autoclass('android.os.Environment')
+    Settings = autoclass('android.provider.Settings')
+    Uri = autoclass('android.net.Uri')
+    mActivity = get_python_activity_context()
+    if not Environment.isExternalStorageManager():
+        try:
+            intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            print(f"package:{mActivity.getPackageName()}")
+            intent.setData(Uri.parse(f"package:{mActivity.getPackageName()}"))
+            Clock.schedule_once(lambda dt: mActivity.startActivity(intent), 2)
+        except Exception as error_opening_permission_screen:
+            print('PermissionHandler.requestAllFilesAccess --> ', error_opening_permission_screen)
+    print("requestAllFilesAccess OK")
+    return None
+
+if on_android_platform():
+
+    MediaPlayer = autoclass('android.media.MediaPlayer')
+
+
+    class PlayerReadyListener(PythonJavaClass):
+        __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
+        __javacontext__ = 'app'
+
+        def __init__(self, on_player_ready):
+            super().__init__()
+            self.on_player_ready = on_player_ready
+
+        # noinspection PyUnusedLocal
+        @java_method('(Landroid/media/MediaPlayer;)V')
+        def onPrepared(self, mp):
+            self.on_player_ready()
+else:
+    class MediaPlayer:
+        def setDataSource(self,path):
+            pass
+        def setOnPreparedListener(self,callback):
+            pass
+        def prepareAsync(self):
+            pass
+        def start(self):
+            pass
+        def pause(self):
+            pass
+        def stop(self):
+            pass
+        def seekTo(self,sec):
+            pass
+        def release(self):
+            pass
+        @classmethod
+        def getCurrentPosition(cls):
+            return 0
+        @classmethod
+        def getDuration(cls):
+            return 0
+
+    class PlayerReadyListener:
+        pass
+
+class SoundLoader(EventDispatcher):
+    _instance = None
+    _player = None
+    _player_ready = False
+    source = ''
+    callback = None
+    state = ObjectProperty('stop')
+
+    length = property(lambda self: self._get_length(),
+                      doc="Get length of the sound (in seconds).")
+    loop=False
+
+
+    __events__ = ('on_play', 'on_stop', 'on_pause','on_load','on_seek')
+    def on_play(self,player):
+        pass
+    def on_pause(self,player):
+        pass
+    def on_stop(self,player):
+        pass
+    def on_load(self,player):
+        pass
+    def on_seek(self,player):
+        pass
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self, **kwargs):
+        # Prevent re-running Kivy's setup logic on subsequent instantiations
+        if getattr(self, "_initialized", False):
+            return
+
+        super().__init__(**kwargs)  # Crucial for Kivy Property & Event bindings
+        self._initialized = True
+
+    @classmethod
+    def load(cls, source):
+        instance=cls()
+        instance.source = source
+
+        logger.info(f"audio source: {os.path.abspath(source)}")
+        instance._player = MediaPlayer()
+        instance._player.setDataSource(source)
+        instance._player.setOnPreparedListener(PlayerReadyListener(instance.on_player_ready))
+        instance._player.prepareAsync()
+        return instance._instance
+
+    def on_player_ready(self):
+        """Called by PlayerReadyListener when MediaPlayer is ready."""
+        self._player_ready = True
+        self.dispatch("on_load",'')
+
+    def get_pos(self):
+        """Get current playback position in seconds."""
+        if not self._player or not self._player_ready:
+            print("Warning player is not ready...")
+            return 0.0
+
+        raw = self._player.getCurrentPosition() / 1000.0
+        pos = raw
+
+        duration = self._player.getDuration() / 1000.0
+        if pos < 0:
+            pos = 0
+        elif 0 < duration < pos:
+            pos = duration
+
+        if pos == duration and self.loop: # under the assumption get_pos will be call every sec
+            self.seek(0)
+            pos=0
+        # logger.debug(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
+        return pos
+
+    def play(self):
+        """Resume playback."""
+        if not self._player or not self._player_ready:
+            print("Warning player is not ready...")
+            return None
+        self._player.start()
+        self.state = 'play'
+        logger.debug("EVENT: PLAY")
+        self.dispatch("on_play",self._player)
+        return None
+
+    def pause(self):
+        """Pause playback."""
+        if not self._player or not self._player_ready:
+            print("Warning player is not ready...")
+            return None
+        self._player.pause()
+        self.state = 'pause'
+        logger.debug("EVENT: PAUSE")
+        self.dispatch("on_pause",self._player)
+        return None
+
+    def stop(self):
+        if not self._player:
+            return
+        self._player.stop()
+
+    def _get_length(self):
+        if not self._player or not self._player_ready:
+            print("Warning player is not ready...")
+            return None
+
+        return self._player.getDuration() / 1000.0
+
+    def seek(self, position):
+        """Seek to a position (sec = seconds from start)."""
+        if not self._player or not self._player_ready:
+            print("Warning player is not ready...")
+            return None
+        self._player.seekTo(int(position * 1000))
+        print(f"EVENT: SEEK {position:.1f}s")
+        self.dispatch("on_seek",'')
+        return None
+
+    def unload(self):
+        """Unload the file from memory."""
+        if self._player:
+            self._player.release()
+        else:
+            print("Warning player not loaded.")
