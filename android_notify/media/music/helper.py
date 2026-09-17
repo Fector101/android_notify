@@ -1,9 +1,15 @@
 import os
+import traceback
 from typing import Callable, Optional
+
+from kivy.properties import ObjectProperty
+
+from android_notify.internal.logger import logger
 from kivy.clock import Clock
 from jnius import autoclass, PythonJavaClass, java_method
 from android_notify.internal.java_classes import Intent
 from android_notify.config import get_python_activity_context, on_android_platform
+from kivy.event import EventDispatcher
 
 
 def requestAllFilesAccess():
@@ -70,39 +76,49 @@ else:
     class PlayerReadyListener:
         pass
 
-class SoundLoader:
+class SoundLoader(EventDispatcher):
     _instance = None
     _player = None
     _player_ready = False
     source = ''
     callback = None
-    state = 'stop'
-    on_play = None
-    on_pause = None
-    on_load: Optional[Callable[[], None]] = None
+    state = ObjectProperty('stop')
+
     length = property(lambda self: self._get_length(),
-                      doc='Get length of the sound (in seconds).')
+                      doc="Get length of the sound (in seconds).")
     loop=False
 
 
-    __events__ = ('on_play', 'on_stop', 'on_pause','on_load')
-
+    __events__ = ('on_play', 'on_stop', 'on_pause','on_load','on_seek')
+    def on_play(self,player):
+        pass
+    def on_pause(self,player):
+        pass
+    def on_stop(self,player):
+        pass
+    def on_load(self,player):
+        pass
+    def on_seek(self,player):
+        pass
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        # Prevent re-running Kivy's setup logic on subsequent instantiations
         if getattr(self, "_initialized", False):
             return
 
+        super().__init__(**kwargs)  # Crucial for Kivy Property & Event bindings
+        self._initialized = True
+
     @classmethod
-    def load(cls, source, on_load):
+    def load(cls, source):
         instance=cls()
-        instance.on_load = on_load
         instance.source = source
 
-        print("audio source:",os.path.abspath(source))
+        logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player = MediaPlayer()
         instance._player.setDataSource(source)
         instance._player.setOnPreparedListener(PlayerReadyListener(instance.on_player_ready))
@@ -112,8 +128,7 @@ class SoundLoader:
     def on_player_ready(self):
         """Called by PlayerReadyListener when MediaPlayer is ready."""
         self._player_ready = True
-        if self.on_load:
-            self.on_load()
+        self.dispatch("on_load",'')
 
     def get_pos(self):
         """Get current playback position in seconds."""
@@ -133,7 +148,7 @@ class SoundLoader:
         if pos == duration and self.loop: # under the assumption get_pos will be call every sec
             self.seek(0)
             pos=0
-        print(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
+        # logger.debug(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
         return pos
 
     def play(self):
@@ -143,8 +158,8 @@ class SoundLoader:
             return None
         self._player.start()
         self.state = 'play'
-        print("EVENT: PLAY")
-        self.__dispatch(self.on_play)
+        logger.debug("EVENT: PLAY")
+        self.dispatch("on_play",self._player)
         return None
 
     def pause(self):
@@ -154,8 +169,8 @@ class SoundLoader:
             return None
         self._player.pause()
         self.state = 'pause'
-        print("EVENT: PAUSE")
-        self.__dispatch(self.on_pause)
+        logger.debug("EVENT: PAUSE")
+        self.dispatch("on_pause",self._player)
         return None
 
     def stop(self):
@@ -177,6 +192,7 @@ class SoundLoader:
             return None
         self._player.seekTo(int(position * 1000))
         print(f"EVENT: SEEK {position:.1f}s")
+        self.dispatch("on_seek",'')
         return None
 
     def unload(self):
@@ -185,12 +201,3 @@ class SoundLoader:
             self._player.release()
         else:
             print("Warning player not loaded.")
-
-    @staticmethod
-    def __dispatch(__function):
-        if __function:
-            try:
-                __function()
-            except Exception as error_dispatching_listener:
-                print(f"Error: {error_dispatching_listener}")
-      

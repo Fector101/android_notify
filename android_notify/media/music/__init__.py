@@ -329,6 +329,7 @@ class MusicNotification:
             return None
         current_ms = int(self.soundLoader.get_pos() * 1000)
         is_playing=self.soundLoader.state == "play"
+        logger.debug(f"updating progress bar...{current_ms}")
 
         # NOTE: MediaSession playback state, updates progress bar without clock schedules
         actions = (
@@ -346,6 +347,7 @@ class MusicNotification:
         state_builder.setState(state, current_ms, 1.0)
         state_builder.setActions(actions)
         self.session.setPlaybackState(state_builder.build())
+        return None
 
     def release(self):
         """Clean up resources when the app shuts down."""
@@ -402,6 +404,7 @@ class MusicNotification:
         # Re-add the updated 3 actions
         for action in actions:
             self.builder.addAction(action)
+
     @staticmethod
     def __to_str(string__):
         value = str(string__) # for weird values
@@ -454,7 +457,7 @@ class MusicNotification:
         self.soundLoader.bind(
             state=self._parse_state,
             on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
-            on_seek=lambda pos:self.updateProgressBar()
+            on_seek=lambda _,pos:self.updateProgressBar()
         )
 
         # TODO Receive on seek
@@ -463,8 +466,15 @@ class MusicNotification:
         print(f'sound load state changed: {state}')
         if self.already_built:
             if state == 'play':
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval is None:
+                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
                 self.showPauseIcon()
             elif state == 'pause':
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval:
+                #     self._update_interval.cancel()
+                #     self._update_interval = None
                 self.showPlayIcon()
         else:
             logger.error("Not built but trying play or pause")
