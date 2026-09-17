@@ -5,10 +5,10 @@
 """
 
 import os
-from kivy.properties import ObjectProperty
 from android_notify.internal.logger import logger
 from jnius import autoclass, PythonJavaClass, java_method
 from android_notify.config import on_android_platform
+from kivy.properties import ObjectProperty
 from kivy.event import EventDispatcher
 
 
@@ -144,6 +144,8 @@ class SoundLoader(EventDispatcher):
     def on_player_complete(self):
         """Called by CompletionListener when the track reaches its end."""
         logger.debug("EVENT: COMPLETE")
+        if not self.loop:
+            self.state = "stop"
         self.dispatch("on_complete", self._player)
         if self.loop:
             self.seek(0)

@@ -9,6 +9,7 @@ from android_notify.internal.java_classes import autoclass, cast,Intent, Pending
 from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
 from android_notify.internal.channels import create_channel
+from android_notify.media.music.helper import SoundLoader
 from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
 from android_notify.widgets.texts import set_title, set_message
 
@@ -85,12 +86,12 @@ class AndroidRunnable(PythonJavaClass):
             traceback.print_exc()
 
 
-_active_music_notification = None
+_active_music_notification:SoundLoader = None
 class Listener(PythonJavaClass):
     __javainterfaces__ = [
         get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
+        # com/example/android_notify/MyMediaCallback$Listener
     ]
-
     __javacontext__ = 'app'
 
     def __init__(self, play_music=None, pause_music=None, seek_music=None, next_music=None, prev_music=None):
@@ -179,6 +180,7 @@ class MusicNotification:
         self._has_next = True
         self._has_prev = True
         self._play_pause_index = 1
+        self._media_style = None
 
         self.on_next = on_next
         self.on_previous = on_previous
@@ -293,7 +295,7 @@ class MusicNotification:
                 # if self._update_interval is None:
                 #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
                 self.showPauseIcon()
-            elif state == 'pause':
+            elif state in ('pause', 'stop'):
                 # updateProgressBar - media session auto handles update
                 # if self._update_interval:
                 #     self._update_interval.cancel()
@@ -340,6 +342,7 @@ class MusicNotification:
         style = MediaStyle()
         style.setMediaSession(self.session.getSessionToken())
         style.setShowActionsInCompactView(self._play_pause_index)
+        self._media_style = style
         self.builder.setStyle(style)
 
         # Attach metadata (title, artist, duration) to the MediaSession
@@ -373,6 +376,9 @@ class MusicNotification:
         is_playing = self.soundLoader.state == "play"
         self._add_buttons(is_playing)
         self.updateProgressBar()
+        if self._media_style is not None:
+            self._media_style.setShowActionsInCompactView(self._play_pause_index)
+            self.builder.setStyle(self._media_style)
         self.refresh()
 
     def showPauseIcon(self):
