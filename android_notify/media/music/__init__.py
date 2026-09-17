@@ -7,7 +7,7 @@ from android_notify.widgets.images import find_and_set_default_icon, get_img_abs
 
 from jnius import autoclass, cast, PythonJavaClass, java_method
 
-from android_notify.internal.android import get_active_notification_ids
+from android_notify.internal.android import get_active_notification_ids, get_unique_id
 from android_notify.internal.java_classes import Intent, PendingIntent, BuildVersion, String, BitmapFactory
 
 NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
@@ -50,7 +50,7 @@ except jnius.jnius.JavaException as e:
     if e.classname == 'java.lang.ClassNotFoundException':
         logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
     else:
-        print(e)
+        logger.error(e)
         traceback.print_exc()
 
 def get_intent_for_launching_app():
@@ -60,7 +60,7 @@ def get_intent_for_launching_app():
         package_name = context.getPackageName()
         return package_manager.getLaunchIntentForPackage(package_name)
     except Exception as error_getting_default_intent_for_launching_app:
-        print(error_getting_default_intent_for_launching_app)
+        logger.error(error_getting_default_intent_for_launching_app)
         traceback.print_exc()
         return None
 
@@ -108,7 +108,7 @@ class AndroidRunnable(PythonJavaClass):
         try:
             self.callback_func()
         except Exception as error_running_callback:
-            print(error_running_callback)
+            logger.error(error_running_callback)
             traceback.print_exc()
 
 class Listener(PythonJavaClass):
@@ -174,7 +174,7 @@ class Listener(PythonJavaClass):
 
     @java_method('()V')
     def onSkipToPrevious(self):
-        print("nEventListener -SKIP PREV EVENT RECEIVED")
+        logger.debug("nEventListener -SKIP PREV EVENT RECEIVED")
         if _active_music_notification is not None and not _active_music_notification._has_prev:
             return
         if self.prev_music:
@@ -213,13 +213,12 @@ class MusicNotification:
 
         self.channel_id = "music_channel"
         self.channel_name = "Music"
-        self.notification_id = self.__get_unique_id()
+        self.notification_id = get_unique_id()
 
         self.context = None
         self.callback = None
         self.session = None
 
-        print("init ran")
         if on_android_platform():
             self.context = get_python_activity_context()
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
@@ -228,10 +227,9 @@ class MusicNotification:
                 runnable = AndroidRunnable(self.__setup_media_session)
                 self.context.runOnUiThread(runnable)
             except Exception as error_setting_controls:
-                print(error_setting_controls)
+                logger.error(error_setting_controls)
                 traceback.print_exc()
 
-    # noinspection DuplicatedCode
     def __setup_media_session(self):
         """
         Initialized Media Session and Sets it's callbacks
@@ -259,7 +257,6 @@ class MusicNotification:
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
         logger.debug("MediaSession initialization and callback setup complete!")
 
-    # noinspection DuplicatedCode
     def build_notification(self, is_playing):
     # def build_notification(self, title, artist, is_playing, current_ms, duration_ms):
         """Fully builds and dispatches the media notification.
@@ -271,7 +268,7 @@ class MusicNotification:
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
-        print("running build....")
+        logger.debug("running build....")
         length_of_song = self.soundLoader.length
         song_position = self.soundLoader.get_pos()
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")
@@ -361,7 +358,6 @@ class MusicNotification:
             self.session.setActive(False)
             self.session.release()
 
-    # noinspection DuplicatedCode
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
 
@@ -380,6 +376,7 @@ class MusicNotification:
 
         flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
         return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
+
     def refresh(self):
         """Refresh the notification."""
         get_notification_manager().notify(self.notification_id,self.builder.build())
@@ -421,31 +418,6 @@ class MusicNotification:
         for action in actions:
             self.builder.addAction(action)
 
-    @staticmethod
-    def __to_str(string__):
-        value = str(string__) # for weird values
-        return String(value)
-
-    @staticmethod
-    def __get_unique_id():
-        if not on_android_platform():
-            return 0
-
-        if from_service_file():
-            return int(time.time() * 1000) % 2_147_483_647
-
-        notification_id=1
-        try:
-            ids_in_tray = get_active_notification_ids(notification_manager = get_notification_manager())
-            while notification_id in ids_in_tray:
-                if notification_id not in ids_in_tray:
-                    break
-                notification_id = notification_id + 1
-        except Exception as error_getting_id_that_is_not_in_tray:
-            logger.exception(error_getting_id_that_is_not_in_tray)
-            traceback.print_exc()
-        return notification_id
-
     def setLargeIcon(self,music_path=None,img_path=None):
         if img_path:
             image_absolute_path = get_img_absolute_path(img_path)
@@ -466,7 +438,6 @@ class MusicNotification:
             except Exception as error_getting_art_bytes:
                 logger.exception(error_getting_art_bytes)
                 traceback.print_exc()
-
 
     def setSoundLoader(self, sound_load_instance):
         self.soundLoader = sound_load_instance
@@ -490,7 +461,7 @@ class MusicNotification:
         self.refresh()
 
     def _parse_state(self, loader_instance,state):
-        print(f'sound load state changed: {state}')
+        logger.debug(f'sound load state changed: {state}')
         if self.already_built:
             if state == 'play':
                 # updateProgressBar - media session auto handles update

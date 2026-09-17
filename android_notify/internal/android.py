@@ -2,13 +2,14 @@
 Android related logic
 """
 import time, os
+import traceback
 
 from .logger import logger
 from ..config import get_notification_manager, on_android_platform, from_service_file, on_flet_app, \
     get_python_activity_context
 from .permissions import has_notification_permission
 from .java_classes import autoclass, BuildVersion, Uri, NotificationCompat, NotificationManagerCompat, \
-    NotificationManager, Context, File
+    NotificationManager, Context, File, String
 from .an_types import Importance
 
 
@@ -271,3 +272,37 @@ def get_active_notification_ids(notification_manager=None) -> list:
         active_notification_ids.append(status_bar_notification.getId())
 
     return active_notification_ids
+
+
+def get_unique_id(candidate_id: int = 1) -> int:
+    """
+    candidate_id: this is a guess for a unique ID, if it's not available a unique one will be returned
+    """
+    if not on_android_platform():
+        return 0
+
+    if from_service_file():
+        return int(time.time() * 1000) % 2_147_483_647
+
+    notification_id = candidate_id
+    try:
+        ids_in_tray = get_active_notification_ids(notification_manager=get_notification_manager())
+        if notification_id in ids_in_tray:
+            for _ in ids_in_tray:  # I am avoiding while loops
+                notification_id = notification_id + 1
+                if notification_id not in ids_in_tray:
+                    break
+    except Exception as error_getting_id_that_is_not_in_tray:
+        logger.exception(error_getting_id_that_is_not_in_tray)
+        traceback.print_exc()
+
+    return notification_id
+
+
+def to_str(string__):
+    """
+    Android ignore some python string value and I end up with parse errors
+    This is also to make sure any weird issues are caught in python first, :) because I understand it better
+    """
+    value = str(string__) # for weird values
+    return String(value)
