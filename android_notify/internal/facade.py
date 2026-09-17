@@ -99,8 +99,8 @@ class Intent(IntFlag):
         pass
 
 class PendingIntent:
-    FLAG_IMMUTABLE = ''
-    FLAG_UPDATE_CURRENT = ''
+    FLAG_UPDATE_CURRENT = 0x08000000
+    FLAG_IMMUTABLE = 0x04000000
 
     @classmethod
     def getActivity(cls, context, value, action_intent, pending_intent_type):
@@ -443,38 +443,6 @@ class AndroidActivity:
         logger.debug(f"[MOCK] AndroidActivity.unbind called with {on_new_intent}")
 
 
-class MActivity:
-    def getSystemService(self):
-        logger.debug("[MOCK] mActivity.getSystemService called")
-        return self
-
-
-class PythonActivity:
-    def __init__(self):
-        logger.debug("[MOCK] PythonActivity initialized")
-
-    @staticmethod
-    def mActivity():
-        logger.debug("[MOCK] mActivity used")
-        return MActivity()
-
-    @staticmethod
-    def startForeground(notification_id, builder_build, foreground_type):
-        logger.debug(
-            f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
-
-    def setAutoRestartService(self):
-        logger.debug("[MOCK] setAutoRestartService called")
-        return self
-
-
-class DummyIcon:
-    icon = 101
-
-    def __init__(self):
-        logger.debug("[MOCK] DummyIcon initialized")
-
-
 class Context:
     NOTIFICATION_SERVICE = "notification"
     VIBRATOR_SERVICE = "vibrator"
@@ -507,6 +475,41 @@ class Context:
     def getExternalCacheDir():
         logger.debug("[MOCK] Context.getExternalCacheDir called")
         return File("mock_external_cache_dir")
+
+class MActivity(Context):
+    def getSystemService(self):
+        logger.debug("[MOCK] mActivity.getSystemService called")
+        return self
+    def runOnUiThread(self,runnable):
+        logger.debug(f"[MOCK] mActivity.runOnUiThread called with runnable={runnable}")
+        return self
+
+
+class PythonActivity:
+    def __init__(self):
+        logger.debug("[MOCK] PythonActivity initialized")
+
+    @staticmethod
+    def mActivity():
+        logger.debug("[MOCK] mActivity used")
+        return MActivity()
+
+    @staticmethod
+    def startForeground(notification_id, builder_build, foreground_type):
+        logger.debug(
+            f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
+
+    def setAutoRestartService(self):
+        logger.debug("[MOCK] setAutoRestartService called")
+        return self
+
+
+class DummyIcon:
+    icon = 101
+
+    def __init__(self):
+        logger.debug("[MOCK] DummyIcon initialized")
+
 
 
 class PackageManager:
@@ -579,7 +582,21 @@ class MediaSession:
     def release(self):
         logger.debug("[MOCK] MediaSession.release called")
 
+    def setCallsetCallbackback(self, callback):
+        logger.debug(f"[MOCK] MediaSession.release called with callback={callback}")
 
+
+class MyMediaCallback:
+    def onPlay(self):
+        pass
+    def onPause(self):
+        pass
+    def onSeekTo(self):
+        pass
+    def onSkipToNext(self):
+        pass
+    def onSkipToPrevious(self):
+        pass
 class PlaybackState:
     ACTION_PLAY = 1
     ACTION_PAUSE = 2

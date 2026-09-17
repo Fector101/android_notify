@@ -188,7 +188,11 @@ class MusicNotification:
 
         # Wire the Java callback (MyMediaCallback) to the Python Listener
 
-        self.listener = self.listener()
+        if self.listener is None:
+            # Instantiate the (user-switchable) Listener Class from the class
+            # attribute -- never the instance attr, which may be a pre-wired
+            # listener or None on re-entry.
+            self.listener = type(self).listener()
         self.listener.play_music = self._play_music
         self.listener.pause_music = self._pause_music
         self.listener.seek_music = self._seek_music

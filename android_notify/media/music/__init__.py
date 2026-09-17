@@ -1,8 +1,10 @@
-import jnius.jnius
 import traceback
+from typing import Optional
+import jnius.jnius
 
 from jnius import PythonJavaClass, java_method
 
+from android_notify.internal.facade import MActivity
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
 from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
@@ -53,7 +55,7 @@ if on_android_platform():
 else:
     from android_notify.internal.facade import (
         NotificationCompatBuilder, R_drawable,
-        ActionBuilder, KeyEvent,
+        ActionBuilder, KeyEvent, MyMediaCallback,
         MediaSession,
         PlaybackState,
         PlaybackStateBuilder,
@@ -86,7 +88,7 @@ class AndroidRunnable(PythonJavaClass):
             traceback.print_exc()
 
 
-_active_music_notification:SoundLoader = None
+_active_music_notification: Optional["MusicNotification"] = None
 class Listener(PythonJavaClass):
     __javainterfaces__ = [
         get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
@@ -141,7 +143,7 @@ class Listener(PythonJavaClass):
     @java_method('()V')
     def onSkipToNext(self):
         logger.debug("nEventListener -SKIP NEXT EVENT RECEIVED")
-        if _active_music_notification is not None and not _active_music_notification._has_next:
+        if _active_music_notification is not None and not _active_music_notification.has_next:
             return
         if self.next_music:
             self.next_music()
@@ -151,7 +153,7 @@ class Listener(PythonJavaClass):
     @java_method('()V')
     def onSkipToPrevious(self):
         logger.debug("nEventListener -SKIP PREV EVENT RECEIVED")
-        if _active_music_notification is not None and not _active_music_notification._has_prev:
+        if _active_music_notification is not None and not _active_music_notification.has_prev:
             return
         if self.prev_music:
             self.prev_music()
@@ -177,8 +179,8 @@ class MusicNotification:
         self._seek_music = None
         self._next_music = on_next
         self._prev_music = on_previous
-        self._has_next = True
-        self._has_prev = True
+        self.has_next = True
+        self.has_prev = True
         self._play_pause_index = 1
         self._media_style = None
 
@@ -189,7 +191,7 @@ class MusicNotification:
         self.channel_name = "Music"
         self.notification_id = get_unique_id()
 
-        self.context = None
+        self.context: Optional["MActivity"] = None
         self.callback = None
         self.session = None
 
@@ -198,8 +200,9 @@ class MusicNotification:
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
             try:
                 # Run init on Android's UI thread (required by MediaSession)
-                runnable = AndroidRunnable(self.__setup_media_session)
-                self.context.runOnUiThread(runnable)
+                if self.context is not None:
+                    runnable = AndroidRunnable(self.__setup_media_session)
+                    self.context.runOnUiThread(runnable)
             except Exception as error_setting_controls:
                 logger.error(error_setting_controls)
                 traceback.print_exc()
@@ -218,6 +221,7 @@ class MusicNotification:
         self.session.setFlags(1 | 2)
 
         # Wire the Java callback (MyMediaCallback) to the Python Listener
+        # if self.listener is not None and MyMediaCallback is not None:
         self.listener = self.listener()
         self.listener.play_music = self._play_music
         self.listener.pause_music = self._pause_music
@@ -226,7 +230,7 @@ class MusicNotification:
         self.listener.prev_music = self._prev_music
 
         self.callback = MyMediaCallback(self.listener)
-        self.session.setCallback(self.callback)
+        self.session.setCallsetCallbackback(self.callback)
         self.session.setActive(True)
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
         logger.debug("MediaSession initialization and callback setup complete!")
@@ -259,7 +263,7 @@ class MusicNotification:
 
 
         action_intents = []
-        if self._has_prev:
+        if self.has_prev:
             action_intents.append(
                 (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             )
@@ -268,7 +272,7 @@ class MusicNotification:
             (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
              String(play_or_pause_text), play_pause_code)
         )
-        if self._has_next:
+        if self.has_next:
             action_intents.append(
                 (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
             )
@@ -369,8 +373,8 @@ class MusicNotification:
 
     def set_skip_available(self, has_next, has_prev):
         """Tell the notification whether prev/next tracks exist around the current one."""
-        self._has_next = bool(has_next)
-        self._has_prev = bool(has_prev)
+        self.has_next = bool(has_next)
+        self.has_prev = bool(has_prev)
         if not self.already_built or not self.soundLoader:
             return
         is_playing = self.soundLoader.state == "play"
@@ -455,9 +459,9 @@ class MusicNotification:
                 | PlaybackState.ACTION_FAST_FORWARD
                 | PlaybackState.ACTION_REWIND
         )
-        if self._has_next:
+        if self.has_next:
             actions |= PlaybackState.ACTION_SKIP_TO_NEXT
-        if self._has_prev:
+        if self.has_prev:
             actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS
         state_builder = PlaybackStateBuilder()
         state = PlaybackState.STATE_PLAYING if is_playing else PlaybackState.STATE_PAUSED
