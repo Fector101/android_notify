@@ -238,3 +238,66 @@ class SoundLoader(EventDispatcher):
 
     def on_complete(self, player):
         pass
+
+
+JAVA_CALLBACK_FILE_CONTENT = """
+// Place as-is inside: ./src/MediaSessionCallback.java
+// A bridge: it receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
+// Python MediaSessionListener implements the Java interface MediaSessionCallback$MediaSessionListener, so it's the Python-side handler of those events.
+
+package org.wally.waller;
+
+import android.media.session.MediaSession;
+
+public class MediaSessionCallback extends MediaSession.Callback {
+
+    public interface MediaSessionListener {
+        void onPlay();
+        void onPause();
+        void onSeekTo(long pos);
+        void onSkipToNext();
+        void onSkipToPrevious();
+    }
+
+    private MediaSessionListener listener;
+
+    public MediaSessionCallback(MediaSessionListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void onPlay() {
+        if (listener != null) {
+            listener.onPlay();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (listener != null) {
+            listener.onPause();
+        }
+    }
+
+    @Override
+    public void onSeekTo(long pos) {
+        if (listener != null) {
+            listener.onSeekTo(pos);
+        }
+    }
+
+    @Override
+    public void onSkipToNext() {
+        if (listener != null) {
+            listener.onSkipToNext();
+        }
+    }
+
+    @Override
+    public void onSkipToPrevious() {
+        if (listener != null) {
+            listener.onSkipToPrevious();
+        }
+    }
+}
+"""
