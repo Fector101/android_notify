@@ -274,6 +274,7 @@ class MusicNotification:
 
         set_title(builder=self.builder,title=self._title)
         set_message(builder=self.builder,message=self._artist)
+        self.setLargeIcon(music_path=self.soundLoader.source)
         find_and_set_default_icon(self.builder)
         self.builder.setOngoing(is_playing)
         self.builder.setVisibility(1)# NotificationCompat.VISIBILITY_PUBLIC = 1 (show content on lock screen)
@@ -447,12 +448,16 @@ class MusicNotification:
                 logger.exception(error_getting_art_bytes)
                 traceback.print_exc()
 
-        manager = get_notification_manager()
-        manager.notify(self.notification_id, self.builder.build())
 
     def setSoundLoader(self, sound_load_instance):
         self.soundLoader = sound_load_instance
-        self.soundLoader.bind(state=self._parse_state,on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0))
+        self.soundLoader.bind(
+            state=self._parse_state,
+            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
+            on_seek=lambda pos:self.updateProgressBar()
+        )
+
+        # TODO Receive on seek
 
     def _parse_state(self, loader_instance,state):
         print(f'sound load state changed: {state}')
