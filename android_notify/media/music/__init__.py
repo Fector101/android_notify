@@ -15,7 +15,7 @@ from android_notify.widgets.images import find_and_set_default_icon, get_img_abs
 from android_notify.widgets.texts import set_title, set_message
 
 
-JAVA_FILE_NAME = "MyMediaCallback"
+JAVA_FILE_NAME = "MediaSessionCallback"
 
 if on_android_platform():
     NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
@@ -42,10 +42,10 @@ if on_android_platform():
 
     java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
     try:
-        MyMediaCallback = autoclass(java_bridge_class)
-        logger.info(f"Successfully loaded MyMediaCallback: {java_bridge_class}")
+        MediaSessionCallback = autoclass(java_bridge_class)
+        logger.info(f"Successfully loaded MediaSessionCallback: {java_bridge_class}")
     except jnius.jnius.JavaException as e:
-        MyMediaCallback = None
+        MediaSessionCallback = None
         if e.classname == 'java.lang.ClassNotFoundException':
             logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
         else:
@@ -54,7 +54,7 @@ if on_android_platform():
 else:
     from android_notify.internal.facade import (
         NotificationCompatBuilder, R_drawable,
-        ActionBuilder, KeyEvent, MyMediaCallback,
+        ActionBuilder, KeyEvent, MediaSessionCallback,
         MediaSession,
         PlaybackState,
         PlaybackStateBuilder,
@@ -88,10 +88,10 @@ class AndroidRunnable(PythonJavaClass):
 
 
 _active_music_notification: Optional["MusicNotification"] = None
-class Listener(PythonJavaClass):
+class MediaSessionListener(PythonJavaClass):
     __javainterfaces__ = [
-        get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
-        # com/example/android_notify/MyMediaCallback$Listener
+        get_package_name().replace(".","/")+'/MediaSessionCallback$MediaSessionListener'
+        # com/example/android_notify/MediaSessionCallback$MediaSessionListener
     ]
     __javacontext__ = 'app'
 
@@ -161,7 +161,7 @@ class Listener(PythonJavaClass):
 
 
 class MusicNotification:
-    listener = Listener # so users can switch listener Class
+    listener = MediaSessionListener # so users can switch listener Class
     soundLoader = None
     notification_id = None
 
@@ -219,7 +219,7 @@ class MusicNotification:
         self.session = MediaSession(self.context, get_package_name()+".MusicSession")
         self.session.setFlags(1 | 2)
 
-        # Wire the Java callback (MyMediaCallback) to the Python Listener
+        # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
         self.listener = self.listener()
         self.listener.play_music = self._play_music
         self.listener.pause_music = self._pause_music
@@ -227,7 +227,7 @@ class MusicNotification:
         self.listener.next_music = self._next_music
         self.listener.prev_music = self._prev_music
 
-        self.callback = MyMediaCallback(self.listener)
+        self.callback = MediaSessionCallback(self.listener)
         self.session.setCallback(self.callback)
         self.session.setActive(True)
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")

@@ -586,7 +586,7 @@ class MediaSession:
         logger.debug(f"[MOCK] MediaSession.release called with callback={callback}")
 
 
-class MyMediaCallback:
+class MediaSessionListener:
     def onPlay(self):
         pass
     def onPause(self):

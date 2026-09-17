@@ -22,7 +22,7 @@ import logging
 
 
 
-JAVA_FILE_NAME = "MyMediaCallback" # For Java <-> Python bridge
+JAVA_FILE_NAME = "MediaSessionCallback" # For Java <-> Python bridge
 
 PythonActivity = autoclass('org.kivy.android.PythonActivity')
 KeyEvent = autoclass('android.view.KeyEvent')
@@ -42,7 +42,7 @@ MediaMetadata = autoclass('android.media.MediaMetadata')
 MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
 MediaStyle = autoclass('android.app.Notification$MediaStyle')
 
-MyMediaCallback = autoclass(f'{get_package_name()}.{JAVA_FILE_NAME}')
+MediaSessionCallback = autoclass(f'{get_package_name()}.{JAVA_FILE_NAME}')
 
 def get_intent_for_launching_app():
     try:
@@ -104,7 +104,7 @@ class AndroidRunnable(PythonJavaClass):
 
 class Listener(PythonJavaClass):
     __javainterfaces__ = [
-        get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
+        get_package_name().replace(".","/")+'/MediaSessionCallback$Listener'
     ]
 
     __javacontext__ = 'app'
@@ -186,7 +186,7 @@ class MusicNotification:
         self.session = MediaSession(self.context, get_package_name()+".MusicSession")
         self.session.setFlags(1 | 2)
 
-        # Wire the Java callback (MyMediaCallback) to the Python Listener
+        # Wire the Java callback (MediaSessionCallback) to the Python Listener
 
         if self.listener is None:
             # Instantiate the (user-switchable) Listener Class from the class
@@ -199,7 +199,7 @@ class MusicNotification:
         self.listener.next_music = self._next_music
         self.listener.prev_music = self._prev_music
 
-        self.callback = MyMediaCallback(self.listener)
+        self.callback = MediaSessionCallback(self.listener)
         self.session.setCallback(self.callback)
         self.session.setActive(True)
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
