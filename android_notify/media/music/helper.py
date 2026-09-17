@@ -110,24 +110,6 @@ class SoundLoader(EventDispatcher):
 
     __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
 
-    def on_play(self, player):
-        pass
-
-    def on_pause(self, player):
-        pass
-
-    def on_stop(self, player):
-        pass
-
-    def on_load(self, player):
-        pass
-
-    def on_seek(self, player):
-        pass
-
-    def on_complete(self, player):
-        pass
-
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -250,4 +232,7 @@ class SoundLoader(EventDispatcher):
         pass
 
     def on_seek(self,player):
+        pass
+
+    def on_complete(self, player):
         pass
