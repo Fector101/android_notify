@@ -39,23 +39,25 @@ class Notification(BaseNotification):
 
     :param title: Title of the notification.
     :param message: Message body.
-    ---
-    (Style Options)
-    :param progress_current_value: Integer To set progress bar current value.
-    :param progress_max_value: Integer To set Max range for progress bar.
-    ---
-    (Advance Options)
-    :param id: Pass in Old 'id' to use old instance
-    :param callback: Function for notification Click.
-    :param channel_name: - str Defaults to "Default Channel"
-    :param channel_id: - str Defaults to "default_channel"
-    :param silent: - boolean to make notification silent
-    :param app_icon: - change default app icon
-    ---
-    (Custom Style Options)
-    :param title_color: title color str (to be safe use hex code)
-    :param message_color: message color str (to be safe use hex code)
 
+    **Style options**
+
+    :param progress_current_value: Integer to set the progress bar current value.
+    :param progress_max_value: Integer to set the max range for the progress bar.
+
+    **Advanced options**
+
+    :param id: Pass in an old ``id`` to reuse an existing instance.
+    :param callback: Function for the notification click.
+    :param channel_name: ``str``. Defaults to "Default Channel".
+    :param channel_id: ``str``. Defaults to "default_channel".
+    :param silent: Boolean to make the notification silent.
+    :param app_icon: Change the default app icon.
+
+    **Custom style options**
+
+    :param title_color: Title color ``str`` (to be safe use a hex code).
+    :param message_color: Message color ``str`` (to be safe use a hex code).
     """
 
     notification_ids = [0]

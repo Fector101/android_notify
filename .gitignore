@@ -5,6 +5,8 @@ auto_stuff.sh
 todo.txt
 .pylintrc
 venv
+.venv
+docs/_build
 lab.md
 release-lab.md
 __pycache__
