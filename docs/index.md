@@ -10,7 +10,9 @@ installation
 quickstart
 usage
 advanced
+foreground-services
 api
+help
 ```
 
 ## Features

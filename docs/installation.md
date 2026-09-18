@@ -18,6 +18,10 @@ requirements = python3, kivy, pyjnius, android-notify
 
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
+
+# AndroidX dependency (required by the library)
+android.gradle_dependencies = androidx.core:core:1.12.0
+android.enable_androidx = True
 ```
 
 ## Flet apps

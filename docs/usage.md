@@ -77,6 +77,8 @@ Clock.schedule_interval(update_progress, 3)
 
 ![progressbar](imgs/progressbar.gif)
 
+**Update frequency** — Android ignores updates faster than **0.5 seconds**. android-notify automatically handles rapid updates by cancelling old ones if a new update arrives within 1 second.
+
 ## Texts
 
 | Method | Description |
@@ -129,6 +131,32 @@ notification.send()
 
 ![buttons](imgs/btns.jpg)
 
+### Broadcast buttons
+
+By default a button callback runs when the app opens (or reopens). If you want a button to trigger a function **without opening the app**, pass a custom BroadcastReceiver name and an optional intent action:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="Save Password?",
+    message="The password was found in the leak database."
+)
+
+def save_password(*args):
+    print("Saving password...")
+
+notification.addButton(
+    "Save",
+    on_release=save_password,
+    receiver_name="PasswordReceiver",
+    action="com.myapp.SAVE_PASSWORD"
+)
+notification.send()
+```
+
+For steps to create broadcast buttons, visit the [android-notify wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) - make things happen without opening the app.
+
 ## Colored texts
 
 You can customize the title and message colors. Using hex codes is safest.
@@ -144,6 +172,67 @@ notification = Notification(
 )
 notification.send()
 ```
+
+### Colored texts setup (dev)
+
+To control the title and message colors you also need a custom notification layout in your app:
+
+1. Create a folder named `res/layout` in your app.
+2. Copy these files using the exact names:
+
+`an_colored_basic_small.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+    />
+
+</LinearLayout>
+```
+
+`an_colored_basic_large.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+    />
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+    />
+
+</LinearLayout>
+```
+
+3. In your `buildozer.spec` include these settings:
+
+```ini
+source.include_exts = py,kv,xml
+android.add_resources = res
+```
+
+Then use the `title_color` and/or `message_color` params with hex color codes to control the colors.
 
 ## Notification styles overview
 
