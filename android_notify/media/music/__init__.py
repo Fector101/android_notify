@@ -325,10 +325,10 @@ class MusicNotification:
         including icons and actions. Called only on state changes
         (play/pause/seek/next/prev) to avoid flickering during seekbar drags.
         """
+        logger.debug("running build....")
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
-        logger.debug("running build....")
         length_of_song = self.soundLoader.length
         song_position = self.soundLoader.get_pos()
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")

@@ -139,6 +139,7 @@ class SoundLoader(EventDispatcher):
     def on_player_ready(self):
         """Called by PlayerReadyListener when MediaPlayer is ready."""
         self._player_ready = True
+        logger.debug("on_load dispatched")
         self.dispatch("on_load",'')
 
     def on_player_complete(self):
