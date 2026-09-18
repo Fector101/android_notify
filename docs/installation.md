@@ -121,6 +121,24 @@ pip install android_notify
 android-notify -v
 ```
 
+## Command-line interface
+
+Installing the package on desktop also installs an `android-notify` command:
+
+```bash
+android-notify --version   # or -v, prints the installed version
+android-notify --help
+```
+
+To remove old `android_notify` build artifacts (stale `android_notify-*.*.*` folders inside `.buildozer/android/platform/build-*` that are no longer part of the requirements) when the build folder gets large:
+
+```bash
+android-notify prune          # clean the current project's .buildozer
+android-notify prune -p path  # point at a specific project directory
+```
+
+`prune` scans the `.buildozer` build paths, lists every `android_notify*` item it finds, and asks for confirmation before deleting anything; nothing is removed without your `y`. The `buildozer` builds themselves are left intact.
+
 ## Dev version
 
 To use the latest development version from GitHub:

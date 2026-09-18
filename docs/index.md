@@ -11,6 +11,7 @@ quickstart
 usage
 advanced
 foreground-services
+music-notifications
 api
 changelog
 help
@@ -24,7 +25,7 @@ help
   - Large icon notifications
   - Big picture notifications
   - Combined image styles
-  - Custom notification icon — see the [images](usage.md#images) section
+  - Custom notification icon: see the [images](usage.md#images) section
   - Big text notifications
   - Inbox-style notifications
   - Colored texts and icons
@@ -40,6 +41,7 @@ help
   - Cancel notifications
   - Use [custom sound](advanced.md#custom-sound)
   - [Vibration](advanced.md#vibration)
+  - [Music notifications](music-notifications.md) with `SoundLoader` playback
 
 ## Quick Start
 

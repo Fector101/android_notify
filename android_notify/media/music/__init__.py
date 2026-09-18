@@ -1,8 +1,6 @@
 import traceback
 from typing import Optional
-import jnius.jnius
 
-from jnius import PythonJavaClass, java_method
 
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
@@ -18,6 +16,8 @@ from android_notify.widgets.texts import set_title, set_message
 JAVA_FILE_NAME = "MediaSessionCallback"
 
 if on_android_platform():
+    import jnius.jnius
+    from jnius import PythonJavaClass, java_method
     NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
     R_drawable = autoclass('android.R$drawable')
     ActionBuilder = autoclass('android.app.Notification$Action$Builder')
@@ -63,6 +63,9 @@ else:
         MediaStyle,
         MediaMetadataRetriever,
     )
+    PythonJavaClass = object
+    java_method = lambda signature: (lambda func: func)  # Dummy decorator for non-Android platforms
+    
 
 
 # AndroidRunnable - run code on Android's main (UI) thread Android's MediaSession APIs MUST be created/accessed from

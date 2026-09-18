@@ -117,9 +117,9 @@ notification.send()
 
 ## Progress bar
 
-- `updateProgressBar(current_value, message, title)` — update progress in real-time.
-- `showInfiniteProgressBar` — shows an infinite progress animation.
-- `removeProgressBar(message, show_on_update=True, title)` — cleanly remove the progress bar. It optionally shows the final update briefly before hiding (`show_on_update=True`).
+- `updateProgressBar(current_value, message, title)` - update progress in real-time.
+- `showInfiniteProgressBar` - shows an infinite progress animation.
+- `removeProgressBar(message, show_on_update=True, title)` - cleanly remove the progress bar. It optionally shows the final update briefly before hiding (`show_on_update=True`).
 
 :::{pydroid}
 from android_notify import Notification
@@ -151,7 +151,7 @@ Clock.schedule_interval(update_progress, 3)
 
 ![progressbar](imgs/progressbar.gif)
 
-**Update frequency** — Android ignores updates faster than **0.5 seconds**. android-notify automatically handles rapid updates by cancelling old ones if a new update arrives within 1 second.
+**Update frequency**: Android ignores updates faster than **0.5 seconds**. android-notify automatically handles rapid updates by cancelling old ones if a new update arrives within 1 second.
 
 ## Texts
 
@@ -269,6 +269,15 @@ notification.send()
 :::
 
 For steps to create broadcast buttons, visit the [android-notify wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) - make things happen without opening the app.
+
+### Removing buttons
+
+To remove all buttons from an already-sent notification, call `removeButtons()` and refresh it:
+
+:::{pydroid}
+notification.removeButtons()
+notification.refresh()
+:::
 
 ## Colored texts
 

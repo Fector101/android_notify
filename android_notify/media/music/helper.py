@@ -6,11 +6,14 @@
 
 import os
 from android_notify.internal.logger import logger
-from jnius import autoclass, PythonJavaClass, java_method
 from android_notify.config import on_android_platform, get_package_name
-from kivy.properties import ObjectProperty
-from kivy.event import EventDispatcher
-
+try:
+    from kivy.properties import ObjectProperty
+    from kivy.event import EventDispatcher
+except:
+    logger.warning("Kivy not found.")
+    EventDispatcher = object
+    ObjectProperty = lambda default: None  # Dummy property for non-Kivy environments
 
 def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
@@ -35,6 +38,7 @@ def requestAllFilesAccess():
     return None
 
 if on_android_platform():
+    from jnius import autoclass, PythonJavaClass, java_method
     MediaPlayer = autoclass('android.media.MediaPlayer')
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
@@ -94,6 +98,8 @@ else:
 
     class CompletionListener:
         pass
+    PythonJavaClass = object
+    java_method = lambda signature: (lambda func: func)  # Dummy decorator for non-Android platforms
 
 class SoundLoader(EventDispatcher):
     _instance = None

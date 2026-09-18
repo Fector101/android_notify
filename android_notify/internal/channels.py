@@ -112,9 +112,9 @@ def delete_all_channels():
     return amount
 
 
-def get_channels() -> list[Any] | Any:
+def get_channels() -> list[dict[str, Any]]:
     """Return all existing channels"""
-    useful_objs=[]
+    useful_objs = []
     if not on_android_platform():
         return []
 
@@ -126,7 +126,6 @@ def get_channels() -> list[Any] | Any:
         "j_obj": None,  # raw channel ref
         # "group", add in next version along with ability to create groups
     }
-
 
     channels = get_notification_manager().getNotificationChannels()
 

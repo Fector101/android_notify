@@ -339,8 +339,9 @@ notification.setPriority("high")  # 'urgent', 'high', 'medium', 'low', 'none'
 
 ## Misc
 
-- `setWhen(secs_ago)` — set the timestamp shown on the notification (seconds ago).
-- `setObeyUserClear(state)` — whether re-triggering the notification after the user cleared it from the tray is allowed.
-- `isInTray()` — check if the notification is still shown in the tray.
-- `fill_args()` / `start_building()` — fill/build the notification without posting it, used with foreground services (see the [Foreground Services](foreground-services.md) page).
-- `NotificationHandler.bindNotifyListener()` / `unbindNotifyListener()` — listen for notification open events in your app.
+- `setWhen(secs_ago)` - set the timestamp shown on the notification (seconds ago).
+- `setObeyUserClear(state)` - whether re-triggering the notification after the user cleared it from the tray is allowed.
+- `isInTray()` - check if the notification is still shown in the tray.
+- `isUsingCustom()` - returns `True` if a custom title or message color is set.
+- `fill_args()` / `start_building()` - fill/build the notification without posting it, used with foreground services (see the [Foreground Services](foreground-services.md) page).
+- `NotificationHandler.bindNotifyListener()` / `unbindNotifyListener()` - listen for notification open events in your app.

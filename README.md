@@ -151,7 +151,7 @@ android-notify -v
 <details>
     <summary>For Agents </summary>
     Full Api Reference:
-    https://android-notify.vercel.app/api/android-notify-v1.60-api.md
+    https://android-notify.vercel.app/api/android-notify-v1.61-api.md
 </details>
 
 ## Common Methods

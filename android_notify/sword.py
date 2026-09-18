@@ -731,7 +731,7 @@ class Notification(BaseNotification):
         return unique_id
 
     @classmethod
-    def getChannels(cls) -> list[Any] | Any:
+    def getChannels(cls) -> list[dict[str, Any]]:
         """Return all existing channels"""
         return get_channels()
 
