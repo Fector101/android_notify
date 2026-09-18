@@ -122,14 +122,16 @@ android-notify --version   # or -v, prints the installed version
 android-notify --help
 ```
 
-To remove old `android_notify` build artifacts (stale `android_notify-*.*.*` folders inside `.buildozer/android/platform/build-*` that are no longer part of the requirements) when the build folder gets large:
+### `prune`
+
+Clears old `android_notify` versions from your buildozer build folder, so a new version in `requirements` is installed fresh instead of reusing the stale one:
 
 ```bash
-android-notify prune          # clean the current project's .buildozer
+android-notify prune          # clear the current project's .buildozer
 android-notify prune -p path  # point at a specific project directory
 ```
 
-`prune` scans the `.buildozer` build paths, lists every `android_notify*` item it finds, and asks for confirmation before deleting anything; nothing is removed without your `y`. The `buildozer` builds themselves are left intact.
+It scans the `build-arm64-v8a_armeabi-v7a/build/python-installs` and `.../dists` folders under `.buildozer/android/platform` for `android_notify*` entries, lists them, and deletes nothing without your `y`.
 
 ## Dev version
 
