@@ -142,9 +142,14 @@ def get_channels() -> list[Any] | Any:
                 obj[key] = spec(channel)
             else: # others
                 value = getattr(channel, spec)()
-                if spec == "getVibrationPattern":
-                    value = list(value) if value is not None else None
-                obj[key] = str(value)
+                if value is None:
+                    obj[key] = None
+                elif spec == "getVibrationPattern":
+                    obj[key] = [value[i] for i in range(len(value))]
+                elif spec == "getSound":
+                    obj[key] = value.toString()  # uri -> real uri string
+                else:
+                    obj[key] = str(value)
         useful_objs.append(obj)
     return useful_objs
 

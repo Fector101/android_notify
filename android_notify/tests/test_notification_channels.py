@@ -1,4 +1,4 @@
-from android_notify import Notification
+from android_notify import Notification, logger
 from .base_test import AndroidNotifyBaseTest
 
 
@@ -16,7 +16,7 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
 
     def test_channel_exists(self):
         try:
-            print(Notification.channelExists("default_channel"))
+            logger.info(f"Channel exists: {Notification.channelExists('default_channel')}")
         except Exception as e:
             self.fail(f"Channel exists failed: {e}")
 
@@ -40,7 +40,7 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
         except Exception as e:
             self.fail(f"Using channel failed: {e}")
 
-    def test_get_channels_structure(self):
+    def test_get_channels_structure(self) -> None:
         prefix = f"getch_{self.uid}"
         Notification.createChannel(
             id=prefix,
@@ -55,6 +55,7 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
         )
 
         channels = Notification.getChannels()
+        logger.debug(channels)
         self.assertIsInstance(channels, list)
         self.assertTrue(channels, "getChannels() returned no channels")
 
@@ -65,6 +66,8 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
             self.assertIsInstance(channel["state"], bool)   # on/off
             self.assertIsInstance(channel["name"], str)
             self.assertTrue(channel["vibration"] is None or isinstance(channel["vibration"], list))
+            self.assertTrue(channel["sound"] is None or isinstance(channel["sound"], str))
+            self.assertTrue(channel["description"] is None or isinstance(channel["description"], str))
             print(
                 f"channel: id={channel['id']} name={channel['name']} state={channel['state']} "
                 f"importance={channel['importance']} sound={channel['sound']} "

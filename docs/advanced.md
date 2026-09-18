@@ -69,11 +69,12 @@ print("Missing channels:", missing)
 channels = Notification.getChannels()
 # [
 #   {'id': 'news', 'name': 'News', 'description': '', 'state': True,
-#    'importance': '3', 'sound': 'None', 'vibration': 'None', 'j_obj': <...>},
+#    'importance': '3', 'sound': 'content://settings/system/notification_sound',
+#    'vibration': None, 'j_obj': <...>},
 #   ...
 # ]
 ```
-`state` is `True` if the channel is turned on by the user (importance > `NONE`). `importance`, `sound` and `vibration` come back as strings, except `vibration` and `sound` which are `None` when not set.
+`state` is `True` if the channel is turned on by the user (importance > `NONE`). `importance` comes back as a string; `sound` is the URI string (or `None`), and `vibration` is a list of timings in ms (or `None` when no pattern is set).
 
 Channels can be deleted at runtime. Once deleted, notifications using that channel are no longer shown and the user has to re-create it:
 
