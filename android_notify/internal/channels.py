@@ -123,9 +123,6 @@ def get_channels() -> list[Any] | Any:
         "name": "getName",
         "description": "getDescription",
         "state": lambda ch: bool(ch.getImportance() > 0),   # on/off (on = importance > IMPORTANCE_NONE)
-        "importance": "getImportance",
-        "sound": "getSound",
-        "vibration": "getVibrationPattern",
         "j_obj": None,  # raw channel ref
         # "group", add in next version along with ability to create groups
     }
@@ -142,14 +139,7 @@ def get_channels() -> list[Any] | Any:
                 obj[key] = spec(channel)
             else: # others
                 value = getattr(channel, spec)()
-                if value is None:
-                    obj[key] = None
-                elif spec == "getVibrationPattern":
-                    obj[key] = [value[i] for i in range(len(value))]
-                elif spec == "getSound":
-                    obj[key] = value.toString()  # uri -> real uri string
-                else:
-                    obj[key] = str(value)
+                obj[key] = None if value is None else str(value)
         useful_objs.append(obj)
     return useful_objs
 

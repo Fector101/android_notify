@@ -59,19 +59,16 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
         self.assertIsInstance(channels, list)
         self.assertTrue(channels, "getChannels() returned no channels")
 
-        expected_keys = {"id", "name", "description", "state", "importance", "sound", "vibration", "j_obj"}
+        expected_keys = {"id", "name", "description", "state", "j_obj"}
         for channel in channels:
             self.assertIsInstance(channel, dict)
             self.assertEqual(set(channel.keys()), expected_keys)
             self.assertIsInstance(channel["state"], bool)   # on/off
             self.assertIsInstance(channel["name"], str)
-            self.assertTrue(channel["vibration"] is None or isinstance(channel["vibration"], list))
-            self.assertTrue(channel["sound"] is None or isinstance(channel["sound"], str))
             self.assertTrue(channel["description"] is None or isinstance(channel["description"], str))
             print(
                 f"channel: id={channel['id']} name={channel['name']} state={channel['state']} "
-                f"importance={channel['importance']} sound={channel['sound']} "
-                f"vibration={channel['vibration']} description={channel['description']}"
+                f"description={channel['description']}"
             )
 
         created = {c["id"] for c in channels}
