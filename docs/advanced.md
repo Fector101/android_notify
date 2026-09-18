@@ -17,25 +17,6 @@ notification.updateTitle("New title")
 notification.updateMessage("New message")
 ```
 
-## Progress bar management
-
-:::{pydroid}
-from android_notify import Notification
-
-notification = Notification(
-    title="Downloading",
-    message="0%",
-    progress_current_value=0,
-    progress_max_value=100,
-).send()
-
-# Update progress in real time
-notification.updateProgressBar(50, "50% downloaded")
-
-# Then remove it cleanly (optionally showing a final update briefly)
-notification.removeProgressBar(message="Done", show_on_update=True)
-:::
-
 ## Adding style even when already sent
 
 Use `.refresh()` to apply any new changes after sending:

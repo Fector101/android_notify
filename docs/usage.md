@@ -119,7 +119,7 @@ notification.send()
 
 - `updateProgressBar(current_value, message, title)` — update progress in real-time.
 - `showInfiniteProgressBar` — shows an infinite progress animation.
-- `removeProgressBar(message, show_on_update=True, title)` — cleanly remove the progress bar.
+- `removeProgressBar(message, show_on_update=True, title)` — cleanly remove the progress bar. It optionally shows the final update briefly before hiding (`show_on_update=True`).
 
 :::{pydroid}
 from android_notify import Notification
