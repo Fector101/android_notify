@@ -253,7 +253,7 @@ JAVA_CALLBACK_FILE_CONTENT = f"""
 // Android-Notify implements MediaSessionListener a Callback Listener with python.
 
 
-package {get_package_name()}"""+"""
+package {get_package_name()};"""+"""
 import android.media.session.MediaSession;
 
 public class MediaSessionCallback extends MediaSession.Callback {

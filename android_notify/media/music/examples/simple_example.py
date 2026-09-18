@@ -59,11 +59,17 @@ class TestApp(App):
             self.status_label.text = f"File not found:\n{AUDIO_ABSOLUTE_PATH}"
             return
 
-        # Ask for All Files Access (needed to read /storage/emulated/0) android.permissions = MANAGE_EXTERNAL_STORAGE
+        # Ask for All Files Access (MANAGE_EXTERNAL_STORAGE) to read the
+        # hard-coded absolute path on Android 11+. This is a special-access
+        # permission that Google Play policy restricts for music apps: prefer
+        # READ_MEDIA_AUDIO and the Storage Access Framework
+        # (ACTION_OPEN_DOCUMENT) for Play-published apps.
         requestAllFilesAccess()
 
         # Create notification Instance
         self.notification = MusicNotification()
+        # No queue in this example: don't advertise prev/next skip controls.
+        self.notification.set_skip_available(False, False)
         self.notification.setTitle(os.path.splitext(os.path.basename(AUDIO_ABSOLUTE_PATH))[0] or "Unknown")
         self.notification.setArtist("Example Artist")
 
