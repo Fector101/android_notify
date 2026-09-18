@@ -8,6 +8,7 @@ META = {
         "in Kivy and Flet apps with the android-notify Python package."
     ),
     "keywords": "android notifications, kivy, flet, pyjnius, python, pydroid",
+    "google-site-verification": "bIEFtLTaiK9xiR_3oMAnf30ok66Lv49Rv_B-4LNp9Ag",
 }
 
 
