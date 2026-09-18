@@ -27,6 +27,7 @@ extensions = [
     "sphinx_tabs.tabs",
     "sphinx_copybutton",
     "pydroid_tabs",
+    "seo_meta",
 ]
 
 # Modules that require Android/pyjnius are mocked so docs build on Linux.
@@ -60,3 +61,10 @@ intersphinx_mapping = {
 
 html_theme = "furo"
 html_title = f"{project} {release}"
+
+# Canonical URL: each version's page points at the same page on the default
+# version, so Google does not treat latest/stable/vX.Y.Z as duplicates.
+html_baseurl = os.environ.get(
+    "READTHEDOCS_CANONICAL_URL",
+    "https://android-notify.readthedocs.io/en/latest/",
+)
