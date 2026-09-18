@@ -11,21 +11,78 @@ Source can be local file paths or complete URLs, except `setSmallIcon` which onl
 | `setSmallIcon` | Changes the app icon to a custom `png`. |
 | `setColor` | Changes the app icon background color. |
 
-For online images the URL should start with `https://` and you need the internet permission (`android.permissions = INTERNET`) in your `buildozer.spec` or `pyproject.toml`.
+### Big Picture
+
+Shows a large image when the notification is expanded:
 
 ```python
 from android_notify import Notification
 
 notification = Notification(
     title='Picture Alert!',
-    message='This notification uses setLargeIcon and setBigPicture method.'
+    message='This notification uses the setBigPicture method.'
 )
-notification.setBigPicture("imgs/photo.png")
-notification.setLargeIcon("imgs/profile.png")
+notification.setBigPicture("https://i.pravatar.cc/300")
 notification.send()
 ```
 
-![images](imgs/images-methods.jpg)
+![big picture](imgs/bigpicturenoti.jpg)
+
+### Large Icon
+
+Appears at the right side of the notification content:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="FabianDev_",
+    message="A twitter about some programming stuff."
+)
+notification.setLargeIcon("https://i.pravatar.cc/300")
+notification.send()
+```
+
+![large icon](imgs/largeicon.jpg)
+
+### Both images
+
+Use `setBigPicture` and `setLargeIcon` together on the same notification:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title='Picture Alert!',
+    message='This notification uses setLargeIcon and setBigPicture together.'
+)
+notification.setBigPicture("https://i.pravatar.cc/300")
+notification.setLargeIcon("https://i.pravatar.cc/300")
+notification.send()
+```
+
+![both images](imgs/images-methods.jpg)
+
+### Custom Small Icon
+
+Changes the app icon. Must be a local `png` file (otherwise it renders as a black box):
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title='Custom Icon',
+    message='This notification uses setSmallIcon.'
+)
+notification.setSmallIcon("icons/butterfly.png")
+notification.send()
+```
+
+![custom icon](imgs/custom_icon.jpg)
+
+### Custom Color
+
+Changes the app icon background color. Strings like `red`, `green`, `blue` work without a hex code:
 
 ```python
 from android_notify import Notification
@@ -34,12 +91,29 @@ notification = Notification(
     title='Custom Icon and Color',
     message='This notification uses setColor and setSmallIcon.'
 )
-notification.setColor("red")
-notification.setSmallIcon("love.png")
+notification.setColor("red")  # or "#FF0000"
+notification.setSmallIcon("icons/butterfly.png")
 notification.send()
 ```
 
-![custom icon and color](imgs/images-methods1.jpg)
+![custom color icon](imgs/custom_color_icon.jpg)
+
+### Online Images
+
+Local paths or URLs both work. For online images the URL should start with `https://` and you need the internet permission (`android.permissions = INTERNET`) in your `buildozer.spec` or `pyproject.toml`:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="Using Online Image",
+    message="Pass image URL as path to setBigPicture."
+)
+notification.setBigPicture("https://www.python.org/static/img/python-logo.png")
+notification.send()
+```
+
+![online image](imgs/online-img.jpg)
 
 ## Progress bar
 
@@ -89,6 +163,28 @@ Clock.schedule_interval(update_progress, 3)
 | `updateTitle` | Updates the title text of the notification. |
 | `updateMessage` | Updates the main message text of the notification. |
 
+### Sub Text
+
+A smaller text that appears beside the app name, often used to provide context like download seconds remaining:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="Downloading...",
+    message="70% downloaded",
+    progress_max_value=100,
+)
+notification.setSubText("19 secs left")
+notification.send()
+```
+
+![sub text](imgs/sub-text.jpg)
+
+### Multi-Line (Inbox Style)
+
+Use `addLine` to add each line. Lines are revealed when the user expands the notification:
+
 ```python
 from android_notify import Notification
 
@@ -97,14 +193,31 @@ notification = Notification(
     message="Check them out",
 )
 notification.setSubText("FabianCodes")
-notification.setLargeIcon("imgs/profile.png")
+notification.setLargeIcon("https://i.pravatar.cc/300")
 notification.addLine("Re: Planning")
 notification.addLine("Delivery on its way")
 notification.addLine("Follow-up")
 notification.send()
 ```
 
-![inbox subtext](imgs/inbox-subtext.jpg)
+![inbox](imgs/inbox_text.gif)
+
+### Big Text
+
+A longer text that is revealed when the notification is expanded. The `message` acts as the sub-title:
+
+```python
+from android_notify import Notification
+
+notification = Notification(
+    title="Article",
+    message="History of Lorem Ipsum",
+)
+notification.setBigText("Lorem Ipsum is simply dummy text of the printing and ...")
+notification.send()
+```
+
+![big text](imgs/big_text.gif)
 
 ## Buttons
 
