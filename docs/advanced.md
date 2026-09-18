@@ -67,7 +67,13 @@ print("Missing channels:", missing)
 
 # List every channel created by the app
 channels = Notification.getChannels()
+# [
+#   {'id': 'news', 'name': 'News', 'description': '', 'state': True,
+#    'importance': '3', 'sound': 'None', 'vibration': 'None', 'j_obj': <...>},
+#   ...
+# ]
 ```
+`state` is `True` if the channel is turned on by the user (importance > `NONE`). `importance`, `sound` and `vibration` come back as strings, except `vibration` and `sound` which are `None` when not set.
 
 Channels can be deleted at runtime. Once deleted, notifications using that channel are no longer shown and the user has to re-create it:
 

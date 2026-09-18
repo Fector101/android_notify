@@ -39,3 +39,40 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
             ).send()
         except Exception as e:
             self.fail(f"Using channel failed: {e}")
+
+    def test_get_channels_structure(self):
+        prefix = f"getch_{self.uid}"
+        Notification.createChannel(
+            id=prefix,
+            name="GetChannels Sample",
+            description="Created by get_channels sample"
+        )
+        Notification.createChannel(
+            id=f"{prefix}_vib",
+            name="Vib Channel",
+            importance="high",
+            vibrate=True
+        )
+
+        channels = Notification.getChannels()
+        self.assertIsInstance(channels, list)
+        self.assertTrue(channels, "getChannels() returned no channels")
+
+        expected_keys = {"id", "name", "description", "state", "importance", "sound", "vibration", "j_obj"}
+        for channel in channels:
+            self.assertIsInstance(channel, dict)
+            self.assertEqual(set(channel.keys()), expected_keys)
+            self.assertIsInstance(channel["state"], bool)   # on/off
+            self.assertIsInstance(channel["name"], str)
+            self.assertTrue(channel["vibration"] is None or isinstance(channel["vibration"], list))
+            print(
+                f"channel: id={channel['id']} name={channel['name']} state={channel['state']} "
+                f"importance={channel['importance']} sound={channel['sound']} "
+                f"vibration={channel['vibration']} description={channel['description']}"
+            )
+
+        created = {c["id"] for c in channels}
+        self.assertIn(prefix, created)
+        self.assertIn(f"{prefix}_vib", created)
+        Notification.deleteChannel(prefix)
+        Notification.deleteChannel(f"{prefix}_vib")
