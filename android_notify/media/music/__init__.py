@@ -1,103 +1,75 @@
-import os
-import jnius.jnius
-# noinspection PyUnusedLocal,DuplicatedCode,PyTypeChecker
-import time
 import traceback
+from typing import Optional
+import jnius.jnius
 
-from kivy.properties import ObjectProperty
+from jnius import PythonJavaClass, java_method
 
-from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
-from jnius import autoclass, cast, PythonJavaClass, java_method
-
-from android_notify.internal.android import get_active_notification_ids
-from android_notify.internal.java_classes import (  # noqa: re-exported for main.py
-    Context, Intent, PendingIntent, NotificationManager, NotificationCompatBuilder,
-    NotificationChannel, BuildVersion, String, BitmapFactory
-)
-from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
-    get_notification_manager, from_service_file, get_python_activity
-
-from android_notify.internal.channels import create_channel
-from android_notify.widgets.texts import set_title, set_message
 from android_notify.internal.logger import logger
-import logging
+from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
+from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
+from android_notify.internal.android import get_unique_id
+from android_notify.internal.intents import add_intent_to_open_app
+from android_notify.internal.channels import create_channel
+from android_notify.media.music.helper import JAVA_CALLBACK_FILE_CONTENT
+from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
+from android_notify.widgets.texts import set_title, set_message
 
-from kivy.clock import Clock
 
-JAVA_FILE_NAME = "MyMediaCallback" # For Java <-> Python bridge
+JAVA_FILE_NAME = "MediaSessionCallback"
 
-PythonActivity = autoclass('org.kivy.android.PythonActivity')
-KeyEvent = autoclass('android.view.KeyEvent')
-#
-# MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
-# PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
-# PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
-# MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
-# MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
-# MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
-#
+if on_android_platform():
+    NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
+    R_drawable = autoclass('android.R$drawable')
+    ActionBuilder = autoclass('android.app.Notification$Action$Builder')
+    KeyEvent = autoclass('android.view.KeyEvent')
+    MediaSession = autoclass('android.media.session.MediaSession')
+    PlaybackState = autoclass('android.media.session.PlaybackState')
+    PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
+    MediaMetadata = autoclass('android.media.MediaMetadata')
+    MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
+    MediaStyle = autoclass('android.app.Notification$MediaStyle')
+    MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
 
-MediaSession = autoclass('android.media.session.MediaSession')
-PlaybackState = autoclass('android.media.session.PlaybackState')
-PlaybackStateBuilder = autoclass('android.media.session.PlaybackState$Builder')
-MediaMetadata = autoclass('android.media.MediaMetadata')
-MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
-MediaStyle = autoclass('android.app.Notification$MediaStyle')
+    # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
+    # PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
+    # PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
+    # MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
+    # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
+    # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
 
-java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
-try:
-    MyMediaCallback = autoclass(java_bridge_class)
-    logger.info(f"Successfully loaded MyMediaCallback: {java_bridge_class}")
-except jnius.jnius.JavaException as e:
-    MyMediaCallback = None
-    if e.classname == 'java.lang.ClassNotFoundException':
-        logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
-    else:
-        print(e)
-        traceback.print_exc()
-
-def get_intent_for_launching_app():
+    java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
     try:
-        context = get_python_activity_context()
-        package_manager = context.getPackageManager()
-        package_name = context.getPackageName()
-        return package_manager.getLaunchIntentForPackage(package_name)
-    except Exception as error_getting_default_intent_for_launching_app:
-        print(error_getting_default_intent_for_launching_app)
-        traceback.print_exc()
-        return None
+        MediaSessionCallback = autoclass(java_bridge_class)
+        logger.info(f"Successfully loaded MediaSessionCallback: {java_bridge_class}")
+    except jnius.jnius.JavaException as e:
+        MediaSessionCallback = None
+        if e.classname == 'java.lang.ClassNotFoundException':
+            # TODO Point to docs section
+            logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
+            logger.info(JAVA_CALLBACK_FILE_CONTENT)
+        else:
+            logger.error(e)
+            traceback.print_exc()
 
-def add_intent_to_open_app(builder, action_name, notification_title, notification_id, data_object,_ignore_data=False):
-    context = get_python_activity_context()
-    PythonActivity = get_python_activity()
-    intent = get_intent_for_launching_app() or Intent(context, PythonActivity)
-    intent.setFlags(
-        Intent.FLAG_ACTIVITY_CLEAR_TOP |  # Makes Sure tapping notification always brings the existing instance of app forward.
-        Intent.FLAG_ACTIVITY_SINGLE_TOP |  # If the activity is already at the top, reuse it instead of creating a new instance.
-        Intent.FLAG_ACTIVITY_NEW_TASK
-        # Required when starting an Activity from a Service; ignored when starting from another Activity.
+else:
+    from android_notify.internal.facade import (
+        NotificationCompatBuilder, R_drawable,
+        ActionBuilder, KeyEvent, MediaSessionCallback,
+        MediaSession,
+        PlaybackState,
+        PlaybackStateBuilder,
+        MediaMetadata,
+        MediaMetadataBuilder,
+        MediaStyle,
+        MediaMetadataRetriever,
     )
-    if not _ignore_data:
-        pass
-        # add_data_to_intent(intent, notification_title, notification_id, str(action_name), data_object)
-    pending_intent = PendingIntent.getActivity(
-        context, notification_id,
-        intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    builder.setContentIntent(pending_intent)
-    if not _ignore_data:
-        logger.debug(
-            f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
 
 
-# ---------------------------------------------------
-# AndroidRunnable - run code on Android's main (UI) thread
-# ---------------------------------------------------
-# Android's MediaSession APIs MUST be created/accessed from the
-# main/UI thread. This wraps a Python function in a java.lang.Runnable
-# so it can be passed to Activity.runOnUiThread().
-# TODO remove on kivy new version release it exists in kivy/mobile/_platform/android.py and is used in kivy/core/clipboard/clipboard_android.py
-# test if this pattern also works for Flet if so then do not delete it
+# AndroidRunnable - run code on Android's main (UI) thread Android's MediaSession APIs MUST be created/accessed from
+# the main/UI thread. This wraps a Python function in a java.lang.Runnable so it can be passed to Activity.runOnUiThread().
+# TODO remove on Kivy new version release it exists in kivy/mobile/_platform/android.py and
+#  is used in kivy/core/clipboard/clipboard_android.py
+#  Test if this pattern also works for Flet if so then do not delete it
 class AndroidRunnable(PythonJavaClass):
     __javainterfaces__ = ['java/lang/Runnable']
     __javacontext__ = 'app'
@@ -111,14 +83,16 @@ class AndroidRunnable(PythonJavaClass):
         try:
             self.callback_func()
         except Exception as error_running_callback:
-            print(error_running_callback)
+            logger.error(error_running_callback)
             traceback.print_exc()
 
-class Listener(PythonJavaClass):
-    __javainterfaces__ = [
-        get_package_name().replace(".","/")+'/MyMediaCallback$Listener'
-    ]
 
+_active_music_notification: Optional["MusicNotification"] = None
+class MediaSessionListener(PythonJavaClass):
+    __javainterfaces__ = [
+        get_package_name().replace(".","/")+'/MediaSessionCallback$MediaSessionListener'
+        # com/example/android_notify/MediaSessionCallback$MediaSessionListener
+    ]
     __javacontext__ = 'app'
 
     def __init__(self, play_music=None, pause_music=None, seek_music=None, next_music=None, prev_music=None):
@@ -168,6 +142,8 @@ class Listener(PythonJavaClass):
     @java_method('()V')
     def onSkipToNext(self):
         logger.debug("nEventListener -SKIP NEXT EVENT RECEIVED")
+        if _active_music_notification is not None and not _active_music_notification.has_next:
+            return
         if self.next_music:
             self.next_music()
         else:
@@ -175,23 +151,22 @@ class Listener(PythonJavaClass):
 
     @java_method('()V')
     def onSkipToPrevious(self):
-        print("nEventListener -SKIP PREV EVENT RECEIVED")
+        logger.debug("nEventListener -SKIP PREV EVENT RECEIVED")
+        if _active_music_notification is not None and not _active_music_notification.has_prev:
+            return
         if self.prev_music:
             self.prev_music()
         else:
             logger.warning("No prev music callback was found")
 
-_active_music_notification = None
-
 
 class MusicNotification:
-    listener = Listener # so users can switch listener Class
+    listener = MediaSessionListener # so users can switch listener Class if needed
     soundLoader = None
     notification_id = None
-    builder = None
 
     def __init__(self, on_next=None, on_previous = None):
-        self.already_built = None
+        self.already_built = False
         global _active_music_notification
         _active_music_notification = self
 
@@ -201,33 +176,36 @@ class MusicNotification:
         self._play_music = None
         self._pause_music = None
         self._seek_music = None
-        self._next_music = None
-        self._prev_music = None
+        self._next_music = on_next
+        self._prev_music = on_previous
+        self.has_next = True
+        self.has_prev = True
+        self._play_pause_index = 1
+        self._media_style = None
 
         self.on_next = on_next
         self.on_previous = on_previous
 
         self.channel_id = "music_channel"
         self.channel_name = "Music"
-        self.notification_id = self.__get_unique_id()
+        self.notification_id = get_unique_id()
 
         self.context = None
         self.callback = None
         self.session = None
 
-        print("init ran")
         if on_android_platform():
             self.context = get_python_activity_context()
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
             try:
-                # Run init on Android's UI thread (required by MediaSession)
-                runnable = AndroidRunnable(self.__setup_media_session)
-                self.context.runOnUiThread(runnable)
+                if self.context is not None: # lint
+                    # Run init on Android's UI thread (required by MediaSession)
+                    runnable = AndroidRunnable(self.__setup_media_session)
+                    self.context.runOnUiThread(runnable)
             except Exception as error_setting_controls:
-                print(error_setting_controls)
+                logger.error(error_setting_controls)
                 traceback.print_exc()
 
-    # noinspection DuplicatedCode
     def __setup_media_session(self):
         """
         Initialized Media Session and Sets it's callbacks
@@ -240,22 +218,107 @@ class MusicNotification:
         # Flag 2 = FLAG_HANDLES_MEDIA_BUTTONS
         self.session = MediaSession(self.context, get_package_name()+".MusicSession")
         self.session.setFlags(1 | 2)
-
-        # Wire the Java callback (MyMediaCallback) to the Python Listener
-        self.listener = self.listener()
-        self.listener.play_music = self._play_music
-        self.listener.pause_music = self._pause_music
-        self.listener.seek_music = self._seek_music
-        self.listener.next_music = self._next_music
-        self.listener.prev_music = self._prev_music
-
-        self.callback = MyMediaCallback(self.listener)
-        self.session.setCallback(self.callback)
         self.session.setActive(True)
-        create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
-        logger.debug("MediaSession initialization and callback setup complete!")
 
-    # noinspection DuplicatedCode
+        # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
+        if MediaSessionCallback:
+            self.listener = self.listener()
+            self.listener.play_music = self._play_music
+            self.listener.pause_music = self._pause_music
+            self.listener.seek_music = self._seek_music
+            self.listener.next_music = self._next_music
+            self.listener.prev_music = self._prev_music
+
+            self.callback = MediaSessionCallback(self.listener)
+            self.session.setCallback(self.callback)
+            logger.debug("MediaSession initialization and callback setup complete!")
+        else: # Pyroid3 and Flet
+            logger.error("MediaSessionCallback.java is Missing Can't attached Actions Notification Listener, Visit TODO to learn how to attach.")
+        create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
+
+    def __create_media_button_intent(self, key_code):
+        """Creates a PendingIntent for a notification action button.
+
+        Each button (prev, play/pause, next) sends a broadcast with a
+        KeyEvent matching the desired action. MediaStyle.setMediaSession()
+        routes the tap through MediaSession.Callback instead.
+        """
+        if not self.context:
+            return None
+        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
+        intent.setPackage(self.context.getPackageName())
+
+        event = KeyEvent(KeyEvent.ACTION_DOWN, key_code)
+        parcelable_event = cast('android.os.Parcelable', event)
+        intent.putExtra(Intent.EXTRA_KEY_EVENT, parcelable_event)
+
+        flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
+        return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
+
+    def _add_buttons(self, is_playing):
+        # Add prev, play/pause, and next action buttons using Android
+        # built-in media icons from android.R$drawable.
+        # Prev/next are only added when a track exists in that direction.
+        play_or_pause_text = "Pause" if is_playing else "Play"
+        play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
+
+
+        action_intents = []
+        if self.has_prev and self._prev_music is not None:
+            action_intents.append(
+                (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            )
+        self._play_pause_index = len(action_intents)
+        action_intents.append(
+            (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
+             String(play_or_pause_text), play_pause_code)
+        )
+        if self.has_next and self._next_music is not None:
+            action_intents.append(
+                (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
+            )
+
+        actions = [
+            ActionBuilder(icon, title, self.__create_media_button_intent(key_code)).build()
+            for icon, title, key_code in action_intents
+        ]
+
+        # android.app.Notification$Builder appends to mActions on every setActions() / addAction()
+        # Clear the internal ArrayList to avoid action duplication
+        self.builder.mActions.clear()
+
+        # Re-add the updated actions
+        for action in actions:
+            self.builder.addAction(action)
+
+    def _parse_state(self, _,state):
+        #_ is loader_instance
+        logger.debug(f'sound load state changed: {state}')
+        if self.already_built:
+            if state == 'play':
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval is None:
+                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
+                self.showPauseIcon()
+            elif state in ('pause', 'stop'):
+                # updateProgressBar - media session auto handles update
+                # if self._update_interval:
+                #     self._update_interval.cancel()
+                #     self._update_interval = None
+                self.showPlayIcon()
+        else:
+            logger.error("Not built but trying play or pause")
+
+    def setSoundLoader(self, sound_load_instance):
+        self.soundLoader = sound_load_instance
+        self.soundLoader.bind(
+            state=self._parse_state,
+            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
+            on_seek=lambda _,pos:self.updateProgressBar()
+        )
+
+        # TODO Receive on seek
+
     def build_notification(self, is_playing):
     # def build_notification(self, title, artist, is_playing, current_ms, duration_ms):
         """Fully builds and dispatches the media notification.
@@ -264,10 +327,10 @@ class MusicNotification:
         including icons and actions. Called only on state changes
         (play/pause/seek/next/prev) to avoid flickering during seekbar drags.
         """
+        logger.debug("running build....")
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
-        print("running build....")
         length_of_song = self.soundLoader.length
         song_position = self.soundLoader.get_pos()
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")
@@ -283,7 +346,8 @@ class MusicNotification:
         # MediaStyle makes the notification show with a larger media layout and wires it to the MediaSession for lock-screen control
         style = MediaStyle()
         style.setMediaSession(self.session.getSessionToken())
-        style.setShowActionsInCompactView(1)
+        style.setShowActionsInCompactView(self._play_pause_index)
+        self._media_style = style
         self.builder.setStyle(style)
 
         # Attach metadata (title, artist, duration) to the MediaSession
@@ -308,176 +372,19 @@ class MusicNotification:
         # elif self._update_interval:
         #     self._update_interval.cancel()
 
-    def updateProgressBar(self, _=None):
-        """Call every ~1 second by Kivy Clock to keep seekbar updated.
-
-        Only calls setPlaybackState() - lightweight, no notification rebuild.
-        This avoids interrupting the user if they're dragging the seekbar.
-
-
-        Updates the MediaSession playback state.
-
-        This is the "lightweight" update - it only calls
-        setPlaybackState() without rebuilding the notification.
-        Called both by the periodic timer (every 1s) and by
-        build_notification() on state changes.
-        """
-        if self.session is None:
+    def set_skip_available(self, has_next, has_prev):
+        """Tell the notification whether prev/next tracks exist around the current one."""
+        self.has_next = bool(has_next)
+        self.has_prev = bool(has_prev)
+        if not self.already_built or not self.soundLoader:
             return
-
-        if not self.soundLoader:
-            return None
-        current_ms = int(self.soundLoader.get_pos() * 1000)
-        is_playing=self.soundLoader.state == "play"
-        logger.debug(f"updating progress bar...{current_ms}")
-
-        # NOTE: MediaSession playback state, updates progress bar without clock schedules
-        actions = (
-                PlaybackState.ACTION_PLAY
-                | PlaybackState.ACTION_PAUSE
-                | PlaybackState.ACTION_SEEK_TO
-                | PlaybackState.ACTION_PLAY_PAUSE
-                | PlaybackState.ACTION_SKIP_TO_NEXT
-                | PlaybackState.ACTION_SKIP_TO_PREVIOUS
-                | PlaybackState.ACTION_FAST_FORWARD
-                | PlaybackState.ACTION_REWIND
-        )
-        state_builder = PlaybackStateBuilder()
-        state = PlaybackState.STATE_PLAYING if is_playing else PlaybackState.STATE_PAUSED
-        state_builder.setState(state, current_ms, 1.0)
-        state_builder.setActions(actions)
-        self.session.setPlaybackState(state_builder.build())
-        return None
-
-    def release(self):
-        """Clean up resources when the app shuts down."""
-        if self.session:
-            self.session.setActive(False)
-            self.session.release()
-
-    # noinspection DuplicatedCode
-    def __create_media_button_intent(self, key_code):
-        """Creates a PendingIntent for a notification action button.
-
-        Each button (prev, play/pause, next) sends a broadcast with a
-        KeyEvent matching the desired action. MediaStyle.setMediaSession()
-        routes the tap through MediaSession.Callback instead.
-        """
-        if not self.context:
-            return None
-        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        intent.setPackage(self.context.getPackageName())
-
-        event = KeyEvent(KeyEvent.ACTION_DOWN, key_code)
-        parcelable_event = cast('android.os.Parcelable', event)
-        intent.putExtra(Intent.EXTRA_KEY_EVENT, parcelable_event)
-
-        flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
-        return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
-    def refresh(self):
-        """Refresh the notification."""
-        get_notification_manager().notify(self.notification_id,self.builder.build())
-
-    def _add_buttons(self, is_playing):
-        # Add prev, play/pause, and next action buttons using Android
-        # built-in media icons from android.R$drawable
-        play_or_pause_text = "Pause" if is_playing else "Play"
-        play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
-        R_drawable = autoclass('android.R$drawable')
-        ActionBuilder = autoclass('android.app.Notification$Action$Builder')
-
-        action_intents = [
-            (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS),
-            (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
-             String(play_or_pause_text), play_pause_code),
-            (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT),
-        ]
-        actions = [
-            ActionBuilder(icon, title, self.__create_media_button_intent(key_code)).build()
-            for icon, title, key_code in action_intents
-        ]
-
-        # android.app.Notification$Builder appends to mActions on every setActions() / addAction()
-        # Clear the internal ArrayList to avoid action duplication
-        self.builder.mActions.clear()
-
-        # Re-add the updated 3 actions
-        for action in actions:
-            self.builder.addAction(action)
-
-    @staticmethod
-    def __to_str(string__):
-        value = str(string__) # for weird values
-        return String(value)
-
-    @staticmethod
-    def __get_unique_id():
-        if not on_android_platform():
-            return 0
-
-        if from_service_file():
-            return int(time.time() * 1000) % 2_147_483_647
-
-        notification_id=1
-        try:
-            ids_in_tray = get_active_notification_ids(notification_manager = get_notification_manager())
-            while notification_id in ids_in_tray:
-                if notification_id not in ids_in_tray:
-                    break
-                notification_id = notification_id + 1
-        except Exception as error_getting_id_that_is_not_in_tray:
-            logger.exception(error_getting_id_that_is_not_in_tray)
-            traceback.print_exc()
-        return notification_id
-
-    def setLargeIcon(self,music_path=None,img_path=None):
-        if img_path:
-            image_absolute_path = get_img_absolute_path(img_path)
-            bitmap = get_bitmap_from_path(image_absolute_path)
-            if bitmap:
-                self.builder.setLargeIcon(bitmap)
-            else:
-                logger.error("Failed getting bitmap from path")
-        elif music_path:
-            try:
-                MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
-                retriever = MediaMetadataRetriever()
-                retriever.setDataSource(music_path)
-                art_bytes = retriever.getEmbeddedPicture()
-                if art_bytes:
-                    bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
-                    self.builder.setLargeIcon(bitmap)
-            except Exception as error_getting_art_bytes:
-                logger.exception(error_getting_art_bytes)
-                traceback.print_exc()
-
-
-    def setSoundLoader(self, sound_load_instance):
-        self.soundLoader = sound_load_instance
-        self.soundLoader.bind(
-            state=self._parse_state,
-            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
-            on_seek=lambda _,pos:self.updateProgressBar()
-        )
-
-        # TODO Receive on seek
-
-    def _parse_state(self, loader_instance,state):
-        print(f'sound load state changed: {state}')
-        if self.already_built:
-            if state == 'play':
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval is None:
-                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
-                self.showPauseIcon()
-            elif state == 'pause':
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval:
-                #     self._update_interval.cancel()
-                #     self._update_interval = None
-                self.showPlayIcon()
-        else:
-            logger.error("Not built but trying play or pause")
+        is_playing = self.soundLoader.state == "play"
+        self._add_buttons(is_playing)
+        self.updateProgressBar()
+        if self._media_style is not None:
+            self._media_style.setShowActionsInCompactView(self._play_pause_index)
+            self.builder.setStyle(self._media_style)
+        self.refresh()
 
     def showPauseIcon(self):
         logger.debug("showing pause icon")
@@ -500,3 +407,79 @@ class MusicNotification:
     def setArtist(self,artist:str):
         self._artist = artist
         pass
+
+    def setLargeIcon(self,music_path=None,img_path=None):
+        if img_path:
+            image_absolute_path = get_img_absolute_path(img_path)
+            bitmap = get_bitmap_from_path(image_absolute_path)
+            if bitmap:
+                self.builder.setLargeIcon(bitmap)
+            else:
+                logger.error("Failed getting bitmap from path")
+        elif music_path:
+            try:
+                retriever = MediaMetadataRetriever()
+                retriever.setDataSource(music_path)
+                art_bytes = retriever.getEmbeddedPicture()
+                if art_bytes:
+                    bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
+                    self.builder.setLargeIcon(bitmap)
+            except Exception as error_getting_art_bytes:
+                logger.exception(error_getting_art_bytes)
+                traceback.print_exc()
+
+    def updateProgressBar(self, _=None):
+        """Call every ~1 second by Kivy Clock to keep seekbar updated.
+
+        Only calls setPlaybackState() - lightweight, no notification rebuild.
+        This avoids interrupting the user if they're dragging the seekbar.
+
+
+        Updates the MediaSession playback state.
+
+        This is the "lightweight" update - it only calls
+        setPlaybackState() without rebuilding the notification.
+        Called both by the periodic timer (every 1s) and by
+        build_notification() on state changes.
+        """
+        if self.session is None:
+            return None
+
+        if not self.soundLoader:
+            return None
+        current_ms = int(self.soundLoader.get_pos() * 1000)
+        is_playing=self.soundLoader.state == "play"
+        logger.debug(f"updating progress bar...{current_ms}")
+
+        # NOTE: MediaSession playback state, updates progress bar without clock schedules
+        actions = (
+                PlaybackState.ACTION_PLAY
+                | PlaybackState.ACTION_PAUSE
+                | PlaybackState.ACTION_SEEK_TO
+                | PlaybackState.ACTION_PLAY_PAUSE
+                | PlaybackState.ACTION_FAST_FORWARD
+                | PlaybackState.ACTION_REWIND
+        )
+        if self.has_next:
+            actions |= PlaybackState.ACTION_SKIP_TO_NEXT
+        if self.has_prev:
+            actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS
+        state_builder = PlaybackStateBuilder()
+        state = PlaybackState.STATE_PLAYING if is_playing else PlaybackState.STATE_PAUSED
+        state_builder.setState(state, current_ms, 1.0)
+        state_builder.setActions(actions)
+        self.session.setPlaybackState(state_builder.build())
+        return None
+
+    def refresh(self):
+        """Refresh the notification."""
+        if self.already_built:
+            get_notification_manager().notify(self.notification_id,self.builder.build())
+        else:
+            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MusicNotification.build_notification")
+
+    def release(self):
+        """Clean up resources when the app shuts down."""
+        if self.session:
+            self.session.setActive(False)
+            self.session.release()

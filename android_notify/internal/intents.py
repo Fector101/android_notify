@@ -61,7 +61,7 @@ def add_data_to_intent(intent, title, notification_id, action_name, data_object)
     intent.putExtras(bundle)
 
 
-def add_intent_to_open_app(builder, action_name, notification_title, notification_id, data_object):
+def add_intent_to_open_app(builder, action_name, notification_title, notification_id, data_object,_ignore_data=False):
     context = get_python_activity_context()
     PythonActivity = get_python_activity()
     intent = get_intent_for_launching_app() or Intent(context, PythonActivity)
@@ -76,14 +76,15 @@ def add_intent_to_open_app(builder, action_name, notification_title, notificatio
 
     # intent.setAction(Intent.ACTION_MAIN)      # Marks this intent as the main entry point of the app, like launching from the home screen.
     # intent.addCategory(Intent.CATEGORY_LAUNCHER)  # Adds the launcher category so Android treats it as a launcher app intent and properly manages the task/back stack.
-
-    add_data_to_intent(intent, notification_title, notification_id, str(action_name), data_object)
+    if not _ignore_data:
+        add_data_to_intent(intent, notification_title, notification_id, str(action_name), data_object)
     pending_intent = PendingIntent.getActivity(
         context, notification_id,
         intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
     )
     builder.setContentIntent(pending_intent)
-    logger.debug(
+    if not _ignore_data:
+        logger.debug(
         f'data for opening app-  notification_title: {notification_title}, notification_id: {notification_id}, notification_name: {action_name}')
 
 
@@ -94,7 +95,7 @@ def get_intent_for_launching_app():
         package_name = context.getPackageName()
         return package_manager.getLaunchIntentForPackage(package_name)
     except Exception as error_getting_default_intent_for_launching_app:
-        print(error_getting_default_intent_for_launching_app)
+        logger.error(error_getting_default_intent_for_launching_app)
         traceback.print_exc()
         return None
 

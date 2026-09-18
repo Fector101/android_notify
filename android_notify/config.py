@@ -233,5 +233,9 @@ def get_package_name():
 
     if _package_name is not None:
         return _package_name
-    _package_name = get_python_activity_context().getPackageName()
+
+    if on_android_platform():
+        _package_name = get_python_activity_context().getPackageName()
+    else:
+        _package_name = "com.example.android_notify"
     return _package_name

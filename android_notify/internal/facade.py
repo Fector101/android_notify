@@ -35,6 +35,8 @@ class Intent(IntFlag):
     ACTION_SEND = auto()
     ACTION_SEND_MULTIPLE = auto()
     EXTRA_STREAM = auto()
+    ACTION_MEDIA_BUTTON = auto()
+    EXTRA_KEY_EVENT = auto()
 
     def __init__(self, context='', activity=''):
         self.IS = "FACADE"
@@ -93,10 +95,12 @@ class Intent(IntFlag):
     def putParcelableArrayListExtra(cls, flag, uris:list):
         logger.debug(f"[MOCK] Intent.putParcelableArrayListExtra called with flag={flag} and uris={uris}")
 
+    def setPackage(self, param):
+        pass
 
 class PendingIntent:
-    FLAG_IMMUTABLE = ''
-    FLAG_UPDATE_CURRENT = ''
+    FLAG_UPDATE_CURRENT = 0x08000000
+    FLAG_IMMUTABLE = 0x04000000
 
     @classmethod
     def getActivity(cls, context, value, action_intent, pending_intent_type):
@@ -104,14 +108,22 @@ class PendingIntent:
             f"[MOCK] PendingIntent.getActivity called with context={context}, value={value}, action_intent={action_intent}, type={pending_intent_type}"
         )
 
+    @classmethod
+    def getBroadcast(cls, context, value, action_intent, pending_intent_type):
+        logger.debug(
+            f"[MOCK] PendingIntent.getBroadcast called with context={context}, value={value}, action_intent={action_intent}, type={pending_intent_type}"
+        )
+
 
 class BitmapFactory:
     @classmethod
     def decodeStream(cls, stream):
         logger.debug(f"[MOCK] BitmapFactory.decodeStream called with stream={stream}")
+
     @classmethod
-    def decodeFile(cls, src_path,opts=None):
-        logger.debug(f"[MOCK] BitmapFactory.decodeFile called with src_path={src_path} and opts={opts}")
+    def decodeByteArray(cls, art_bytes, art_bytes_start, art_bytes_len):
+        logger.debug(f"[MOCK] BitmapFactory.decodeStream called with art_bytes={art_bytes},art_bytes_start={art_bytes_start}, art_bytes_len={art_bytes_len}")
+
 
 
 class BuildVersion:
@@ -336,10 +348,14 @@ class NotificationCompatBuilder:
         logger.debug(f"[MOCK] setContentIntent called with {pending_action_intent}")
 
     @classmethod
-    def addAction(cls, icon_int, action_text, pending_action_intent):
-        logger.debug(
-            f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}"
-        )
+    def addAction(cls, *args):
+        if len(args) == 1:
+            logger.debug(f"[MOCK] addAction called with action={args[0]}")
+        else:
+            icon_int, action_text, pending_action_intent = args
+            logger.debug(
+                f"[MOCK] addAction called with icon={icon_int}, text={action_text}, intent={pending_action_intent}"
+            )
 
     @classmethod
     def setShowWhen(cls, state):
@@ -368,6 +384,11 @@ class NotificationCompatBuilder:
     @classmethod
     def setVibrate(cls, state) -> None:
         logger.debug(f"[MOCK] setVibrate called with state={state}")
+
+
+    @classmethod
+    def setVisibility(cls, state) -> None:
+        logger.debug(f"[MOCK] setVisibility called with state={state}")
 
 
 class NotificationCompatBigTextStyle:
@@ -422,38 +443,6 @@ class AndroidActivity:
         logger.debug(f"[MOCK] AndroidActivity.unbind called with {on_new_intent}")
 
 
-class MActivity:
-    def getSystemService(self):
-        logger.debug("[MOCK] mActivity.getSystemService called")
-        return self
-
-
-class PythonActivity:
-    def __init__(self):
-        logger.debug("[MOCK] PythonActivity initialized")
-
-    @staticmethod
-    def mActivity():
-        logger.debug("[MOCK] mActivity used")
-        return MActivity()
-
-    @staticmethod
-    def startForeground(notification_id, builder_build, foreground_type):
-        logger.debug(
-            f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
-
-    def setAutoRestartService(self):
-        logger.debug("[MOCK] setAutoRestartService called")
-        return self
-
-
-class DummyIcon:
-    icon = 101
-
-    def __init__(self):
-        logger.debug("[MOCK] DummyIcon initialized")
-
-
 class Context:
     NOTIFICATION_SERVICE = "notification"
     VIBRATOR_SERVICE = "vibrator"
@@ -487,12 +476,223 @@ class Context:
         logger.debug("[MOCK] Context.getExternalCacheDir called")
         return File("mock_external_cache_dir")
 
+class MActivity(Context):
+    def getSystemService(self):
+        logger.debug("[MOCK] mActivity.getSystemService called")
+        return self
+    def runOnUiThread(self,runnable):
+        logger.debug(f"[MOCK] mActivity.runOnUiThread called with runnable={runnable}")
+        return self
+
+
+class PythonActivity:
+    def __init__(self):
+        logger.debug("[MOCK] PythonActivity initialized")
+
+    @staticmethod
+    def mActivity():
+        logger.debug("[MOCK] mActivity used")
+        return MActivity()
+
+    @staticmethod
+    def startForeground(notification_id, builder_build, foreground_type):
+        logger.debug(
+            f"[MOCK] startForeground called with notification_id={notification_id}, builder.build()={builder_build}, foreground_type={foreground_type}")
+
+    def setAutoRestartService(self):
+        logger.debug("[MOCK] setAutoRestartService called")
+        return self
+
+
+class DummyIcon:
+    icon = 101
+
+    def __init__(self):
+        logger.debug("[MOCK] DummyIcon initialized")
+
+
 
 class PackageManager:
     @property
     def PERMISSION_GRANTED(self):
         logger.debug("[MOCK] PackageManager.PERMISSION_GRANTED called")
         return 1
+
+
+class KeyEvent:
+    ACTION_DOWN = 0
+    KEYCODE_MEDIA_PLAY = 126
+    KEYCODE_MEDIA_PAUSE = 127
+    KEYCODE_MEDIA_PREVIOUS = 88
+    KEYCODE_MEDIA_NEXT = 87
+
+    def __init__(self, action, code):
+        self.action = action
+        self.code = code
+        logger.debug(f"[MOCK] KeyEvent initialized with action={action}, code={code}")
+
+
+class R_drawable:
+    ic_media_previous = 0
+    ic_media_pause = 1
+    ic_media_play = 2
+    ic_media_next = 3
+
+
+class ActionBuilder:
+    def __init__(self, icon, title, pending_intent):
+        logger.debug(
+            f"[MOCK] ActionBuilder initialized with icon={icon}, title={title}, intent={pending_intent}"
+        )
+
+    def build(self):
+        logger.debug("[MOCK] ActionBuilder.build called")
+        return self
+
+
+class MediaSession:
+    def __init__(self, context, tag):
+        self._token = object()
+        logger.debug(f"[MOCK] MediaSession initialized with context={context}, tag={tag}")
+
+    def setFlags(self, flags):
+        logger.debug(f"[MOCK] MediaSession.setFlags called with flags={flags}")
+        return self
+
+    def setCallback(self, callback):
+        logger.debug(f"[MOCK] MediaSession.setCallback called with callback={callback}")
+        return self
+
+    def setActive(self, state):
+        logger.debug(f"[MOCK] MediaSession.setActive called with state={state}")
+        return self
+
+    def setMetadata(self, metadata):
+        logger.debug(f"[MOCK] MediaSession.setMetadata called with metadata={metadata}")
+        return self
+
+    def setPlaybackState(self, playback_state):
+        logger.debug(f"[MOCK] MediaSession.setPlaybackState called with playback_state={playback_state}")
+        return self
+
+    def getSessionToken(self):
+        logger.debug("[MOCK] MediaSession.getSessionToken called")
+        return self._token
+
+    def release(self):
+        logger.debug("[MOCK] MediaSession.release called")
+
+    def setCallsetCallbackback(self, callback):
+        logger.debug(f"[MOCK] MediaSession.release called with callback={callback}")
+
+
+class MediaSessionListener:
+    def onPlay(self):
+        pass
+    def onPause(self):
+        pass
+    def onSeekTo(self):
+        pass
+    def onSkipToNext(self):
+        pass
+    def onSkipToPrevious(self):
+        pass
+
+
+class MediaSessionCallback:
+    """Desktop stand-in for the Java MediaSessionCallback bridge class.
+
+    Mirrors the constructor of the real Java class: it receives the Python
+    MediaSessionListener that Java forwards transport events to.
+    """
+
+    def __init__(self, listener):
+        self.listener = listener
+        logger.debug(f"[MOCK] MediaSessionCallback initialized with listener={listener}")
+
+
+class PlaybackState:
+    ACTION_PLAY = 1
+    ACTION_PAUSE = 2
+    ACTION_SEEK_TO = 4
+    ACTION_PLAY_PAUSE = 8
+    ACTION_SKIP_TO_NEXT = 16
+    ACTION_SKIP_TO_PREVIOUS = 32
+    ACTION_FAST_FORWARD = 64
+    ACTION_REWIND = 128
+    STATE_PLAYING = 3
+    STATE_PAUSED = 2
+
+
+class PlaybackStateBuilder:
+    def __init__(self):
+        logger.debug("[MOCK] PlaybackStateBuilder initialized")
+
+    def setState(self, state, position_ms, playback_speed):
+        logger.debug(
+            f"[MOCK] PlaybackStateBuilder.setState called with state={state}, position_ms={position_ms}, playback_speed={playback_speed}"
+        )
+        return self
+
+    def setActions(self, actions):
+        logger.debug(f"[MOCK] PlaybackStateBuilder.setActions called with actions={actions}")
+        return self
+
+    def build(self):
+        logger.debug("[MOCK] PlaybackStateBuilder.build called")
+        return self
+
+
+class MediaMetadata:
+    METADATA_KEY_TITLE = 'android.media.metadata.TITLE'
+    METADATA_KEY_ARTIST = 'android.media.metadata.ARTIST'
+    METADATA_KEY_DURATION = 'android.media.metadata.DURATION'
+
+
+class MediaMetadataBuilder:
+    def __init__(self):
+        self._metadata = {}
+        logger.debug("[MOCK] MediaMetadataBuilder initialized")
+
+    def putString(self, key, value):
+        self._metadata[key] = value
+        logger.debug(f"[MOCK] MediaMetadataBuilder.putString called with key={key}, value={value}")
+        return self
+
+    def putLong(self, key, value):
+        self._metadata[key] = value
+        logger.debug(f"[MOCK] MediaMetadataBuilder.putLong called with key={key}, value={value}")
+        return self
+
+    def build(self):
+        logger.debug(f"[MOCK] MediaMetadataBuilder.build called, returning {self._metadata}")
+        return self
+
+
+class MediaStyle:
+    def __init__(self):
+        logger.debug("[MOCK] MediaStyle initialized")
+
+    def setMediaSession(self, token):
+        logger.debug(f"[MOCK] MediaStyle.setMediaSession called with token={token}")
+        return self
+
+    def setShowActionsInCompactView(self, index):
+        logger.debug(f"[MOCK] MediaStyle.setShowActionsInCompactView called with index={index}")
+        return self
+
+
+class MediaMetadataRetriever:
+    def __init__(self):
+        logger.debug("[MOCK] MediaMetadataRetriever initialized")
+
+    def setDataSource(self, path):
+        logger.debug(f"[MOCK] MediaMetadataRetriever.setDataSource called with path={path}")
+
+    def getEmbeddedPicture(self):
+        logger.debug("[MOCK] MediaMetadataRetriever.getEmbeddedPicture called")
+        return None
+
 
 # Now writing Knowledge from errors
 # notify.(int, Builder.build()) # must be int

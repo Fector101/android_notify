@@ -1,14 +1,14 @@
+"""
+    SoundLoader with events
+    __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
+
+"""
+
 import os
-import traceback
-from typing import Callable, Optional
-
-from kivy.properties import ObjectProperty
-
 from android_notify.internal.logger import logger
-from kivy.clock import Clock
 from jnius import autoclass, PythonJavaClass, java_method
-from android_notify.internal.java_classes import Intent
-from android_notify.config import get_python_activity_context, on_android_platform
+from android_notify.config import on_android_platform, get_package_name
+from kivy.properties import ObjectProperty
 from kivy.event import EventDispatcher
 
 
@@ -16,6 +16,9 @@ def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
     if not on_android_platform():
         return None
+    from kivy.clock import Clock
+    from android_notify.config import get_python_activity_context
+    from android_notify.internal.java_classes import Intent
     Environment = autoclass('android.os.Environment')
     Settings = autoclass('android.provider.Settings')
     Uri = autoclass('android.net.Uri')
@@ -32,10 +35,7 @@ def requestAllFilesAccess():
     return None
 
 if on_android_platform():
-
     MediaPlayer = autoclass('android.media.MediaPlayer')
-
-
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
         __javacontext__ = 'app'
@@ -48,11 +48,27 @@ if on_android_platform():
         @java_method('(Landroid/media/MediaPlayer;)V')
         def onPrepared(self, mp):
             self.on_player_ready()
+
+
+    class CompletionListener(PythonJavaClass):
+        __javainterfaces__ = ['android/media/MediaPlayer$OnCompletionListener']
+        __javacontext__ = 'app'
+
+        def __init__(self, on_player_complete):
+            super().__init__()
+            self.on_player_complete = on_player_complete
+
+        # noinspection PyUnusedLocal
+        @java_method('(Landroid/media/MediaPlayer;)V')
+        def onCompletion(self, mp):
+            self.on_player_complete()
 else:
     class MediaPlayer:
         def setDataSource(self,path):
             pass
         def setOnPreparedListener(self,callback):
+            pass
+        def setOnCompletionListener(self,callback):
             pass
         def prepareAsync(self):
             pass
@@ -76,6 +92,9 @@ else:
     class PlayerReadyListener:
         pass
 
+    class CompletionListener:
+        pass
+
 class SoundLoader(EventDispatcher):
     _instance = None
     _player = None
@@ -89,17 +108,8 @@ class SoundLoader(EventDispatcher):
     loop=False
 
 
-    __events__ = ('on_play', 'on_stop', 'on_pause','on_load','on_seek')
-    def on_play(self,player):
-        pass
-    def on_pause(self,player):
-        pass
-    def on_stop(self,player):
-        pass
-    def on_load(self,player):
-        pass
-    def on_seek(self,player):
-        pass
+    __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -121,14 +131,30 @@ class SoundLoader(EventDispatcher):
         logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player = MediaPlayer()
         instance._player.setDataSource(source)
-        instance._player.setOnPreparedListener(PlayerReadyListener(instance.on_player_ready))
+        # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
+        # otherwise garbage collection can drop the callbacks before they fire.
+        instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
+        instance._completion_listener = CompletionListener(instance.on_player_complete)
+        instance._player.setOnPreparedListener(instance._ready_listener)
+        instance._player.setOnCompletionListener(instance._completion_listener)
         instance._player.prepareAsync()
         return instance._instance
 
     def on_player_ready(self):
         """Called by PlayerReadyListener when MediaPlayer is ready."""
         self._player_ready = True
+        logger.debug("on_load dispatched")
         self.dispatch("on_load",'')
+
+    def on_player_complete(self):
+        """Called by CompletionListener when the track reaches its end."""
+        logger.debug("EVENT: COMPLETE")
+        if not self.loop:
+            self.state = "stop"
+        self.dispatch("on_complete", self._player)
+        if self.loop:
+            self.seek(0)
+            self._player.start()
 
     def get_pos(self):
         """Get current playback position in seconds."""
@@ -145,9 +171,6 @@ class SoundLoader(EventDispatcher):
         elif 0 < duration < pos:
             pos = duration
 
-        if pos == duration and self.loop: # under the assumption get_pos will be call every sec
-            self.seek(0)
-            pos=0
         # logger.debug(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
         return pos
 
@@ -177,6 +200,7 @@ class SoundLoader(EventDispatcher):
         if not self._player:
             return
         self._player.stop()
+        self.state = 'stop'
 
     def _get_length(self):
         if not self._player or not self._player_ready:
@@ -201,3 +225,86 @@ class SoundLoader(EventDispatcher):
             self._player.release()
         else:
             print("Warning player not loaded.")
+
+    def on_play(self,player):
+        pass
+
+    def on_stop(self,player):
+        pass
+
+    def on_pause(self,player):
+        pass
+
+    def on_load(self,player):
+        pass
+
+    def on_seek(self,player):
+        pass
+
+    def on_complete(self, player):
+        pass
+
+
+JAVA_CALLBACK_FILE_CONTENT = f"""
+// Place as-is inside: "./src/MediaSessionCallback.java"
+// Point to it in buildozer.spec "android.add_src = ./src"
+ 
+// A bridge: It receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
+// Android-Notify implements MediaSessionListener a Callback Listener with python.
+
+
+package {get_package_name()};"""+"""
+import android.media.session.MediaSession;
+
+public class MediaSessionCallback extends MediaSession.Callback {
+
+    public interface MediaSessionListener {
+        void onPlay();
+        void onPause();
+        void onSeekTo(long pos);
+        void onSkipToNext();
+        void onSkipToPrevious();
+    }
+
+    private MediaSessionListener listener;
+
+    public MediaSessionCallback(MediaSessionListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void onPlay() {
+        if (listener != null) {
+            listener.onPlay();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (listener != null) {
+            listener.onPause();
+        }
+    }
+
+    @Override
+    public void onSeekTo(long pos) {
+        if (listener != null) {
+            listener.onSeekTo(pos);
+        }
+    }
+
+    @Override
+    public void onSkipToNext() {
+        if (listener != null) {
+            listener.onSkipToNext();
+        }
+    }
+
+    @Override
+    public void onSkipToPrevious() {
+        if (listener != null) {
+            listener.onSkipToPrevious();
+        }
+    }
+}
+"""
