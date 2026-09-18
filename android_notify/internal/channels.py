@@ -106,20 +106,47 @@ def delete_all_channels():
 
     notification_manager = get_notification_manager()
     channels = get_channels()
-    for index in range(channels.size()):
+    for channel in channels:
         amount += 1
-        channel = channels.get(index)
-        channel_id = channel.getId()
-        notification_manager.deleteNotificationChannel(channel_id)
+        notification_manager.deleteNotificationChannel(channel["id"])
     return amount
 
 
 def get_channels() -> list[Any] | Any:
     """Return all existing channels"""
+    useful_objs=[]
     if not on_android_platform():
         return []
 
-    return get_notification_manager().getNotificationChannels()
+    useful_values = {
+        "id": "getId",
+        "name": "getName",
+        "description": "getDescription",
+        "state": lambda ch: bool(ch.getImportance() > 0),   # on/off (on = importance > IMPORTANCE_NONE)
+        "importance": "getImportance",
+        "sound": "getSound",
+        "vibration": "getVibrationPattern",
+        "j_obj": None,  # raw channel ref
+        # "group", add in next version along with ability to create groups
+    }
+
+
+    channels = get_notification_manager().getNotificationChannels()
+
+    for channel in channels:
+        obj = {}
+        for key, spec in useful_values.items():
+            if spec is None: # java raw channel
+                obj[key] = channel
+            elif callable(spec): # state value
+                obj[key] = spec(channel)
+            else: # others
+                value = getattr(channel, spec)()
+                if spec == "getVibrationPattern":
+                    value = list(value) if value is not None else None
+                obj[key] = str(value)
+        useful_objs.append(obj)
+    return useful_objs
 
 
 def do_channels_exist(ids):
