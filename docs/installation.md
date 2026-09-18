@@ -15,9 +15,6 @@ requirements = python3, kivy, pyjnius, android-notify
 
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
-
-# AndroidX is optional - the library auto-detects it at runtime and
-# falls back to the built-in Android APIs when it is not present.
 ```
 
 Flet
@@ -48,9 +45,6 @@ requirements = python3, kivy, pyjnius, android-notify
 
 # Add permission for notifications
 android.permissions = POST_NOTIFICATIONS
-
-# AndroidX is optional - the library auto-detects it at runtime and
-# falls back to the built-in Android APIs when it is not present.
 ```
 
 ## Flet apps
