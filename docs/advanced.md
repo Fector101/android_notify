@@ -67,7 +67,12 @@ print("Missing channels:", missing)
 
 # List every channel created by the app
 channels = Notification.getChannels()
+# [
+#   {'id': 'news', 'name': 'News', 'description': '', 'state': True, 'j_obj': <...>},
+#   ...
+# ]
 ```
+`state` is `True` if the channel is turned on by the user (importance > `NONE`). `j_obj` is the raw Android `NotificationChannel`, so any other property (importance, sound, vibration, ...) can still be read from it directly.
 
 Channels can be deleted at runtime. Once deleted, notifications using that channel are no longer shown and the user has to re-create it:
 

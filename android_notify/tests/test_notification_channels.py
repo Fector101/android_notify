@@ -1,4 +1,4 @@
-from android_notify import Notification
+from android_notify import Notification, logger
 from .base_test import AndroidNotifyBaseTest
 
 
@@ -16,7 +16,7 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
 
     def test_channel_exists(self):
         try:
-            print(Notification.channelExists("default_channel"))
+            logger.info(f"Channel exists: {Notification.channelExists('default_channel')}")
         except Exception as e:
             self.fail(f"Channel exists failed: {e}")
 
@@ -39,3 +39,40 @@ class TestNotificationChannels(AndroidNotifyBaseTest):
             ).send()
         except Exception as e:
             self.fail(f"Using channel failed: {e}")
+
+    def test_get_channels_structure(self) -> None:
+        prefix = f"getch_{self.uid}"
+        Notification.createChannel(
+            id=prefix,
+            name="GetChannels Sample",
+            description="Created by get_channels sample"
+        )
+        Notification.createChannel(
+            id=f"{prefix}_vib",
+            name="Vib Channel",
+            importance="high",
+            vibrate=True
+        )
+
+        channels = Notification.getChannels()
+        logger.debug(channels)
+        self.assertIsInstance(channels, list)
+        self.assertTrue(channels, "getChannels() returned no channels")
+
+        expected_keys = {"id", "name", "description", "state", "j_obj"}
+        for channel in channels:
+            self.assertIsInstance(channel, dict)
+            self.assertEqual(set(channel.keys()), expected_keys)
+            self.assertIsInstance(channel["state"], bool)   # on/off
+            self.assertIsInstance(channel["name"], str)
+            self.assertTrue(channel["description"] is None or isinstance(channel["description"], str))
+            print(
+                f"channel: id={channel['id']} name={channel['name']} state={channel['state']} "
+                f"description={channel['description']}"
+            )
+
+        created = {c["id"] for c in channels}
+        self.assertIn(prefix, created)
+        self.assertIn(f"{prefix}_vib", created)
+        Notification.deleteChannel(prefix)
+        Notification.deleteChannel(f"{prefix}_vib")
