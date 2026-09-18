@@ -264,7 +264,7 @@ class MusicNotification:
 
 
         action_intents = []
-        if self.has_prev:
+        if self.has_prev and self._prev_music is not None:
             action_intents.append(
                 (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             )
@@ -273,7 +273,7 @@ class MusicNotification:
             (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
              String(play_or_pause_text), play_pause_code)
         )
-        if self.has_next:
+        if self.has_next and self._next_music is not None:
             action_intents.append(
                 (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
             )

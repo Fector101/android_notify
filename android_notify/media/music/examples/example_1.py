@@ -95,6 +95,11 @@ class MusicPlayerRoot(BoxLayout):
         """Create the SoundLoader + MusicNotification and wire them together."""
         path = (self.path_input.text or DEFAULT_TRACK_PATH).strip()
 
+        # Release the previous track/notification first: SoundLoader is a
+        # singleton, so a new load would otherwise leak the old MediaPlayer,
+        # and the previous notification's callbacks/session would stay active.
+        self.cleanup()
+
         # 1) Ask for All Files Access (needed to read /storage/emulated/0).
         requestAllFilesAccess()
         notification = MusicNotification(
@@ -119,7 +124,7 @@ class MusicPlayerRoot(BoxLayout):
         #    `sound`, so you only have to react to state changes.
 
         notification.setSoundLoader(sound)              # wires state/on_load/on_seek
-        #notification.set_skip_available(self.has_next, self.has_prev)
+        notification.set_skip_available(self.has_next, self.has_prev)
         self.notification = notification
 
         self.status_label.text = f"Loading {path}"

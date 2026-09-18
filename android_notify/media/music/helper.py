@@ -131,8 +131,12 @@ class SoundLoader(EventDispatcher):
         logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player = MediaPlayer()
         instance._player.setDataSource(source)
-        instance._player.setOnPreparedListener(PlayerReadyListener(instance.on_player_ready))
-        instance._player.setOnCompletionListener(CompletionListener(instance.on_player_complete))
+        # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
+        # otherwise garbage collection can drop the callbacks before they fire.
+        instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
+        instance._completion_listener = CompletionListener(instance.on_player_complete)
+        instance._player.setOnPreparedListener(instance._ready_listener)
+        instance._player.setOnCompletionListener(instance._completion_listener)
         instance._player.prepareAsync()
         return instance._instance
 
