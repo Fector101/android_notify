@@ -15,7 +15,7 @@ Source can be local file paths or complete URLs, except `setSmallIcon` which onl
 
 Shows a large image when the notification is expanded:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -24,7 +24,7 @@ notification = Notification(
 )
 notification.setBigPicture("https://i.pravatar.cc/300")
 notification.send()
-```
+:::
 
 ![big picture](imgs/bigpicturenoti.jpg)
 
@@ -32,7 +32,7 @@ notification.send()
 
 Appears at the right side of the notification content:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -41,7 +41,7 @@ notification = Notification(
 )
 notification.setLargeIcon("https://i.pravatar.cc/300")
 notification.send()
-```
+:::
 
 ![large icon](imgs/largeicon.jpg)
 
@@ -49,7 +49,7 @@ notification.send()
 
 Use `setBigPicture` and `setLargeIcon` together on the same notification:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -59,7 +59,7 @@ notification = Notification(
 notification.setBigPicture("https://i.pravatar.cc/300")
 notification.setLargeIcon("https://i.pravatar.cc/300")
 notification.send()
-```
+:::
 
 ![both images](imgs/images-methods.jpg)
 
@@ -67,7 +67,7 @@ notification.send()
 
 Changes the app icon. Must be a local `png` file (otherwise it renders as a black box):
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -76,7 +76,7 @@ notification = Notification(
 )
 notification.setSmallIcon("icons/butterfly.png")
 notification.send()
-```
+:::
 
 ![custom icon](imgs/custom_icon.jpg)
 
@@ -84,7 +84,7 @@ notification.send()
 
 Changes the app icon background color. Strings like `red`, `green`, `blue` work without a hex code:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -94,7 +94,7 @@ notification = Notification(
 notification.setColor("red")  # or "#FF0000"
 notification.setSmallIcon("icons/butterfly.png")
 notification.send()
-```
+:::
 
 ![custom color icon](imgs/custom_color_icon.jpg)
 
@@ -102,7 +102,7 @@ notification.send()
 
 Local paths or URLs both work. For online images the URL should start with `https://` and you need the internet permission (`android.permissions = INTERNET`) in your `buildozer.spec` or `pyproject.toml`:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -111,7 +111,7 @@ notification = Notification(
 )
 notification.setBigPicture("https://www.python.org/static/img/python-logo.png")
 notification.send()
-```
+:::
 
 ![online image](imgs/online-img.jpg)
 
@@ -121,7 +121,7 @@ notification.send()
 - `showInfiniteProgressBar` — shows an infinite progress animation.
 - `removeProgressBar(message, show_on_update=True, title)` — cleanly remove the progress bar.
 
-```python
+:::{pydroid}
 from android_notify import Notification
 from kivy.clock import Clock
 
@@ -147,7 +147,7 @@ def update_progress(dt):
     return progress < 100  # Ends loop when reaching 100%
 
 Clock.schedule_interval(update_progress, 3)
-```
+:::
 
 ![progressbar](imgs/progressbar.gif)
 
@@ -167,7 +167,7 @@ Clock.schedule_interval(update_progress, 3)
 
 A smaller text that appears beside the app name, often used to provide context like download seconds remaining:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -177,7 +177,7 @@ notification = Notification(
 )
 notification.setSubText("19 secs left")
 notification.send()
-```
+:::
 
 ![sub text](imgs/sub-text.jpg)
 
@@ -185,7 +185,7 @@ notification.send()
 
 Use `addLine` to add each line. Lines are revealed when the user expands the notification:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -198,7 +198,7 @@ notification.addLine("Re: Planning")
 notification.addLine("Delivery on its way")
 notification.addLine("Follow-up")
 notification.send()
-```
+:::
 
 ![inbox](imgs/inbox_text.gif)
 
@@ -206,7 +206,7 @@ notification.send()
 
 A longer text that is revealed when the notification is expanded. The `message` acts as the sub-title:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -215,7 +215,7 @@ notification = Notification(
 )
 notification.setBigText("Lorem Ipsum is simply dummy text of the printing and ...")
 notification.send()
-```
+:::
 
 ![big text](imgs/big_text.gif)
 
@@ -223,7 +223,7 @@ notification.send()
 
 You can add action buttons with custom callbacks. When a button is pressed the callback runs, and the app can open with the click.
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -240,7 +240,7 @@ def not_now(*args):
 notification.addButton("Save", on_release=save_password)
 notification.addButton("Not now", on_release=not_now)
 notification.send()
-```
+:::
 
 ![buttons](imgs/btns.jpg)
 
@@ -248,7 +248,7 @@ notification.send()
 
 By default a button callback runs when the app opens (or reopens). If you want a button to trigger a function **without opening the app**, pass a custom BroadcastReceiver name and an optional intent action:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -266,7 +266,7 @@ notification.addButton(
     action="com.myapp.SAVE_PASSWORD"
 )
 notification.send()
-```
+:::
 
 For steps to create broadcast buttons, visit the [android-notify wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) - make things happen without opening the app.
 

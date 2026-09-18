@@ -1,12 +1,43 @@
 # Installation
 
-This package is available on PyPI and can be installed via pip:
+The package is available on PyPI. Pick the platform you are building for and get going in seconds:
 
+:::{code-tabs}
+PIP
 ```bash
 pip install android-notify
 ```
 
-The way you add the library depends on the platform you are building for. Pick the one that matches your app.
+Kivy
+```ini
+# Add requirements list
+requirements = python3, kivy, pyjnius, android-notify
+
+# Add permission for notifications
+android.permissions = POST_NOTIFICATIONS
+
+# AndroidX dependency (required by the library)
+android.gradle_dependencies = androidx.core:core:1.12.0
+android.enable_androidx = True
+```
+
+Flet
+```toml
+[tool.flet.android]
+dependencies = [
+  "pyjnius", "android-notify"
+]
+
+[tool.flet.android.permission]
+"android.permission.POST_NOTIFICATIONS" = true
+```
+
+Pydroid 3
+```
+# In the Pydroid 3 pip section, add:
+android-notify
+```
+:::
 
 ## Kivy apps
 

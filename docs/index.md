@@ -43,7 +43,7 @@ help
 
 ## Quick Start
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 # Simple notification
@@ -51,7 +51,7 @@ Notification(
     title="Hello",
     message="This is a basic notification."
 ).send()
-```
+:::
 
 ## Support the Project
 

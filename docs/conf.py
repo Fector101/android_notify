@@ -3,7 +3,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../'))  # noqa: E402
+sys.path.insert(0, os.path.abspath('../'))   # noqa: E402
+sys.path.insert(0, os.path.abspath('_ext'))  # noqa: E402
 
 import android_notify.config  # noqa: E402
 
@@ -23,6 +24,9 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
+    "sphinx_tabs.tabs",
+    "sphinx_copybutton",
+    "pydroid_tabs",
 ]
 
 # Modules that require Android/pyjnius are mocked so docs build on Linux.

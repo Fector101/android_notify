@@ -6,9 +6,9 @@
 
 Notifications can be updated in real-time. Pass the notification `id` (or reuse the same instance) to update instead of creating a new one.
 
-```python
+:::{pydroid}
 notification = Notification(title="Old title", message="Old message").send()
-```
+:::
 
 Update title and/or message:
 
@@ -19,7 +19,7 @@ notification.updateMessage("New message")
 
 ## Progress bar management
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(
@@ -34,25 +34,25 @@ notification.updateProgressBar(50, "50% downloaded")
 
 # Then remove it cleanly (optionally showing a final update briefly)
 notification.removeProgressBar(message="Done", show_on_update=True)
-```
+:::
 
 ## Adding style even when already sent
 
 Use `.refresh()` to apply any new changes after sending:
 
-```python
+:::{pydroid}
 notification = Notification(title="Downloading", message="0%")
 notification.send()
 
 notification.setLargeIcon("imgs/profile.png")
 notification.refresh()
-```
+:::
 
 ## Channel management
 
 Android 8.0+ requires notifications to belong to a channel. The default channel is created for you, but you can create, check and delete your own.
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 # Create a channel
@@ -70,7 +70,7 @@ Notification(
     message="Check out the latest article",
     channel_id="news",
 ).send()
-```
+:::
 
 Read the channels that exist on the device before sending:
 
@@ -105,7 +105,7 @@ print(f"Deleted {count} channels")
 
 ## Silent notifications
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 Notification(
@@ -113,23 +113,23 @@ Notification(
     message="No sound or heads-up",
     silent=True,
 ).send()
-```
+:::
 
 ## Persistent notifications
 
 Keep the notification in the tray until cancelled by the user or the app:
 
-```python
+:::{pydroid}
 notification = Notification(
     title="Downloading...",
     message="Large file",
     persistent=True,
 ).send()
-```
+:::
 
 ## Controlling popups (heads-up)
 
-```python
+:::{pydroid}
 from android_notify import Notification
 import time
 
@@ -144,7 +144,7 @@ notification.setOnlyAlertOnce(False)
 
 notification.updateTitle("Processing Complete!")
 notification.updateMessage("Task finished successfully")
-```
+:::
 
 ## Custom sound
 
@@ -218,7 +218,7 @@ android.permissions = VIBRATE
 
 For Android 8+, enable vibration on the channel:
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 # Create a channel with vibration enabled
@@ -233,17 +233,17 @@ n = Notification(
     channel_id='shake'
 )
 n.send()
-```
+:::
 
 Otherwise you can make the notification itself vibrate:
 
-```python
+:::{pydroid}
 notification = Notification(
     title="Vibration",
     message="Buzz buzz",
     vibrate=True,
 ).send()
-```
+:::
 
 Custom vibration pattern (Android < 8):
 
@@ -261,13 +261,13 @@ n.fVibrate()
 
 `NotificationHandler.data_object` returns a `dict` of data in the clicked notification. `setData` can be called after `send` to change the stored `data_object`. Use the `name` argument if the value is constant.
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(title="Hello", name="change page")
 notification.setData({"next wallpaper path": "test.jpg"})
 notification.send()
-```
+:::
 
 ```python
 from android_notify import NotificationHandler
@@ -327,29 +327,29 @@ class MyApp(MDApp):
 
 ## Cancel notifications
 
-```python
+:::{pydroid}
 notification = Notification(title="Hello", message="World").send()
 
 # Later, cancel it
 notification.cancel()
-```
+:::
 
 Cancel all notifications:
 
-```python
+:::{pydroid}
 Notification.cancelAll()
-```
+:::
 
 ## Priority
 
 On devices below Android 8 there are no channels, so importance is set per notification with `setPriority()`. For Android 8+ use the channel's `importance` instead.
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 notification = Notification(title="Urgent", message="Important").send()
 notification.setPriority("high")  # 'urgent', 'high', 'medium', 'low', 'none'
-```
+:::
 
 ## Misc
 

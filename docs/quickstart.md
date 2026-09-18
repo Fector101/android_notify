@@ -1,29 +1,19 @@
 # Quick Start
 
+> Most runnable examples have an **In-App** / **Pydroid 3** toggle. The **Pydroid 3** tab wraps the same snippet in a Kivy app with a *Run Code* button, so you can copy it into [Pydroid 3](https://play.google.com/store/apps/details?id=ru.iiec.pydroid3) and run it straight on your phone.
+
 ## Basic notification
 
-```python
+:::{pydroid}
 from android_notify import Notification
 
 Notification(
     title="Hello",
     message="This is a basic notification."
 ).send()
-```
+:::
 
 ![basic notification](imgs/basicnoti.jpg)
-
-```python
-from android_notify import Notification
-
-# Basic notification on a Flet app
-Notification(
-    title="Hello from Flet",
-    message="This is a basic notification."
-).send()
-```
-
-![basic flet notification](imgs/basic-flet-notification.jpg)
 
 ## How it works
 
@@ -36,16 +26,16 @@ Notification(
 
 On Android 13+, the library automatically asks for the `POST_NOTIFICATIONS` permission when you create a notification. You can also request it manually:
 
-```python
+:::{pydroid}
 from android_notify import NotificationHandler
 
 NotificationHandler.asks_permission()
-```
+:::
 
 Check whether permission is already granted:
 
-```python
+:::{pydroid}
 from android_notify import NotificationHandler
 
 has_permission = NotificationHandler.has_permission()
-```
+:::
