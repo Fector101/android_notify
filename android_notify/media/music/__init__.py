@@ -4,7 +4,6 @@ import jnius.jnius
 
 from jnius import PythonJavaClass, java_method
 
-from android_notify.internal.facade import MActivity
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
 from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
@@ -21,7 +20,6 @@ if on_android_platform():
     NotificationCompatBuilder = autoclass('android.app.Notification$Builder')
     R_drawable = autoclass('android.R$drawable')
     ActionBuilder = autoclass('android.app.Notification$Action$Builder')
-
     KeyEvent = autoclass('android.view.KeyEvent')
     MediaSession = autoclass('android.media.session.MediaSession')
     PlaybackState = autoclass('android.media.session.PlaybackState')
@@ -31,14 +29,12 @@ if on_android_platform():
     MediaStyle = autoclass('android.app.Notification$MediaStyle')
     MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
 
-    #
     # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
     # PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
     # PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
     # MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
     # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
     # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
-    #
 
     java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
     try:
@@ -47,10 +43,12 @@ if on_android_platform():
     except jnius.jnius.JavaException as e:
         MediaSessionCallback = None
         if e.classname == 'java.lang.ClassNotFoundException':
+            # TODO Point to docs section
             logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
         else:
             logger.error(e)
             traceback.print_exc()
+
 else:
     from android_notify.internal.facade import (
         NotificationCompatBuilder, R_drawable,
@@ -67,7 +65,7 @@ else:
 
 # AndroidRunnable - run code on Android's main (UI) thread Android's MediaSession APIs MUST be created/accessed from
 # the main/UI thread. This wraps a Python function in a java.lang.Runnable so it can be passed to Activity.runOnUiThread().
-# TODO remove on kivy new version release it exists in kivy/mobile/_platform/android.py and
+# TODO remove on Kivy new version release it exists in kivy/mobile/_platform/android.py and
 #  is used in kivy/core/clipboard/clipboard_android.py
 #  Test if this pattern also works for Flet if so then do not delete it
 class AndroidRunnable(PythonJavaClass):
@@ -161,7 +159,7 @@ class MediaSessionListener(PythonJavaClass):
 
 
 class MusicNotification:
-    listener = MediaSessionListener # so users can switch listener Class
+    listener = MediaSessionListener # so users can switch listener Class if needed
     soundLoader = None
     notification_id = None
 
@@ -190,7 +188,7 @@ class MusicNotification:
         self.channel_name = "Music"
         self.notification_id = get_unique_id()
 
-        self.context: Optional["MActivity"] = None
+        self.context = None
         self.callback = None
         self.session = None
 
@@ -198,8 +196,8 @@ class MusicNotification:
             self.context = get_python_activity_context()
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
             try:
-                # Run init on Android's UI thread (required by MediaSession)
-                if self.context is not None:
+                if self.context is not None: # lint
+                    # Run init on Android's UI thread (required by MediaSession)
                     runnable = AndroidRunnable(self.__setup_media_session)
                     self.context.runOnUiThread(runnable)
             except Exception as error_setting_controls:
@@ -220,18 +218,21 @@ class MusicNotification:
         self.session.setFlags(1 | 2)
 
         # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
-        self.listener = self.listener()
-        self.listener.play_music = self._play_music
-        self.listener.pause_music = self._pause_music
-        self.listener.seek_music = self._seek_music
-        self.listener.next_music = self._next_music
-        self.listener.prev_music = self._prev_music
+        if MediaSessionCallback:
+            self.listener = self.listener()
+            self.listener.play_music = self._play_music
+            self.listener.pause_music = self._pause_music
+            self.listener.seek_music = self._seek_music
+            self.listener.next_music = self._next_music
+            self.listener.prev_music = self._prev_music
 
-        self.callback = MediaSessionCallback(self.listener)
-        self.session.setCallback(self.callback)
-        self.session.setActive(True)
-        create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
-        logger.debug("MediaSession initialization and callback setup complete!")
+            self.callback = MediaSessionCallback(self.listener)
+            self.session.setCallback(self.callback)
+            self.session.setActive(True)
+            create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
+            logger.debug("MediaSession initialization and callback setup complete!")
+        else: # Pyroid3 and Flet
+            logger.error("MediaSessionCallback.java is Missing Can't attached Actions Notification Listener, Visit TODO to learn how to attach.")
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.

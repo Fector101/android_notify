@@ -597,6 +597,20 @@ class MediaSessionListener:
         pass
     def onSkipToPrevious(self):
         pass
+
+
+class MediaSessionCallback:
+    """Desktop stand-in for the Java MediaSessionCallback bridge class.
+
+    Mirrors the constructor of the real Java class: it receives the Python
+    MediaSessionListener that Java forwards transport events to.
+    """
+
+    def __init__(self, listener):
+        self.listener = listener
+        logger.debug(f"[MOCK] MediaSessionCallback initialized with listener={listener}")
+
+
 class PlaybackState:
     ACTION_PLAY = 1
     ACTION_PAUSE = 2
