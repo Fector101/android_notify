@@ -12,6 +12,7 @@ usage
 advanced
 foreground-services
 api
+changelog
 help
 ```
 
