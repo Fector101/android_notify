@@ -10,6 +10,7 @@ from android_notify.internal.java_classes import autoclass, cast,Intent, Pending
 from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
 from android_notify.internal.channels import create_channel
+from android_notify.media.music.helper import JAVA_CALLBACK_FILE_CONTENT
 from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
 from android_notify.widgets.texts import set_title, set_message
 
@@ -45,6 +46,7 @@ if on_android_platform():
         if e.classname == 'java.lang.ClassNotFoundException':
             # TODO Point to docs section
             logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
+            logger.info(JAVA_CALLBACK_FILE_CONTENT)
         else:
             logger.error(e)
             traceback.print_exc()

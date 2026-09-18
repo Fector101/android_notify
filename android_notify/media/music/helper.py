@@ -7,7 +7,7 @@
 import os
 from android_notify.internal.logger import logger
 from jnius import autoclass, PythonJavaClass, java_method
-from android_notify.config import on_android_platform
+from android_notify.config import on_android_platform, get_package_name
 from kivy.properties import ObjectProperty
 from kivy.event import EventDispatcher
 
@@ -241,13 +241,15 @@ class SoundLoader(EventDispatcher):
         pass
 
 
-JAVA_CALLBACK_FILE_CONTENT = """
-// Place as-is inside: ./src/MediaSessionCallback.java
-// A bridge: it receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
-// Python MediaSessionListener implements the Java interface MediaSessionCallback$MediaSessionListener, so it's the Python-side handler of those events.
+JAVA_CALLBACK_FILE_CONTENT = f"""
+// Place as-is inside: "./src/MediaSessionCallback.java"
+// Point to it in buildozer.spec "android.add_src = ./src"
+ 
+// A bridge: It receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
+// Android-Notify implements MediaSessionListener a Callback Listener with python.
 
-package org.wally.waller;
 
+package {get_package_name()}"""+"""
 import android.media.session.MediaSession;
 
 public class MediaSessionCallback extends MediaSession.Callback {

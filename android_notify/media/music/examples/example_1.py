@@ -2,34 +2,18 @@
 Standalone example: media notification for music playback
 =========================================================
 
-Shows how to give a Kivy app a real Android media notification using
-``android_notify.media.music``:
+``android_notify.media.music.MusicNotification``:
 
-* Play / pause controls on the notification, lock screen and quick settings.
-* A seek bar driven by MediaSession — the progress moves while playing and
-  can be dragged to seek, no app-side polling of the notification needed.
-* Prev / next buttons that are removed from the notification when there is
+- Play / pause controls on the notification, lock screen and quick settings are auto bound to SoundLoader.
+- The seek bar progress moves while playing and can be dragged to seek, no app-side polling of the notification needed.
+
+- Prev / next buttons that are removed from the notification when there is
   no track in that direction (``set_skip_available``).
-* End-of-track handling: loop the current track, or play it just once and
-  stop (see ``on_complete``).
 
-Run on a real device (Android 13+ — the MediaSession seek bar needs it).
-The notification code only needs Kivy + pyjnius; this example uses plain
-Kivy widgets but no KivyMD on purpose.
 
-Paste this file into your own project (it is self-contained), then build
-with buildozer. Minimum requirements line:
 
-    requirements = python3,kivy,pyjnius,android-notify
+Paste this file into your own project (it is self-contained)
 
-And your manifest needs All Files Access to read .mp3 files from the shared
-storage:
-
-    android.permissions = POST_NOTIFICATIONS, MANAGE_EXTERNAL_STORAGE, \
-        (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32)
-
-On Android 13+ the user also has to enable "All files access" for your app;
-that is what ``requestAllFilesAccess()`` below asks for.
 """
 
 import os
