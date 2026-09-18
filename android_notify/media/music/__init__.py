@@ -216,6 +216,7 @@ class MusicNotification:
         # Flag 2 = FLAG_HANDLES_MEDIA_BUTTONS
         self.session = MediaSession(self.context, get_package_name()+".MusicSession")
         self.session.setFlags(1 | 2)
+        self.session.setActive(True)
 
         # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
         if MediaSessionCallback:
@@ -228,11 +229,10 @@ class MusicNotification:
 
             self.callback = MediaSessionCallback(self.listener)
             self.session.setCallback(self.callback)
-            self.session.setActive(True)
-            create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
             logger.debug("MediaSession initialization and callback setup complete!")
         else: # Pyroid3 and Flet
             logger.error("MediaSessionCallback.java is Missing Can't attached Actions Notification Listener, Visit TODO to learn how to attach.")
+        create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
