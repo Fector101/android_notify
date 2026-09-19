@@ -32,6 +32,7 @@ New methods:
 - Permission check in a service raising `NoneType` errors.
 - Path issues in Flet apps.
 - Auto-strip the audio extension from `res_sound_name` with a warning.
+- Music notification: notification now also builds when `setSoundLoader` is given an already-loaded `SoundLoader` (its `on_load` already fired).
 
 **Docs**
 

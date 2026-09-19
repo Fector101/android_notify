@@ -111,11 +111,11 @@ requestAllFilesAccess()
 
 ## Minimal example
 
-```{caution}
-**Order matters**: call `SoundLoader.load()` *before* `setSoundLoader(sound)`.
-The notification is built on the sound's `on_load` event, which
-`setSoundLoader` wires up — create/bind the notification first and it may
-never appear.
+```{note}
+The notification is built when the sound finishes loading (its `on_load`
+event) and is dispatched automatically. `setSoundLoader` handles both call
+orders: wire it before the load completes (it waits for `on_load`), or after
+the sound is already loaded (it builds the notification immediately).
 ```
 
 ```python
@@ -206,7 +206,7 @@ Two ready-to-run variants ship inside the package:
 
 - `MusicNotification(on_next=None, on_previous=None)` - create the notification; pass callbacks for the skip buttons.
 - `setTitle(text)` / `setArtist(text)` - track metadata (also shown on the lock screen).
-- `setSoundLoader(sound)` - bind a `SoundLoader`; wires state/load/seek updates to the notification automatically.
+- `setSoundLoader(sound)` - bind a `SoundLoader`; wires state/load/seek updates to the notification automatically. Builds on `on_load`, or immediately if the sound is already loaded.
 - `set_skip_available(has_next, has_prev)` - show/hide the previous/next buttons depending on your queue.
 - `updateProgressBar()` - sync the seek bar/play state (called automatically).
 - `refresh()` - re-post the built notification.
