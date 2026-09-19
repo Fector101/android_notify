@@ -6,7 +6,7 @@
 
 import os
 from android_notify.internal.logger import logger
-from android_notify.config import on_android_platform, get_package_name
+from android_notify.config import on_android_platform
 try:
     from kivy.properties import ObjectProperty
     from kivy.event import EventDispatcher
@@ -252,15 +252,23 @@ class SoundLoader(EventDispatcher):
         pass
 
 
-JAVA_CALLBACK_FILE_CONTENT = f"""
+# Legacy fallback for setups that can't use the Maven bridge artifact:
+# copy this file into "./src/MediaSessionCallback.java" and point buildozer at it
+# with "android.add_src = ./src". New setups should add
+# android-notify-music-bridge to android.gradle_dependencies instead.
+#
+# The package is fixed to match the pre-compiled Maven bridge, so the same class
+# is loadable from either path.
+
+JAVA_CALLBACK_FILE_CONTENT = """
 // Place as-is inside: "./src/MediaSessionCallback.java"
 // Point to it in buildozer.spec "android.add_src = ./src"
- 
-// A bridge: It receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
+// Prefer the Maven artifact: android.gradle_dependencies = io.github.fector101:android-notify-music-bridge
+ // A bridge: It receives MediaSession transport control events (play/pause/seek/next/prev) and forwards them to a Python listener interface.
 // Android-Notify implements MediaSessionListener a Callback Listener with python.
 
 
-package {get_package_name()};"""+"""
+package org.android_notify.music;"""+"""
 import android.media.session.MediaSession;
 
 public class MediaSessionCallback extends MediaSession.Callback {

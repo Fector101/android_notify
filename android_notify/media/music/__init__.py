@@ -14,6 +14,11 @@ from android_notify.widgets.texts import set_title, set_message
 
 
 JAVA_FILE_NAME = "MediaSessionCallback"
+# The bridge ships pre-compiled in a fixed package (io.github.fector101:android-notify-music-bridge)
+# so users never have to copy or edit Java. `bridge_interface_class` matches the
+# nested interface embedded in that Java class.
+MUSIC_BRIDGE_PACKAGE = "org.android_notify.music"
+bridge_interface_class = f'{MUSIC_BRIDGE_PACKAGE.replace(".", "/")}/{JAVA_FILE_NAME}$MediaSessionListener'
 
 if on_android_platform():
     import jnius.jnius
@@ -37,16 +42,31 @@ if on_android_platform():
     # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
     # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
 
-    java_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
+    java_bridge_class = f'{MUSIC_BRIDGE_PACKAGE}.{JAVA_FILE_NAME}'
     try:
         MediaSessionCallback = autoclass(java_bridge_class)
         logger.info(f"Successfully loaded MediaSessionCallback: {java_bridge_class}")
     except jnius.jnius.JavaException as e:
         MediaSessionCallback = None
         if e.classname == 'java.lang.ClassNotFoundException':
-            # TODO Point to docs section
-            logger.error(f"Didn't find: {java_bridge_class}, visit: docs-on-how-to-add.html")
-            logger.info(JAVA_CALLBACK_FILE_CONTENT)
+            # Fall back to the legacy android.add_src layout {app_package}.MediaSessionCallback
+            # (copy-pasted Java file). New setups should use the Maven artifact instead.
+            legacy_bridge_class = f'{get_package_name()}.{JAVA_FILE_NAME}'
+            if legacy_bridge_class != java_bridge_class:
+                try:
+                    MediaSessionCallback = autoclass(legacy_bridge_class)
+                    bridge_interface_class = f'{get_package_name().replace(".", "/")}/{JAVA_FILE_NAME}$MediaSessionListener'
+                    logger.warning(f"Bridge not found at '{java_bridge_class}', fell back to legacy: {legacy_bridge_class}")
+                except jnius.jnius.JavaException:
+                    logger.error("Couldn't find the media bridge anywhere. Add android-notify-music-bridge to "
+                                 "android.gradle_dependencies (see docs/music-notifications.html), or add the "
+                                 "legacy src/MediaSessionCallback.java via android.add_src.")
+                    logger.info(JAVA_CALLBACK_FILE_CONTENT)
+            else:
+                logger.error("Media bridge missing: add android-notify-music-bridge to android.gradle_dependencies "
+                             "(see docs/music-notifications.html), or add the legacy src/MediaSessionCallback.java "
+                             "via android.add_src.")
+                logger.info(JAVA_CALLBACK_FILE_CONTENT)
         else:
             logger.error(e)
             traceback.print_exc()
@@ -93,8 +113,8 @@ class AndroidRunnable(PythonJavaClass):
 _active_music_notification: Optional["MusicNotification"] = None
 class MediaSessionListener(PythonJavaClass):
     __javainterfaces__ = [
-        get_package_name().replace(".","/")+'/MediaSessionCallback$MediaSessionListener'
-        # com/example/android_notify/MediaSessionCallback$MediaSessionListener
+        bridge_interface_class
+        # org/android_notify/music/MediaSessionCallback$MediaSessionListener
     ]
     __javacontext__ = 'app'
 
@@ -237,7 +257,8 @@ class MusicNotification:
             self.session.setCallback(self.callback)
             logger.debug("MediaSession initialization and callback setup complete!")
         else: # Pyroid3 and Flet
-            logger.error("MediaSessionCallback.java is Missing Can't attached Actions Notification Listener, Visit TODO to learn how to attach.")
+            logger.error("Media bridge is unavailable, media buttons will be inert. Add android-notify-music-bridge to "
+                         "android.gradle_dependencies (see docs/music-notifications.html).")
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
 
         # If a build was deferred while the MediaSession was being created,

@@ -3,6 +3,13 @@
 Release notes for all versions of Android Notify.
 
 
+## Version 1.62
+
+**Changed**
+
+- Music notifications now use a pre-compiled Java bridge (`io.github.fector101:android-notify-music-bridge`, published on Maven Central) with a fixed package. No more copy-pasting and editing `MediaSessionCallback.java`; just add one line to `android.gradle_dependencies`. The legacy `android.add_src` setup still works as a fallback.
+
+
 ## Version 1.61
 
 **Improvements**

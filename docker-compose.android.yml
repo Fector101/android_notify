@@ -1,0 +1,85 @@
+# Android emulator + music-notification smoke tests (scripts/ci/docker_android_test.sh).
+# APKs are built first; the emulator starts only for smoke tests (saves RAM during long builds).
+#
+# Prerequisites: Docker with /dev/kvm passthrough (native docker.io / docker-ce on Linux), ~8GB+ RAM.
+#
+# Run locally:
+#   ./scripts/ci/docker_android_test.sh
+#
+# Environment:
+#   SKIP_AUTH=true        Emulator-side auth bypass (Play Store still needs shared adb keys; see .docker-android/keys)
+#   ANDROID_EMU_MEMORY    Emulator RAM MiB (default 4096)
+#   ANDROID_EMU_SHM       /dev/shm size (default 2gb)
+#   ANDROID_EMU_CORES     vCPU count (default 2)
+#   LOG_TIMEOUT           Logcat wait seconds (default 180)
+#   ANDROID_GRADLE_IMAGE  Gradle/SDK image for the bridge (default cimg/android:2025.12.1)
+
+name: android-notify-android
+
+services:
+  emulator:
+    image: halimqarroum/docker-android:api-33-playstore
+    container_name: android-notify-android-emulator
+    shm_size: ${ANDROID_EMU_SHM:-2gb}
+    devices:
+      - /dev/kvm:/dev/kvm
+    ports:
+      - "5555:5555"
+    environment:
+      SKIP_AUTH: ${SKIP_AUTH:-true}
+      DISABLE_ANIMATION: "true"
+      DISABLE_HIDDEN_POLICY: "true"
+      GPU_ACCELERATED: "false"
+      MEMORY: ${ANDROID_EMU_MEMORY:-4096}
+      CORES: ${ANDROID_EMU_CORES:-2}
+      EXTRA_FLAGS: "-no-metrics -no-audio -partition-size ${ANDROID_EMU_PARTITION_MB:-4096}"
+    volumes:
+      - android-emulator-data:/data
+      # Play Store images require the same adbkey on emulator and remote clients (HQarroum/docker-android).
+      - ./.docker-android/keys/adbkey:/root/.android/adbkey:ro
+      - ./.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'boot=$$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r"); test "$$boot" = "1"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 90
+      start_period: 120s
+
+  bridge:
+    # cimg tags are dated (e.g. 2025.12.1), see hub.docker.com/r/cimg/android/tags
+    image: ${ANDROID_GRADLE_IMAGE:-cimg/android:2025.12.1}
+    user: "0:0"
+    volumes:
+      - .:/workspace
+      - ${HOME}/.m2:/root/.m2
+    working_dir: /workspace
+    command:
+      - bash
+      - -ec
+      - |
+        chmod +x scripts/ci/*.sh bridges/android/gradlew
+        cd bridges/android
+        ./gradlew :android-notify-music-bridge:publishToMavenLocal --no-daemon
+
+  smoke:
+    build:
+      context: ./scripts/ci
+      dockerfile: Dockerfile.android-smoke
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/workspace:ro
+      - ./.docker-android/keys/adbkey:/root/.android/adbkey:ro
+      - ./.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
+    working_dir: /workspace
+    environment:
+      ANDROID_SERIAL: "${ADB_CONNECT:-android-notify-android-emulator:5555}"
+      ADB_CONNECT: "${ADB_CONNECT:-android-notify-android-emulator:5555}"
+      LOG_TIMEOUT: ${LOG_TIMEOUT:-180}
+
+volumes:
+  android-emulator-data:

@@ -20,12 +20,32 @@ Add `android-notify` to your `buildozer.spec` requirements (see [Installation](i
 requirements = python3, kivy, pyjnius, android-notify
 ```
 
-A small Java bridge file is required so transport controls from the notification reach Python. You won't write any Java; the whole file is copy-pasted from below, and you only edit its **first line**.
+The media buttons are wired through a small **pre-compiled Java bridge**
+[`io.github.fector101:android-notify-music-bridge`](../changelog/android-notify-music-bridge.md),
+published on Maven Central. You do not write or copy any Java - just add one line
+to your `buildozer.spec`:
+
+```ini
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.0
+```
+
+`mavenCentral()` is already included in the Gradle project buildozer generates,
+so no extra repository line is needed.
+
+```{note}
+If the bridge dependency can't be resolved the notification still builds, but
+the media buttons do nothing.
+```
+
+### Legacy: `android.add_src` fallback
+
+Toolchains that can't pull a Gradle dependency (older p4a setups, forks) can ship
+the bridge as a Java source file instead. The file is **fixed** - you never edit
+a package line because the bridge always lives in `org.android_notify.music`.
 
 1. Create a `src` folder next to your `buildozer.spec` and add `src/MediaSessionCallback.java` to it.
 2. Paste the contents below into that file.
-3. Edit the **first line only**: replace `com.example.android_notify` with your app's real package name, the one Android uses for your app. It comes from your `buildozer.spec`, for example `package.domain = org.example` and `package.name = myapp` make the line `package org.example.myapp;`.
-4. Point buildozer at the folder in `buildozer.spec`:
+3. Point buildozer at the folder in `buildozer.spec`:
 
 ```ini
 android.add_src = ./src
@@ -34,7 +54,11 @@ android.add_src = ./src
 `src/MediaSessionCallback.java`:
 
 ```java
-package com.example.android_notify; // TODO: replace with your buildozer.spec package.name
+// Android-Notify media bridge: receives MediaSession transport control events
+// (play/pause/seek/next/prev) and forwards them to a Python listener interface.
+// Keep the package line exactly as-is - it must match the pre-compiled bridge.
+
+package org.android_notify.music;
 
 import android.media.session.MediaSession;
 
@@ -92,7 +116,7 @@ public class MediaSessionCallback extends MediaSession.Callback {
 ```
 
 ```{note}
-If the Java file is missing the notification still builds, but the media buttons do nothing.
+If the Java file is missing the notification still builds, but the media buttons do nothing. The exact same file content is also shown in your logs when the bridge can't be found (`android_notify.media.music.helper.JAVA_CALLBACK_FILE_CONTENT`).
 ```
 
 ## Reading audio files
