@@ -111,6 +111,13 @@ requestAllFilesAccess()
 
 ## Minimal example
 
+```{caution}
+**Order matters**: call `SoundLoader.load()` *before* `setSoundLoader(sound)`.
+The notification is built on the sound's `on_load` event, which
+`setSoundLoader` wires up — create/bind the notification first and it may
+never appear.
+```
+
 ```python
 import os
 
@@ -127,15 +134,7 @@ class MyApp(App):
     def build(self):
         requestAllFilesAccess()
 
-        # 1) The player (singleton): prepares the MediaPlayer asynchronously,
-        #    fires on_load when ready.
-        self.sound = SoundLoader.load(TRACK)
-        self.sound.loop = True
-        self.sound.bind(on_load=self.on_loaded)
-        self.sound.bind(on_complete=self.on_track_finished)
-        self.sound.bind(state=self.on_state_changed)
-
-        # 2) The notification: builds a media notification and wires it to
+        # 1) The notification: builds a media notification and wires it to
         #    the same player.
         self.notification = MusicNotification(
             on_next=self.next_track,
@@ -143,6 +142,15 @@ class MyApp(App):
         )
         self.notification.setTitle(os.path.splitext(os.path.basename(TRACK))[0])
         self.notification.setArtist("Example Artist")
+
+        # 2) The player: prepares the MediaPlayer asynchronously,
+        #    fires on_load when ready.
+        self.sound = SoundLoader.load(TRACK)
+        self.sound.loop = True
+        self.sound.bind(on_load=self.on_loaded)
+        self.sound.bind(on_complete=self.on_track_finished)
+        self.sound.bind(state=self.on_state_changed)
+
         self.notification.setSoundLoader(self.sound)
         self.notification.set_skip_available(has_next=False, has_prev=False)
 
