@@ -135,6 +135,7 @@ class SoundLoader(EventDispatcher):
         instance.source = source
 
         logger.info(f"audio source: {os.path.abspath(source)}")
+        instance._player_ready = False
         instance._player = MediaPlayer()
         instance._player.setDataSource(source)
         # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,

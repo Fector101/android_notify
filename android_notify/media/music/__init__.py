@@ -170,6 +170,7 @@ class MusicNotification:
 
     def __init__(self, on_next=None, on_previous = None):
         self.already_built = False
+        self._build_pending = False
         global _active_music_notification
         _active_music_notification = self
 
@@ -238,6 +239,11 @@ class MusicNotification:
         else: # Pyroid3 and Flet
             logger.error("MediaSessionCallback.java is Missing Can't attached Actions Notification Listener, Visit TODO to learn how to attach.")
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
+
+        # If a build was deferred while the MediaSession was being created,
+        # finish it now that the session exists.
+        if self._build_pending and self.soundLoader is not None:
+            self._build_or_defer(is_playing=1 if self.soundLoader.state == "play" else 0)
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
@@ -312,13 +318,41 @@ class MusicNotification:
         else:
             logger.error("Not built but trying play or pause")
 
+    @staticmethod
+    def _sound_is_loaded(sound):
+        """True if the sound's on_load has already fired (player is ready)."""
+        if getattr(sound, "_player_ready", False):
+            return True
+        try:
+            # Plain Kivy Sound: length is only available once loaded.
+            return bool(getattr(sound, "length", 0))
+        except Exception:
+            return False
+
+    def _build_or_defer(self, is_playing):
+        """Build the notification now, or defer once the MediaSession exists.
+
+        build_notification bails out when the MediaSession isn't created yet;
+        queue the build so __setup_media_session retries it as soon as the
+        session is ready.
+        """
+        if self.session is not None:
+            self.build_notification(is_playing=is_playing)
+        else:
+            self._build_pending = True
+
     def setSoundLoader(self, sound_load_instance):
         self.soundLoader = sound_load_instance
         self.soundLoader.bind(
             state=self._parse_state,
-            on_load=lambda instance,v: self.build_notification(is_playing=1 if self.soundLoader.state=="play" else 0),
+            on_load=lambda instance,v: self._build_or_defer(is_playing=1 if self.soundLoader.state=="play" else 0),
             on_seek=lambda _,pos:self.updateProgressBar()
         )
+
+        # If the sound was already loaded when we bound to it, its on_load
+        # has already fired and will never fire again - build now instead.
+        if not self.already_built and self._sound_is_loaded(sound_load_instance):
+            self._build_or_defer(is_playing=1 if self.soundLoader.state == "play" else 0)
 
         # TODO Receive on seek
 
@@ -369,6 +403,8 @@ class MusicNotification:
         manager = get_notification_manager()
         manager.notify(self.notification_id, self.builder.build())
         self.already_built=1
+        # A build happened: consume any queued build request (see setSoundLoader).
+        self._build_pending = False
         #No manual updates, MediaSession playback state handles it in updateProgressBar
         # if is_playing:
         #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
