@@ -67,6 +67,13 @@ jobs:
           echo "changelog_version=$CHANGELOG_VERSION" >> "$GITHUB_OUTPUT"
           echo "Staging $VERSION (changelog: $CHANGELOG_VERSION)"
 
+      - name: Reject non-semver version (guard against crafted workflow_dispatch input)
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.meta.outputs.version }}"
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            || { echo "Version '$VERSION' is not a clean X.Y.Z semver"; exit 1; }
+
       - name: Fail if version does not match the changelog
         if: steps.meta.outputs.version != steps.meta.outputs.changelog_version
         run: |
