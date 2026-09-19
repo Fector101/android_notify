@@ -6,6 +6,9 @@ name: Music smoke
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   android-smoke:
     runs-on: ubuntu-latest
