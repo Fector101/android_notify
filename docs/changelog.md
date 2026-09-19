@@ -33,6 +33,7 @@ New methods:
 - Path issues in Flet apps.
 - Auto-strip the audio extension from `res_sound_name` with a warning.
 - Music notification: notification now also builds when `setSoundLoader` is given an already-loaded `SoundLoader` (its `on_load` already fired).
+- Music notification: the build is deferred until the `MediaSession` is ready, so the "bind before load" order works even when `on_load` fires before the session is created.
 
 **Docs**
 
