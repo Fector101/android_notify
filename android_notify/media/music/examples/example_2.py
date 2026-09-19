@@ -3,7 +3,7 @@ Complete music player app: scan device for audio files, play with notification c
 =========================================================================================
 
 Features:
-- Scans device storage for audio files (.mp3, .m4a, .ogg, .wav, .flac, .aac, .opus)
+- Scans device storage for audio files (.mp3, .m4a, .ogg, .wav, .flac, .aac)
 - List view of all found tracks, tap to play
 - Prev / Next / Play / Pause with notification, lock screen & bluetooth controls
 - Draggable seek bar synced with playback
@@ -45,7 +45,7 @@ logger = logging.getLogger("MusicApp")
 # --------------------------------------------------------------------------- #
 # Config
 # --------------------------------------------------------------------------- #
-AUDIO_EXTENSIONS = (".mp3", ".m4a", ".ogg", ".wav", ".flac", ".aac", ".opus")
+AUDIO_EXTENSIONS = (".mp3", ".m4a", ".ogg", ".wav", ".flac", ".aac",)# ".opus")
 
 # Where to scan. On Android we try the most common public music dirs first,
 # then fall back to a broader scan. Add or remove roots to fit your needs.
@@ -561,4 +561,48 @@ class MusicPlayerRoot(BoxLayout):
             # Last track, stop
             if self.sound is not None:
                 self.sound.seek(0)
-                sel
+                self.sound.state = "pause"
+            self._reset_seek_ui()
+
+    def _reset_seek_ui(self):
+        self._pending_seek = None
+        self.seek_bar.value = 0
+        length = (self.sound.length if self.sound else 0) or 0
+        self.time_label.text = f"00:00 / {_fmt(length)}"
+
+    # ------------------------------------------------------------------ #
+    # Toggles                                                              #
+    # ------------------------------------------------------------------ #
+    def toggle_loop(self):
+        self.loop_track = not self.loop_track
+        if self.sound is not None:
+            self.sound.loop = self.loop_track
+        self.loop_btn.text = f"Loop: {'ON' if self.loop_track else 'OFF'}"
+        if self.notification is not None:
+            self.notification.set_skip_available(self._has_next(), self._has_prev())
+
+    def toggle_shuffle(self):
+        self.shuffle = not self.shuffle
+        self.shuffle_btn.text = f"Shuffle: {'ON' if self.shuffle else 'OFF'}"
+        if self.notification is not None:
+            self.notification.set_skip_available(self._has_next(), self._has_prev())
+
+    # ------------------------------------------------------------------ #
+    # Lifecycle                                                            #
+    # ------------------------------------------------------------------ #
+    def cleanup(self):
+        self._release_player()
+
+
+class MusicPlayerApp(App):
+    def build(self):
+        self.title = "Music Player"
+        return MusicPlayerRoot()
+
+    def on_stop(self):
+        if self.root is not None:
+            self.root.cleanup()
+
+
+if __name__ == "__main__":
+    MusicPlayerApp().run()
