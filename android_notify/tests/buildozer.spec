@@ -28,7 +28,11 @@ android.api = 35
 android.permissions = INTERNET, VIBRATE, USE_EXACT_ALARM, SCHEDULE_EXACT_ALARM, FOREGROUND_SERVICE, FOREGROUND_SERVICE_DATA_SYNC, POST_NOTIFICATIONS, SET_WALLPAPER, READ_MEDIA_IMAGES, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=28)
 android.add_src = %(source.dir)s/android/src
 android.add_resources = %(source.dir)s/android/res
-android.gradle_dependencies = androidx.core:core:1.12.0
+# The music bridge ships pre-compiled in a fixed package (org.android_notify.music), replacing the
+# legacy copy-pasted MediaSessionCallback.java under android.add_src. mavenLocal() is only needed
+# until the artifact lands on Maven Central; then remove this line.
+android.add_gradle_repositories = mavenLocal()
+android.gradle_dependencies = androidx.core:core:1.12.0, io.github.fector101:android-notify-music-bridge:1.0.0
 p4a.hook = %(source.dir)s/android/p4a/hook.py
 
 android.archs = arm64-v8a

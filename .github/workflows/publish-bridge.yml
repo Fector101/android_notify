@@ -1,0 +1,101 @@
+# Publish io.github.fector101:android-notify-music-bridge to the Sonatype Central
+# Publisher Portal (via its OSSRH Staging API compatibility service).
+# Nothing is released automatically: the workflow uploads and *closes* a staging
+# repository, which creates a deployment on the Central Publisher Portal. A human
+# inspects it and confirms validation on https://central.sonatype.com/publishing
+# before clicking "Publish" — that is the only step that makes it live on
+# Maven Central.
+#
+# Triggers:
+#   Tag  music-bridge-vX.Y.Z   -> resolve X.Y.Z, stage the artifact (no release)
+#   Manual "publish"           -> stage with a given version (tag not required)
+#
+# Version must match changelog/android-notify-music-bridge.md (first section
+# below Unreleased).
+#
+# Secrets required:
+#   ORG_GRADLE_PROJECT_signingKey       armored PGP private key
+#   ORG_GRADLE_PROJECT_signingPassword  PGP passphrase
+#   ORG_GRADLE_PROJECT_sonatypeUsername Central Portal user token username
+#   ORG_GRADLE_PROJECT_sonatypePassword Central Portal user token password
+#   (token generated at https://central.sonatype.com/usertoken)
+
+name: Publish music bridge (Maven Central, staging-first)
+
+on:
+  push:
+    tags:
+      - "music-bridge-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 1.0.1); must match changelog"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-bridge-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      changelog_version: ${{ steps.meta.outputs.changelog_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: meta
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.event.ref }}"
+            VERSION="${TAG#refs/tags/music-bridge-v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "Empty version"; exit 1
+          fi
+          CHANGELOG_VERSION="$(python3 scripts/version.py android-notify-music-bridge)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "changelog_version=$CHANGELOG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Staging $VERSION (changelog: $CHANGELOG_VERSION)"
+
+      - name: Fail if version does not match the changelog
+        if: steps.meta.outputs.version != steps.meta.outputs.changelog_version
+        run: |
+          echo "Release ${{ steps.meta.outputs.version }} does not match "
+               "changelog/android-notify-music-bridge.md (${{ steps.meta.outputs.changelog_version }})"
+          exit 1
+
+  stage:
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Publish to Sonatype staging (no release) and close
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_signingKey }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingPassword }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_sonatypeUsername }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_sonatypePassword }}
+        run: |
+          chmod +x scripts/ci/*.sh bridges/android/gradlew
+          cd bridges/android
+          ./gradlew :android-notify-music-bridge:publishAllPublicationsToSonatypeRepository \
+            :closeSonatypeStagingRepository \
+            -PbridgeVersion="${{ needs.resolve.outputs.version }}"
