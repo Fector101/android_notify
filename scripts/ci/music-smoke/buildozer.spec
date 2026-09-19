@@ -1,3 +1,6 @@
+[buildozer]
+warn_on_root = 0
+
 [app]
 title = Music Smoke
 package.name = smokemusic
