@@ -26,7 +26,10 @@ if [ -z "$apk" ]; then
 fi
 echo "==> APK: $apk"
 
-pkg="$(grep '^package\.name' scripts/ci/music-smoke/buildozer.spec | sed 's/.*= *//')"
+package_name="$(grep '^package\.name' scripts/ci/music-smoke/buildozer.spec | sed 's/.*= *//')"
+package_domain="$(grep '^package\.domain' scripts/ci/music-smoke/buildozer.spec | sed 's/.*= *//')"
+
+pkg="${package_domain}.${package_name}"
 activity="${pkg}/org.kivy.android.PythonActivity"
 
 echo "==> Installing APK on emulator"
