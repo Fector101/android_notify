@@ -46,7 +46,6 @@ def _write_tone(path, seconds=30.0, sample_rate=22050, freq=440.0):
 
 
 class SmokeApp(App):
-
     def build(self):
         return Label(text="android-notify music smoke", color=(0, 0, 0, 1))
 
@@ -68,7 +67,6 @@ class SmokeApp(App):
         from android_notify.config import get_python_activity_context
 
         context = get_python_activity_context()
-
         files_dir = context.getFilesDir().getAbsolutePath()
         tone_path = os.path.join(files_dir, "tone.wav")
         _write_tone(tone_path)
@@ -83,14 +81,13 @@ class SmokeApp(App):
         self.mn.setTitle("Smoke Test - android-notify")
         self.mn.setArtist("music notification")
 
-        sound = SoundLoader.load(tone_path)
-        self.mn.setSoundLoader(sound)
-        self.sound = sound
+        self.sound = SoundLoader.load(tone_path)
+        self.mn.setSoundLoader(self.sound)
 
-        sound.bind(state=self._on_state)
+        self.sound.bind(state=self._on_state)
         # Wait for MediaPlayer.prepareAsync() to complete before
         # attempting playback.
-        sound.bind(on_load=self._on_sound_loaded)
+        self.sound.bind(on_load=self._on_sound_loaded)
 
         Clock.schedule_interval(self._post_build_check, 1)
         Clock.schedule_once(self._smoke_timeout, 40)

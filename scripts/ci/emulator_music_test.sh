@@ -35,11 +35,7 @@ export ADB
 
 LOG_TIMEOUT="${LOG_TIMEOUT:-180}"
 
-apk="$(
-    ls -t scripts/ci/music-smoke/bin/*debug*.apk 2>/dev/null |
-        head -n1 ||
-        true
-)"
+apk="$(ls -t scripts/ci/music-smoke/bin/*debug*.apk 2>/dev/null | head -n1 || true)"
 
 if [ -z "$apk" ]; then
     echo "No debug APK found under scripts/ci/music-smoke/bin" >&2
@@ -198,10 +194,8 @@ $ADB logcat -c
 echo "==> Sending KEYCODE_MEDIA_PLAY_PAUSE (85) to pause"
 
 $ADB shell input keyevent 85 >/dev/null
-
 if ! _wait_for_log "MUSIC_STATE: pause" 5; then
-    _fail \
-        "pause not detected after KEYCODE_MEDIA_PLAY_PAUSE"
+    _fail "pause not detected after KEYCODE_MEDIA_PLAY_PAUSE"
 fi
 
 echo "==> Pause detected"
@@ -234,8 +228,7 @@ echo "==> Sending KEYCODE_MEDIA_NEXT (87)"
 $ADB shell input keyevent 87 >/dev/null
 
 if ! _wait_for_log "MUSIC_SKIPPED" 5; then
-    _fail \
-        "next (KEYCODE_MEDIA_NEXT) did not reach the session"
+    _fail "next (KEYCODE_MEDIA_NEXT) did not reach the session"
 fi
 
 echo "==> Next detected"
