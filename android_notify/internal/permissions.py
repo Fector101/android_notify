@@ -122,6 +122,7 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
 
     def on_permissions_result(_, grants):
         # _ is permissions
+        logger.warning(f"grants---->{grants}")
         execute_callback(callback, grants[0])
         execute_callback(set_requesting_state, False,from_who="package")
 
