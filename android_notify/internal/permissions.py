@@ -121,9 +121,9 @@ def ask_notification_permission(callback=None, set_requesting_state=None, legacy
     context = get_python_activity_context()
 
     def on_permissions_result(_, grants):
-        # _ is permissions
+        # _ is permissions, note: grants was empty in cli test
         logger.warning(f"grants---->{grants}")
-        execute_callback(callback, grants[0])
+        execute_callback(callback, grants[0] if len(grants) else True)
         execute_callback(set_requesting_state, False,from_who="package")
 
     if legacy or on_flet_app() or on_pydroid_app():
