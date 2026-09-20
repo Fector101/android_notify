@@ -25,47 +25,6 @@ fi
 docker volume rm "$BOZER_VOLUME" 2>/dev/null || true
 docker volume create "$BOZER_VOLUME" >/dev/null
 
-# Seed the accepted SDK license files BEFORE buildozer starts. The 2026-era sdkmanager
-# (build-tools;37) no longer honors `yes |` pipes in non-TTY CI; it requires the accepted
-# hashes to pre-exist on disk under \$SDK_ROOT/licenses/. We copy the byte-exact hashes from
-# this machine's own working SDK (ground truth), which sdkmanager accepts verbatim.
-_multi_seed_licenses() {
-  local sdk_root="$1"
-  local seeds_dir="$2/sdk-licenses-copy"
-  local target="$sdk_root/licenses"
-  # Buildozer installs the SDK at ~/.buildozer/android/platform/android-sdk; only seed that root.
-  [ -n "$sdk_root" ] || return 0
-  [ -d "$seeds_dir" ] || return 0
-  mkdir -p "$target"
-  local f
-  for f in "$seeds_dir"/android-*; do
-    [ -f "$f" ] && cp -f "$f" "$target/$(basename "${f#android-}")"
-  done
-}
-HOST_SDK_LICENSES_SRC="${HOME}/.buildozer/android/platform/android-sdk/licenses"
-_multi_seed_licenses "${HOME}/.buildozer/android/platform/android-sdk" "$HOST_SDK_LICENSES_SRC"
-
-# Pre-accept the Android SDK license so the 2026-era sdkmanager does not EOF-EOF abort
-# on build-tools;37 tools (it needs the accepted hash on disk before install).
-# Seed from buildozer's OWN accepted copy baked into the kivy/buildozer image, falling
-# back to this host's real SDK (the local build used by developers) if present.
-SDK_LICENSES="${HOME}/.buildozer/android/platform/android-sdk/licenses"
-mkdir -p "$SDK_LICENSES"
-if [ -f "${HOME}/buildozer-license-android-sdk-license" ]; then
-  cp -f "${HOME}/buildozer-license-android-sdk-license" "$SDK_LICENSES/android-sdk-license"
-elif [ -f "$ROOT/scripts/ci/music-smoke/licenses/android-sdk-license" ]; then
-  cp -f "$ROOT/scripts/ci/music-smoke/licenses/android-sdk-license" "$SDK_LICENSES/android-sdk-license"
-else
-  # Canonical accepted hashes (dev-host's own real SDK, byte-for-byte, see local .buildozer).
-  printf '%s\n' \
-    "8933bad161af4178b1185d1a37fbf41ea5269c55" \
-    "d56f5187479451eabf01fb78af6dfcb131a6481e" \
-    "24333f8a63b6825ea9c5514f83c2829b004d1fee" \
-    > "$SDK_LICENSES/android-sdk-license"
-fi
-# Preview-license hash also needed by some build-tools (x86_64 aidl path).
-printf '%s\n' "84831b9409646a918e30573bab4c9c91346d8abd" > "$SDK_LICENSES/android-sdk-preview-license"
-
 # .buildozer on a named volume avoids parallel-make races on bind mounts (openssl .d.tmp).
 DOCKER_VOLUMES=(
   -v "$ROOT:/home/user/project"

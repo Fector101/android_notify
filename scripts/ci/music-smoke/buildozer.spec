@@ -21,6 +21,7 @@ android.add_gradle_repositories = mavenLocal()
 android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.0
 
 android.permissions = POST_NOTIFICATIONS
+android.accept_sdk_license = True 
 
 android.api = 33
 android.minapi = 21
