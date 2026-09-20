@@ -32,7 +32,7 @@ android.add_resources = %(source.dir)s/android/res
 # legacy copy-pasted MediaSessionCallback.java under android.add_src. mavenLocal() is only needed
 # until the artifact lands on Maven Central; then remove this line.
 android.add_gradle_repositories = mavenLocal()
-android.gradle_dependencies = androidx.core:core:1.12.0, io.github.fector101:android-notify-music-bridge:1.0.0
+android.gradle_dependencies = androidx.core:core:1.12.0, io.github.fector101:android-notify-music-bridge:1.0.1
 p4a.hook = %(source.dir)s/android/p4a/hook.py
 
 android.archs = arm64-v8a

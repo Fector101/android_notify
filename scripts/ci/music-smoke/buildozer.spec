@@ -18,7 +18,7 @@ requirements = python3,kivy,pyjnius
 android.add_gradle_repositories = mavenLocal()
 
 # The bridge artifact replaces the legacy copy-pasted Java file (android.add_src).
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.0
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1
 
 android.permissions = POST_NOTIFICATIONS
 android.accept_sdk_license = True 

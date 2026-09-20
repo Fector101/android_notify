@@ -18,6 +18,15 @@ See [Music Notifications](../docs/music-notifications.md) for the full setup.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-20
+
+### Changed
+
+- Lowered `minSdk` from 23 to 21. The bridge only uses
+  `android.media.session.MediaSession.Callback`, which exists since API 21, so
+  apps with `android.minapi = 21` now link the artifact without manifest
+  conflicts.
+
 ## [1.0.0] - 2026-09-19
 
 ### Added
