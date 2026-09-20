@@ -19,7 +19,7 @@ import traceback
 
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.core.audio import SoundLoader
+from android_notify.media.music.helper import SoundLoader
 from kivy.uix.label import Label
 
 from android_notify.media.music import MediaSessionCallback, MusicNotification
