@@ -244,5 +244,22 @@ echo "==> Next detected"
 # DONE
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# LOG OUTPUT
+# ---------------------------------------------------------------------------
+
 echo ""
+echo "============================================================"
+echo " Android music smoke-test log"
+echo "============================================================"
+
+$ADB logcat -d -v brief 2>/dev/null |
+    grep -iE \
+        'MusicNotification|MUSIC_|MediaSession|MediaButton|python|AndroidRuntime' |
+    tail -200 ||
+    true
+
+echo "============================================================"
+echo ""
+
 echo "PASS: music notification smoke test completed"
