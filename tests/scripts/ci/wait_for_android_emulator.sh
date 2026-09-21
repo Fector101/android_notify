@@ -19,8 +19,8 @@ _fail_emulator_gone() {
   echo "ERROR: Nothing is listening on ${ADB_PORT_HOST}:${ADB_PORT}." >&2
   echo "       The docker-android emulator process probably exited (OOM, crash)." >&2
   echo "       On the host: docker logs android-notify-android-emulator" >&2
-  echo "       Then: ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v" >&2
-  echo "       Retry: ANDROID_EMU_MEMORY=2048 ANDROID_EMU_SHM=1gb ./scripts/ci/docker_android_test.sh" >&2
+  echo "       Then: ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v" >&2
+  echo "       Retry: ANDROID_EMU_MEMORY=2048 ANDROID_EMU_SHM=1gb ./tests/scripts/ci/docker_android_test.sh" >&2
   echo "       Or raise Docker memory to 8 GiB+ if using Docker Desktop." >&2
   exit 1
 }
@@ -75,9 +75,9 @@ while [ "$_elapsed" -lt "$BOOT_TIMEOUT" ]; do
   _state="$($ADB get-state 2>/dev/null || true)"
   if [ "$_state" = "unauthorized" ]; then
     echo "ERROR: adb device unauthorized — emulator and client must share the same adbkey." >&2
-    echo "       Run: ./scripts/ci/ensure_docker_adb_keys.sh" >&2
-    echo "       Then: ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v" >&2
-    echo "       Retry: ./scripts/ci/docker_android_test.sh" >&2
+    echo "       Run: ./tests/scripts/ci/ensure_docker_adb_keys.sh" >&2
+    echo "       Then: ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v" >&2
+    echo "       Retry: ./tests/scripts/ci/docker_android_test.sh" >&2
     exit 1
   fi
   case "$_state" in

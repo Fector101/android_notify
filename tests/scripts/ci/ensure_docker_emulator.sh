@@ -2,11 +2,11 @@
 # Host-side: ensure the docker-android emulator container is up and booted.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
 
-COMPOSE_FILE="${COMPOSE_FILE:-$ROOT/docker-compose.android.yml}"
-COMPOSE=(./scripts/ci/docker_compose.sh -f "$COMPOSE_FILE")
+COMPOSE_FILE="${COMPOSE_FILE:-$ROOT/tests/scripts/ci/docker-compose.android.yml}"
+COMPOSE=(./tests/scripts/ci/docker_compose.sh -f "$COMPOSE_FILE")
 
 EMU_CONTAINER="${ANDROID_EMU_CONTAINER:-android-notify-android-emulator}"
 _boot_timeout="${ANDROID_BOOT_TIMEOUT:-600}"
@@ -39,15 +39,15 @@ _log_emulator_failure() {
   if echo "$logs" | grep -qE 'multiple emulators with the same AVD|read-only flag to enable'; then
     echo "" >&2
     echo "The persisted AVD volume still has a lock from a previous emulator run." >&2
-    echo "  ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v" >&2
+    echo "  ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v" >&2
   fi
   if echo "$logs" | grep -q 'Not enough space to create userdata partition'; then
     echo "" >&2
     echo "The emulator needs several GB free on the Docker data disk (API 33 userdata is large)." >&2
     echo "  df -h /var/lib/docker    # or your Docker data root" >&2
     echo "  docker system prune -af   # reclaim unused images/layers" >&2
-    echo "  ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v" >&2
-    echo "  ANDROID_EMU_PARTITION_MB=3072 ./scripts/ci/docker_android_test.sh   # smaller AVD if still tight" >&2
+    echo "  ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v" >&2
+    echo "  ANDROID_EMU_PARTITION_MB=3072 ./tests/scripts/ci/docker_android_test.sh   # smaller AVD if still tight" >&2
   fi
   echo "$logs" >&2
 }
@@ -118,7 +118,7 @@ fi
 echo "==> Verifying adb from smoke container"
 if ! "${COMPOSE[@]}" run --rm --no-deps \
   -e ANDROID_BOOT_TIMEOUT="${ANDROID_EMU_ADB_TIMEOUT:-300}" \
-  smoke ./scripts/ci/wait_for_android_emulator.sh; then
+  smoke ./tests/scripts/ci/wait_for_android_emulator.sh; then
   echo "ERROR: Emulator healthcheck passed but adb smoke check failed." >&2
   "${COMPOSE[@]}" logs --tail 80 emulator >&2 || true
   exit 1

@@ -6,7 +6,7 @@ on [KivMob's](https://github.com/MichaelStott/KivMob) dockerized emulator harnes
 What it does (single entry point):
 
 ```bash
-./scripts/ci/docker_android_test.sh
+./tests/scripts/ci/docker_android_test.sh
 ```
 
 1. Publish `io.github.fector101:android-notify-music-bridge` to your host `~/.m2`
@@ -49,10 +49,10 @@ What it does (single entry point):
 ## Individual steps
 
 ```bash
-./scripts/ci/ensure_docker_emulator.sh        # up + healthy emulator (host side)
-./scripts/ci/open_emulator_display.sh          # scrcpy view of the emulator screen
-./scripts/ci/docker_gradle_bridge.sh           # publish bridge AAR to ~/.m2
-./scripts/ci/build_music_apk.sh                # build the smoke APK
+./tests/scripts/ci/ensure_docker_emulator.sh        # up + healthy emulator (host side)
+./tests/scripts/ci/open_emulator_display.sh          # scrcpy view of the emulator screen
+./tests/scripts/ci/docker_gradle_bridge.sh           # publish bridge AAR to ~/.m2
+./tests/scripts/ci/build_music_apk.sh                # build the smoke APK
 ```
 
 Note: Play Store emulator images need shared adb keys — `ensure_docker_adb_keys.sh`
@@ -61,10 +61,10 @@ emulator and the `smoke` container.
 
 ## Troubleshooting
 
-- Emulator `Killed` (OOM): `./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v`
+- Emulator `Killed` (OOM): `./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v`
   then retry with `ANDROID_EMU_MEMORY=2048 ANDROID_EMU_SHM=1gb`.
 - `adb device unauthorized`: delete `.docker-android/keys` (new keys reset the AVD volume
-  automatically on next run) or `docker compose -f docker-compose.android.yml down -v`.
-- AVD lock from a previous run: `docker compose -f docker-compose.android.yml down -v`.
+  automatically on next run) or `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
+- AVD lock from a previous run: `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
 - Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.0/`
   exists; the smoke spec only needs the `mavenLocal()` repo currently.

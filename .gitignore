@@ -21,7 +21,7 @@ bridges/android/local.properties
 bridges/android/.gradle
 bridges/android/android-notify-music-bridge/build
 .docker-android
-scripts/ci/music-smoke/.buildozer
-scripts/ci/music-smoke/bin
-scripts/ci/music-smoke/android_notify
+tests/scripts/ci/music-smoke/.buildozer
+tests/scripts/ci/music-smoke/bin
+tests/scripts/ci/music-smoke/android_notify
 settings.xml

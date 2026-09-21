@@ -35,7 +35,7 @@ Install the Compose plugin, then verify:
   sudo apt install docker-compose-plugin
   docker compose version
 
-Then retry, e.g.: ./scripts/ci/docker_android_test.sh
+Then retry, e.g.: ./tests/scripts/ci/docker_android_test.sh
 EOF
 
 if _broken_compose_plugin_symlink; then

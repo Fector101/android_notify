@@ -6,11 +6,11 @@
 # buildozer demo builds (add `mavenLocal()` to android.add_gradle_repositories).
 #
 # Usage examples:
-#   scripts/build_bridge.sh                          # default: publishToMavenLocal
-#   scripts/build_bridge.sh build build -x lint      # any gradle task
+#   tests/scripts/build_bridge.sh                    # default: publishToMavenLocal
+#   tests/scripts/build_bridge.sh build build -x lint
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 IMAGE="${ANDROID_GRADLE_IMAGE:-cimg/android:2025.12.1}"
 TASKS="${*:-:android-notify-music-bridge:publishToMavenLocal}"
 

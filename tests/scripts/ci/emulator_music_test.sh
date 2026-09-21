@@ -21,24 +21,24 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
 
 EMU_HOST="${ADB_CONNECT:-android-notify-android-emulator:5555}"
 export ANDROID_SERIAL="${ANDROID_SERIAL:-$EMU_HOST}"
 
 echo "==> Verifying emulator is still up before smoke test"
-./scripts/ci/wait_for_android_emulator.sh
+./tests/scripts/ci/wait_for_android_emulator.sh
 
 ADB="adb -s $ANDROID_SERIAL"
 export ADB
 
 LOG_TIMEOUT="${LOG_TIMEOUT:-180}"
 
-apk="$(ls -t scripts/ci/music-smoke/bin/*debug*.apk 2>/dev/null | head -n1 || true)"
+apk="$(ls -t tests/scripts/ci/music-smoke/bin/*debug*.apk 2>/dev/null | head -n1 || true)"
 
 if [ -z "$apk" ]; then
-    echo "No debug APK found under scripts/ci/music-smoke/bin" >&2
+    echo "No debug APK found under tests/scripts/ci/music-smoke/bin" >&2
     exit 1
 fi
 
@@ -54,12 +54,12 @@ echo "==> APK: $apk"
 # org.test.smokemusic
 #
 package_name="$(
-    grep '^package\.name' scripts/ci/music-smoke/buildozer.spec |
+    grep '^package\.name' tests/scripts/ci/music-smoke/buildozer.spec |
         sed 's/.*= *//'
 )"
 
 package_domain="$(
-    grep '^package\.domain' scripts/ci/music-smoke/buildozer.spec |
+    grep '^package\.domain' tests/scripts/ci/music-smoke/buildozer.spec |
         sed 's/.*= *//'
 )"
 

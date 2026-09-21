@@ -2,8 +2,8 @@
 # Build a debug APK of the music notification smoke app via Docker buildozer (emulator profile).
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-APP_DIR="$ROOT/scripts/ci/music-smoke"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+APP_DIR="$ROOT/tests/scripts/ci/music-smoke"
 DOCKER_IMAGE="${DOCKER_IMAGE:-kivy/buildozer:latest}"
 BOZER_VOLUME="android-notify-music-smoke-buildozer"
 CLEAN="${CI_ANDROID_CLEAN:-0}"
@@ -28,11 +28,11 @@ docker volume create "$BOZER_VOLUME" >/dev/null
 # .buildozer on a named volume avoids parallel-make races on bind mounts (openssl .d.tmp).
 DOCKER_VOLUMES=(
   -v "$ROOT:/home/user/project"
-  -v "${BOZER_VOLUME}:/home/user/project/scripts/ci/music-smoke/.buildozer"
+  -v "${BOZER_VOLUME}:/home/user/project/tests/scripts/ci/music-smoke/.buildozer"
   -v "${HOME}/.buildozer:/home/user/.buildozer"
   -v "${HOME}/.m2:/root/.m2"
 )
-WORK_DIR="/home/user/project/scripts/ci/music-smoke"
+WORK_DIR="/home/user/project/tests/scripts/ci/music-smoke"
 
 mkdir -p "$APP_DIR/bin"
 DIST="$(grep '^package\.name' "$APP_DIR/buildozer.spec" | sed 's/.*= *//')"

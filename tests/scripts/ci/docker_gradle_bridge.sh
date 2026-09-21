@@ -4,7 +4,7 @@
 # resolve the bridge via mavenLocal().
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
 
 GRADLE_IMAGE="${ANDROID_GRADLE_IMAGE:-cimg/android:2025.12.1}"

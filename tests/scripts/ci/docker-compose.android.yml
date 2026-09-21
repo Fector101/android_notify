@@ -1,10 +1,10 @@
-# Android emulator + music-notification smoke tests (scripts/ci/docker_android_test.sh).
+# Android emulator + music-notification smoke tests (tests/scripts/ci/docker_android_test.sh).
 # APKs are built first; the emulator starts only for smoke tests (saves RAM during long builds).
 #
 # Prerequisites: Docker with /dev/kvm passthrough (native docker.io / docker-ce on Linux), ~8GB+ RAM.
 #
 # Run locally:
-#   ./scripts/ci/docker_android_test.sh
+#   ./tests/scripts/ci/docker_android_test.sh
 #
 # Environment:
 #   SKIP_AUTH=true        Emulator-side auth bypass (Play Store still needs shared adb keys; see .docker-android/keys)
@@ -36,8 +36,8 @@ services:
     volumes:
       - android-emulator-data:/data
       # Play Store images require the same adbkey on emulator and remote clients (HQarroum/docker-android).
-      - ./.docker-android/keys/adbkey:/root/.android/adbkey:ro
-      - ./.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
+      - ../../../.docker-android/keys/adbkey:/root/.android/adbkey:ro
+      - ../../../.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
     healthcheck:
       test:
         [
@@ -54,27 +54,27 @@ services:
     image: ${ANDROID_GRADLE_IMAGE:-cimg/android:2025.12.1}
     user: "0:0"
     volumes:
-      - .:/workspace
+      - ../../../:/workspace
       - ${HOME}/.m2:/root/.m2
     working_dir: /workspace
     command:
       - bash
       - -ec
       - |
-        chmod +x scripts/ci/*.sh bridges/android/gradlew
+        chmod +x tests/scripts/ci/*.sh bridges/android/gradlew
         cd bridges/android
         ./gradlew :android-notify-music-bridge:publishToMavenLocal --no-daemon
 
   smoke:
     build:
-      context: ./scripts/ci
+      context: .
       dockerfile: Dockerfile.android-smoke
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - .:/workspace:ro
-      - ./.docker-android/keys/adbkey:/root/.android/adbkey:ro
-      - ./.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
+      - ../../../:/workspace:ro
+      - ../../../.docker-android/keys/adbkey:/root/.android/adbkey:ro
+      - ../../../.docker-android/keys/adbkey.pub:/root/.android/adbkey.pub:ro
     working_dir: /workspace
     environment:
       ANDROID_SERIAL: "${ADB_CONNECT:-android-notify-android-emulator:5555}"

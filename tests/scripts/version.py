@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 _VERSION_HEADING = re.compile(r"^## \[([^\]]+)\]")
-_REPO_ROOT = Path(__file__).resolve().parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 PACKAGES = ("android-notify-music-bridge",)
 

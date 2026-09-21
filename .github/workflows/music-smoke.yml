@@ -1,5 +1,5 @@
 # Builds the android-notify-music-bridge, a x86_64 emulator APK, and runs the music
-# notification logcat smoke test (same path as local `scripts/ci/docker_android_test.sh`).
+# notification logcat smoke test (same path as local `tests/scripts/ci/docker_android_test.sh`).
 # Requires native Docker Engine + KVM on the runner (ubuntu-latest), not Docker Desktop.
 name: Music smoke
 
@@ -32,10 +32,10 @@ jobs:
 
       - name: "Run docker_android_test.sh (bridge → APK → emulator smoke)"
         run: |
-          chmod +x scripts/ci/*.sh
-          ./scripts/ci/docker_android_test.sh
+          chmod +x tests/scripts/ci/*.sh
+          ./tests/scripts/ci/docker_android_test.sh
 
       - name: Teardown emulator stack
         if: always()
         run: |
-          ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v --remove-orphans 2>/dev/null || true
+          ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v --remove-orphans 2>/dev/null || true
