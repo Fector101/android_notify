@@ -19,17 +19,17 @@ from android_notify import Notification, NotificationHandler
 from android_notify.core import asks_permission_if_needed
 
 # ---- IMPORT YOUR SPLIT TEST FILES (TestCase CLASSES) ----
-from android_notify.tests.android_notify_test import TestAndroidNotifyFull
-from android_notify.tests.test_notification_styles import TestNotificationStyles
-from android_notify.tests.test_notification_actions import TestNotificationActions
-from android_notify.tests.test_basic_notifications import TestBasicNotifications
-from android_notify.tests.test_notification_channels import TestNotificationChannels
-from android_notify.tests.test_notification_appearance import TestNotificationAppearance
-from android_notify.tests.test_notification_behavior import TestNotificationBehavior
-from android_notify.tests.test_notification_progress import TestNotificationProgress
-from android_notify.tests.test_notification_sound import TestNotificationSound
-from android_notify.tests.test_notification_clear import TestClearNotifications
-from android_notify.tests.test_notification_permission import NOTIFICATION_PERMISSION_TESTS
+from tests.android_notify_test import TestAndroidNotifyFull
+from tests.test_notification_styles import TestNotificationStyles
+from tests.test_notification_actions import TestNotificationActions
+from tests.test_basic_notifications import TestBasicNotifications
+from tests.test_notification_channels import TestNotificationChannels
+from tests.test_notification_appearance import TestNotificationAppearance
+from tests.test_notification_behavior import TestNotificationBehavior
+from tests.test_notification_progress import TestNotificationProgress
+from tests.test_notification_sound import TestNotificationSound
+from tests.test_notification_clear import TestClearNotifications
+from tests.test_notification_permission import NOTIFICATION_PERMISSION_TESTS
 from kivy.clock import Clock
 
 # -----------------------------

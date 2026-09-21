@@ -210,8 +210,8 @@ if __name__ == "__main__":
 
 Two ready-to-run variants ship inside the package:
 
-- `android_notify/media/music/examples/simple_example.py` - load + play only.
-- `android_notify/media/music/examples/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
+- `examples/music/simple_example.py` - load + play only.
+- `examples/music/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
 
 ## `SoundLoader` reference
 

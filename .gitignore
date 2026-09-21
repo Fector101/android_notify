@@ -10,7 +10,9 @@ docs/_build
 lab.md
 release-lab.md
 __pycache__
+.pytest_cache
 .idea
+action logs/
 todo.md
 .vscode
 dist
