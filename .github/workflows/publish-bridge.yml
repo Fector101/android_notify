@@ -10,7 +10,7 @@
 #   Tag  music-bridge-vX.Y.Z   -> resolve X.Y.Z, stage the artifact (no release)
 #   Manual "publish"           -> stage with a given version (tag not required)
 #
-# Version must match changelog/android-notify-music-bridge.md (first section
+# Version must match bridges/android/CHANGELOG.md (first section
 # below Unreleased).
 #
 # Secrets required:
@@ -78,7 +78,7 @@ jobs:
         if: steps.meta.outputs.version != steps.meta.outputs.changelog_version
         run: |
           echo "Release ${{ steps.meta.outputs.version }} does not match "
-               "changelog/android-notify-music-bridge.md (${{ steps.meta.outputs.changelog_version }})"
+               "bridges/android/CHANGELOG.md (${{ steps.meta.outputs.changelog_version }})"
           exit 1
 
   stage:

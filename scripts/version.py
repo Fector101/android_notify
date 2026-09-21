@@ -8,17 +8,20 @@ from pathlib import Path
 
 _VERSION_HEADING = re.compile(r"^## \[([^\]]+)\]")
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_CHANGELOG_DIR = _REPO_ROOT / "changelog"
 
 PACKAGES = ("android-notify-music-bridge",)
 
+_CHANGELOG_PATHS = {
+    "android-notify-music-bridge": _REPO_ROOT / "bridges" / "android" / "CHANGELOG.md",
+}
+
 
 def get_version(package: str = "android-notify-music-bridge") -> str:
-    """Return the first release version in ``changelog/<package>.md``."""
+    """Return the first release version in the artifact's ``CHANGELOG.md``."""
     if package not in PACKAGES:
         raise ValueError(f"Unknown package {package!r} (expected one of {PACKAGES})")
 
-    changelog = _CHANGELOG_DIR / f"{package}.md"
+    changelog = _CHANGELOG_PATHS[package]
     if not changelog.is_file():
         raise FileNotFoundError(f"Missing changelog: {changelog}")
 
