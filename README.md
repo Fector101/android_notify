@@ -36,6 +36,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
   - Cancel Notifications
   - Use [Custom Sound](https://android-notify.vercel.app/advanced-methods#custom-sound)
   - Vibration [section](https://android-notify.vercel.app/advanced-methods#vibration)
+  - Music notification [guide](https://github.com/Fector101/android_notify/wiki/Music-Notification)
 
 ## Quick Start
 
