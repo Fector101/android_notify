@@ -71,7 +71,7 @@ If you add a new dependency, make sure to:
 
 Justify its use.
 
-Add it to requirements.txt or your buildozer.spec if needed.
+Add it to the `dev` extra in `pyproject.toml`, or your `buildozer.spec` if needed.
 
 
 

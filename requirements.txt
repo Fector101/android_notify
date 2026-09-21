@@ -1,3 +1,0 @@
-pyjnius
-setuptools
-twine

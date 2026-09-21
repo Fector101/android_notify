@@ -21,7 +21,7 @@ requirements = python3, kivy, pyjnius, android-notify
 ```
 
 The media buttons are wired through a small **pre-compiled Java bridge**
-[`io.github.fector101:android-notify-music-bridge`](../changelog/android-notify-music-bridge.md),
+[`io.github.fector101:android-notify-music-bridge`](../bridges/android/CHANGELOG.md),
 published on Maven Central. You do not write or copy any Java - just add one line
 to your `buildozer.spec`:
 
@@ -208,10 +208,10 @@ if __name__ == "__main__":
     MyApp().run()
 ```
 
-Two ready-to-run variants ship inside the package:
+Two ready-to-run variants live in the repository under `examples/music/`:
 
-- `android_notify/media/music/examples/simple_example.py` - load + play only.
-- `android_notify/media/music/examples/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
+- `examples/music/simple_example.py` - load + play only.
+- `examples/music/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
 
 ## `SoundLoader` reference
 

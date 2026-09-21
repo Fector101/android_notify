@@ -3,7 +3,7 @@
 # emulator_music_test.sh - lets you watch the notification/buttons live during a smoke test).
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
 
 if ! command -v scrcpy >/dev/null 2>&1; then
@@ -11,10 +11,10 @@ if ! command -v scrcpy >/dev/null 2>&1; then
   exit 1
 fi
 
-COMPOSE=(./scripts/ci/docker_compose.sh -f "$ROOT/docker-compose.android.yml")
+COMPOSE=(./tests/scripts/ci/docker_compose.sh -f "$ROOT/tests/scripts/ci/docker-compose.android.yml")
 
 echo "==> Starting emulator (if not already running)"
-./scripts/ci/ensure_docker_emulator.sh
+./tests/scripts/ci/ensure_docker_emulator.sh
 
 EMU_ADB_PORT="${ANDROID_EMU_ADB_PORT:-5555}"
 echo "==> Forwarding the emulator's adb port to localhost:$EMU_ADB_PORT"

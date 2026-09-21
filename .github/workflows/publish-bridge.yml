@@ -10,7 +10,7 @@
 #   Tag  music-bridge-vX.Y.Z   -> resolve X.Y.Z, stage the artifact (no release)
 #   Manual "publish"           -> stage with a given version (tag not required)
 #
-# Version must match changelog/android-notify-music-bridge.md (first section
+# Version must match bridges/android/CHANGELOG.md (first section
 # below Unreleased).
 #
 # Secrets required:
@@ -62,7 +62,7 @@ jobs:
           if [ -z "$VERSION" ]; then
             echo "Empty version"; exit 1
           fi
-          CHANGELOG_VERSION="$(python3 scripts/version.py android-notify-music-bridge)"
+          CHANGELOG_VERSION="$(python3 tests/scripts/version.py android-notify-music-bridge)"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "changelog_version=$CHANGELOG_VERSION" >> "$GITHUB_OUTPUT"
           echo "Staging $VERSION (changelog: $CHANGELOG_VERSION)"
@@ -78,7 +78,7 @@ jobs:
         if: steps.meta.outputs.version != steps.meta.outputs.changelog_version
         run: |
           echo "Release ${{ steps.meta.outputs.version }} does not match "
-               "changelog/android-notify-music-bridge.md (${{ steps.meta.outputs.changelog_version }})"
+               "bridges/android/CHANGELOG.md (${{ steps.meta.outputs.changelog_version }})"
           exit 1
 
   stage:
@@ -101,7 +101,7 @@ jobs:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_sonatypeUsername }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_sonatypePassword }}
         run: |
-          chmod +x scripts/ci/*.sh bridges/android/gradlew
+          chmod +x tests/scripts/ci/*.sh bridges/android/gradlew
           cd bridges/android
           ./gradlew :android-notify-music-bridge:publishAllPublicationsToSonatypeRepository \
             :closeSonatypeStagingRepository \

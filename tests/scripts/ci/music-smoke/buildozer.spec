@@ -13,7 +13,7 @@ version = 0.1
 
 requirements = python3,kivy,pyjnius
 
-# Local pre-publication test: the AAR must already be in ~/.m2 (scripts/ci/docker_gradle_bridge.sh).
+# Local pre-publication test: the AAR must already be in ~/.m2 (tests/scripts/ci/docker_gradle_bridge.sh).
 # Once published to Maven Central no repo block is needed; this line becomes a no-op only if removed.
 android.add_gradle_repositories = mavenLocal()
 

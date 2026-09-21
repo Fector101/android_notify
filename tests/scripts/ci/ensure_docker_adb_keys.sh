@@ -2,7 +2,7 @@
 # Shared adb keys for docker-android Play Store images (emulator + smoke must match).
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 KEY_DIR="$ROOT/.docker-android/keys"
 
 mkdir -p "$KEY_DIR"
@@ -37,4 +37,4 @@ chmod 600 "$KEY_DIR/adbkey" 2>/dev/null || true
 # New keys are not yet trusted by an existing AVD userdata volume.
 date -Iseconds >"$KEY_DIR/.generated"
 echo "==> Created adb keys. If the emulator was used before, reset its volume:"
-echo "    ./scripts/ci/docker_compose.sh -f docker-compose.android.yml down -v"
+echo "    ./tests/scripts/ci/docker_compose.sh -f tests/scripts/ci/docker-compose.android.yml down -v"

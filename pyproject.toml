@@ -51,6 +51,9 @@ Funding = "https://www.buymeacoffee.com/fector101"
 
 [project.optional-dependencies]
 dev = [
+    "pyjnius",
+    "setuptools",
+    "twine",
     "kivy"
 ]
 

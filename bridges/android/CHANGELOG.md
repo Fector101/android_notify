@@ -1,7 +1,7 @@
 # android-notify-music-bridge (Maven)
 
 Android Java library (`io.github.fector101:android-notify-music-bridge`) used by
-[Android Notify](../README.md) music notifications on Android.
+[Android Notify](../../README.md) music notifications on Android.
 
 It contains `org.android_notify.music.MediaSessionCallback`, a
 `MediaSession.Callback` bridge that forwards transport control events
@@ -14,7 +14,7 @@ never have to copy or edit Java files. To use it, add it to your `buildozer.spec
 android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.0
 ```
 
-See [Music Notifications](../docs/music-notifications.md) for the full setup.
+See [Music Notifications](../../docs/music-notifications.md) for the full setup.
 
 ## [Unreleased]
 
