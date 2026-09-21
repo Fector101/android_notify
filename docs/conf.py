@@ -46,7 +46,7 @@ templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "imgs", "old-README.md"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "imgs"]
 
 # The master toctree document.
 master_doc = "index"

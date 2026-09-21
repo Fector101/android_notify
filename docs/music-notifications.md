@@ -21,7 +21,7 @@ requirements = python3, kivy, pyjnius, android-notify
 ```
 
 The media buttons are wired through a small **pre-compiled Java bridge**
-[`io.github.fector101:android-notify-music-bridge`](../changelog/android-notify-music-bridge.md),
+[`io.github.fector101:android-notify-music-bridge`](../bridges/android/CHANGELOG.md),
 published on Maven Central. You do not write or copy any Java - just add one line
 to your `buildozer.spec`:
 
