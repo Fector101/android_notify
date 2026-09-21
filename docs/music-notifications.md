@@ -208,7 +208,7 @@ if __name__ == "__main__":
     MyApp().run()
 ```
 
-Two ready-to-run variants ship inside the package:
+Two ready-to-run variants live in the repository under `examples/music/`:
 
 - `examples/music/simple_example.py` - load + play only.
 - `examples/music/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
