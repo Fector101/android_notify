@@ -19,7 +19,6 @@ def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
     if not on_android_platform():
         return None
-    from kivy.clock import Clock
     from android_notify.config import get_python_activity_context
     from android_notify.internal.java_classes import Intent
     Environment = autoclass('android.os.Environment')
@@ -31,7 +30,7 @@ def requestAllFilesAccess():
             intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
             print(f"package:{mActivity.getPackageName()}")
             intent.setData(Uri.parse(f"package:{mActivity.getPackageName()}"))
-            Clock.schedule_once(lambda dt: mActivity.startActivity(intent), 2)
+            mActivity.startActivity(intent)
         except Exception as error_opening_permission_screen:
             print('PermissionHandler.requestAllFilesAccess --> ', error_opening_permission_screen)
     print("requestAllFilesAccess OK")

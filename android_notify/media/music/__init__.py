@@ -3,7 +3,8 @@ from typing import Optional
 
 
 from android_notify.internal.logger import logger
-from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, get_notification_manager
+from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
+    get_notification_manager, on_flet_app
 from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
 from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
@@ -129,44 +130,35 @@ class MediaSessionListener(PythonJavaClass):
     @java_method('()V')
     def onPlay(self):
         logger.debug("nEventListener - PLAY EVENT RECEIVED")
-        if _active_music_notification is not None:
-            # _active_music_notification.showPauseIcon() # comment out because bound soundLoader play event to notification, leaving this comment for future reference when implement on Flet Apps
-            _active_music_notification.soundLoader.play()
+        # _active_music_notification.showPauseIcon() # comment out because bound mediaController play event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.play_music:
             self.play_music()
         else:
-            logger.debug("No play music callback was found")
+            logger.error("No play music callback was found")
 
     @java_method('()V')
     def onPause(self):
         logger.debug("nEventListener - PAUSE EVENT RECEIVED")
-        if _active_music_notification is not None:
-            # _active_music_notification.showPlayIcon() # comment out because bound soundLoader pause event to notification, leaving this comment for future reference when implement on Flet Apps
-            _active_music_notification.soundLoader.pause()
-
+        # _active_music_notification.showPlayIcon() # comment out because bound mediaController pause event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.pause_music:
             self.pause_music()
         else:
-            logger.debug("No pause music callback was found")
+            logger.error("No pause music callback was found")
 
     @java_method('(J)V')
     def onSeekTo(self, pos):
         logger.debug(f"nEventListener - SEEK EVENT RECEIVED: {pos}")
-        if _active_music_notification is not None:
-            # _active_music_notification.showPlayIcon() # comment out because bound soundLoader pause event to notification, leaving this comment for future reference when implement on Flet Apps
-            _active_music_notification.soundLoader.seek(pos / 1000.0)
-            # Sync MediaSession immediately after seek to update system position anchor
-            _active_music_notification.updateProgressBar()
         if self.seek_music:
             self.seek_music(pos / 1000.0)
+            if _active_music_notification is not None:
+                # Sync MediaSession immediately after seek to update system position anchor
+                _active_music_notification.syncMediaSession()
         else:
-            logger.debug("No seek music callback was found")
+            logger.error("No seek music callback was found")
 
     @java_method('()V')
     def onSkipToNext(self):
         logger.debug("nEventListener -SKIP NEXT EVENT RECEIVED")
-        if _active_music_notification is not None and not _active_music_notification.has_next:
-            return
         if self.next_music:
             self.next_music()
         else:
@@ -175,36 +167,70 @@ class MediaSessionListener(PythonJavaClass):
     @java_method('()V')
     def onSkipToPrevious(self):
         logger.debug("nEventListener -SKIP PREV EVENT RECEIVED")
-        if _active_music_notification is not None and not _active_music_notification.has_prev:
-            return
         if self.prev_music:
             self.prev_music()
         else:
             logger.warning("No prev music callback was found")
 
 
+# Users mediaController need to fulfill
+class IMediaController:
+    def __init__(self,media_controller):
+        self.media_controller = media_controller
+
+    def play(self):
+        """
+        To play audio/video.
+        """
+        self.media_controller.play()
+
+    def pause(self):
+        """
+        To pause audio/video.
+        """
+        self.media_controller.pause()
+
+    def seek(self, pos:float):
+        """
+        pos: is the milliseconds to change current playing position of media
+        """
+        self.media_controller.seek(pos)
+
+    def get_pos(self) -> float:
+        """
+        This returns the current media position in seconds
+        """
+        return self.media_controller.get_pos()
+
+    @property
+    def length(self) -> float:
+        """
+        This returns the current media length in seconds
+        """
+        return self.media_controller.length
+
+    def isMediaPlaying(self):
+        """
+        Checks if media state is equivalent to "play"
+        """
+        return self.media_controller.state == "play"
+
+
 class MusicNotification:
     listener = MediaSessionListener # so users can switch listener Class if needed
-    soundLoader = None
-    notification_id = None
+    mediaController = None
 
     def __init__(self, on_next=None, on_previous = None):
+        self.media_controller = None # In kivy mediaController can be SoundLoader
+        self.mediaController = None
         self.already_built = False
         self._build_pending = False
         global _active_music_notification
         _active_music_notification = self
 
-        self._update_interval = None
+        # self._update_interval = None
         self._artist = None
         self._title = None
-        self._play_music = None
-        self._pause_music = None
-        self._seek_music = None
-        self._next_music = on_next
-        self._prev_music = on_previous
-        self.has_next = True
-        self.has_prev = True
-        self._play_pause_index = 1
         self._media_style = None
 
         self.on_next = on_next
@@ -216,7 +242,7 @@ class MusicNotification:
 
         self.context = None
         self.callback = None
-        self.session = None
+        self.session = None # for auto seek updates, lock-screen control and speakers
 
         if on_android_platform():
             self.context = get_python_activity_context()
@@ -247,11 +273,12 @@ class MusicNotification:
         # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
         if MediaSessionCallback:
             self.listener = self.listener()
-            self.listener.play_music = self._play_music
-            self.listener.pause_music = self._pause_music
-            self.listener.seek_music = self._seek_music
-            self.listener.next_music = self._next_music
-            self.listener.prev_music = self._prev_music
+            self.listener.play_music = self.media_controller.play
+            self.listener.pause_music = self.media_controller.pause
+            self.listener.seek_music = self.media_controller.seek
+
+            self.listener.next_music = self.on_next
+            self.listener.prev_music = self.on_previous
 
             self.callback = MediaSessionCallback(self.listener)
             self.session.setCallback(self.callback)
@@ -263,8 +290,8 @@ class MusicNotification:
 
         # If a build was deferred while the MediaSession was being created,
         # finish it now that the session exists.
-        if self._build_pending and self.soundLoader is not None:
-            self._build_or_defer(is_playing=1 if self.soundLoader.state == "play" else 0)
+        if self._build_pending and self.mediaController is not None:
+            self._build_or_defer(is_playing=self.media_controller.isMediaPlaying())
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
@@ -285,25 +312,25 @@ class MusicNotification:
         flag = PendingIntent.FLAG_IMMUTABLE if BuildVersion.SDK_INT >= 23 else 0
         return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
 
-    def _add_buttons(self, is_playing):
+    def _format_buttons(self):
         # Add prev, play/pause, and next action buttons using Android
-        # built-in media icons from android.R$drawable.
-        # Prev/next are only added when a track exists in that direction.
+        # built-in media icons from android.
+        # Prev/next are only added when a self.on_next and/or self.on_previous exists.
+        is_playing = self.media_controller.isMediaPlaying()
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
 
 
         action_intents = []
-        if self.has_prev and self._prev_music is not None:
+        if self.on_previous:
             action_intents.append(
                 (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             )
-        self._play_pause_index = len(action_intents)
         action_intents.append(
             (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
              String(play_or_pause_text), play_pause_code)
         )
-        if self.has_next and self._next_music is not None:
+        if self.on_next:
             action_intents.append(
                 (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
             )
@@ -313,31 +340,23 @@ class MusicNotification:
             for icon, title, key_code in action_intents
         ]
 
-        # android.app.Notification$Builder appends to mActions on every setActions() / addAction()
-        # Clear the internal ArrayList to avoid action duplication
         self.builder.mActions.clear()
 
-        # Re-add the updated actions
         for action in actions:
             self.builder.addAction(action)
 
-    def _parse_state(self, _,state):
-        #_ is loader_instance
+    def _parse_state(self, _,state): #_ is loader_instance
         logger.debug(f'sound load state changed: {state}')
-        if self.already_built:
-            if state == 'play':
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval is None:
-                #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
-                self.showPauseIcon()
-            elif state in ('pause', 'stop'):
-                # updateProgressBar - media session auto handles update
-                # if self._update_interval:
-                #     self._update_interval.cancel()
-                #     self._update_interval = None
-                self.showPlayIcon()
+        if not self.already_built:
+            return None
         else:
             logger.error("Not built but trying play or pause")
+
+        if state == 'play':
+            self.showPauseIcon()
+        elif state in ('pause', 'stop'):
+            self.showPlayIcon()
+        return None
 
     @staticmethod
     def _sound_is_loaded(sound):
@@ -347,7 +366,9 @@ class MusicNotification:
         try:
             # Plain Kivy Sound: length is only available once loaded.
             return bool(getattr(sound, "length", 0))
-        except Exception:
+        except Exception as error_getting_length_value:
+            logger.error(error_getting_length_value)
+            traceback.print_exc()
             return False
 
     def _build_or_defer(self, is_playing):
@@ -362,23 +383,24 @@ class MusicNotification:
         else:
             self._build_pending = True
 
-    def setSoundLoader(self, sound_load_instance):
-        self.soundLoader = sound_load_instance
-        self.soundLoader.bind(
-            state=self._parse_state,
-            on_load=lambda instance,v: self._build_or_defer(is_playing=1 if self.soundLoader.state=="play" else 0),
-            on_seek=lambda _,pos:self.updateProgressBar()
-        )
-
-        # If the sound was already loaded when we bound to it, its on_load
+    def setMediaController(self, sound_load_instance: object) -> None:
+        self.media_controller = IMediaController(sound_load_instance)
+        try:
+            if not on_flet_app():
+                self.mediaController.bind(
+                    state=self._parse_state,
+                    on_load=lambda instance,v: self._build_or_defer(is_playing=self.media_controller.isMediaPlaying()),
+                    on_seek=lambda _,pos: self.syncMediaSession()
+                )
+        except Exception as failed_to_bind_to_value:
+            logger.error(failed_to_bind_to_value)
+            traceback.print_exc()
+        # If the sound was already loaded when we bound to it, it's on_load
         # has already fired and will never fire again - build now instead.
         if not self.already_built and self._sound_is_loaded(sound_load_instance):
-            self._build_or_defer(is_playing=1 if self.soundLoader.state == "play" else 0)
-
-        # TODO Receive on seek
+            self._build_or_defer(is_playing=1 if self.media_controller.isMediaPlaying() else 0)
 
     def build_notification(self, is_playing):
-    # def build_notification(self, title, artist, is_playing, current_ms, duration_ms):
         """Fully builds and dispatches the media notification.
 
         This is a "heavy" operation - it rebuilds the entire notification
@@ -386,25 +408,29 @@ class MusicNotification:
         (play/pause/seek/next/prev) to avoid flickering during seekbar drags.
         """
         logger.debug("running build....")
+
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
-        length_of_song = self.soundLoader.length
-        song_position = self.soundLoader.get_pos()
+
+        length_of_song = self.media_controller.length
+        song_position = self.media_controller.get_pos()
+
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")
 
         set_title(builder=self.builder,title=self._title)
         set_message(builder=self.builder,message=self._artist)
-        self.setLargeIcon(music_path=self.soundLoader.source)
+        self.setLargeIcon(music_path=self.mediaController.source)
         find_and_set_default_icon(self.builder)
         self.builder.setOngoing(is_playing)
         self.builder.setVisibility(1)# NotificationCompat.VISIBILITY_PUBLIC = 1 (show content on lock screen)
         add_intent_to_open_app(self.builder,notification_id=self.notification_id,_ignore_data=True,notification_title="",action_name="",data_object=None)
-        self._add_buttons(is_playing=is_playing)
-        # MediaStyle makes the notification show with a larger media layout and wires it to the MediaSession for lock-screen control
+        self._format_buttons()
+
+        # MediaStyle makes the notification show with a larger media layout and wires it to the MediaSession for lock-screen control and speakers
         style = MediaStyle()
         style.setMediaSession(self.session.getSessionToken())
-        style.setShowActionsInCompactView(self._play_pause_index)
+        style.setShowActionsInCompactView(1 if self.on_previous else 0)
         self._media_style = style
         self.builder.setStyle(style)
 
@@ -419,54 +445,50 @@ class MusicNotification:
         )
         self.session.setMetadata(metadata)
         # Update the playback state (position, playing/paused, available actions)
-        self.updateProgressBar()
+        self.syncMediaSession()
 
         manager = get_notification_manager()
         manager.notify(self.notification_id, self.builder.build())
         self.already_built=1
         # A build happened: consume any queued build request (see setSoundLoader).
         self._build_pending = False
-        #No manual updates, MediaSession playback state handles it in updateProgressBar
-        # if is_playing:
-        #     self._update_interval = Clock.schedule_interval(self.updateProgressBar, 1)
-        # elif self._update_interval:
-        #     self._update_interval.cancel()
 
-    def set_skip_available(self, has_next, has_prev):
+    def set_Next_and_Prev(self, new_next=None, new_prev=None):
         """Tell the notification whether prev/next tracks exist around the current one."""
-        self.has_next = bool(has_next)
-        self.has_prev = bool(has_prev)
-        if not self.already_built or not self.soundLoader:
+        if new_next:
+            self.on_next = new_next
+        if new_prev:
+            self.on_previous = new_prev
+
+        if not self.already_built or not self.mediaController:
             return
-        is_playing = self.soundLoader.state == "play"
-        self._add_buttons(is_playing)
-        self.updateProgressBar()
+
+        self._format_buttons()
+        self.syncMediaSession()
         if self._media_style is not None:
-            self._media_style.setShowActionsInCompactView(self._play_pause_index)
+            self._media_style.setShowActionsInCompactView(1 if self.on_previous else 0)
             self.builder.setStyle(self._media_style)
         self.refresh()
 
     def showPauseIcon(self):
         logger.debug("showing pause icon")
-        self._add_buttons(True)
+        self._format_buttons()
         # On Android 13+, MediaSession playback state needs sync to display buttons properly
-        self.updateProgressBar()
+        self.syncMediaSession()
         self.refresh()
 
     def showPlayIcon(self):
         logger.debug("showing play icon")
-        self._add_buttons(False)
+        self._format_buttons()
         # On Android 13+, MediaSession playback state needs sync to display buttons properly
-        self.updateProgressBar()
+        self.syncMediaSession()
         self.refresh()
 
     def setTitle(self,title:str):
         self._title = title
-        pass
 
     def setArtist(self,artist:str):
         self._artist = artist
-        pass
 
     def setLargeIcon(self,music_path=None,img_path=None):
         if img_path:
@@ -488,30 +510,24 @@ class MusicNotification:
                 logger.exception(error_getting_art_bytes)
                 traceback.print_exc()
 
-    def updateProgressBar(self, _=None):
-        """Call every ~1 second by Kivy Clock to keep seekbar updated.
-
-        Only calls setPlaybackState() - lightweight, no notification rebuild.
-        This avoids interrupting the user if they're dragging the seekbar.
-
-
-        Updates the MediaSession playback state.
-
-        This is the "lightweight" update - it only calls
-        setPlaybackState() without rebuilding the notification.
-        Called both by the periodic timer (every 1s) and by
-        build_notification() on state changes.
+    def syncMediaSession(self):
         """
+        This syncs notification Slider position and buttons with current Media state
+        This method doesn't require polling, that's auto handled by Android
+        Only call once when Media position or state changes by user action.
+        """
+        # This method is only achieved by updating the MediaSession playback state.
+        # NOTE: MediaSession playback state updates progress bar without clock schedules
         if self.session is None:
             return None
 
-        if not self.soundLoader:
+        if not self.mediaController:
             return None
-        current_ms = int(self.soundLoader.get_pos() * 1000)
-        is_playing=self.soundLoader.state == "play"
-        logger.debug(f"updating progress bar...{current_ms}")
 
-        # NOTE: MediaSession playback state, updates progress bar without clock schedules
+        is_playing = self.media_controller.isMediaPlaying()
+        current_ms = int(self.media_controller.get_pos() * 1000)
+        logger.debug(f"updating progress bar to milliseconds:{current_ms}")
+
         actions = (
                 PlaybackState.ACTION_PLAY
                 | PlaybackState.ACTION_PAUSE
@@ -520,9 +536,9 @@ class MusicNotification:
                 | PlaybackState.ACTION_FAST_FORWARD
                 | PlaybackState.ACTION_REWIND
         )
-        if self.has_next:
+        if self.on_next:
             actions |= PlaybackState.ACTION_SKIP_TO_NEXT
-        if self.has_prev:
+        if self.on_previous:
             actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS
         state_builder = PlaybackStateBuilder()
         state = PlaybackState.STATE_PLAYING if is_playing else PlaybackState.STATE_PAUSED
