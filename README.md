@@ -267,68 +267,6 @@ requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_noti
 ### Dev Features docs
 
 <details>
-<summary> <b>To use Custom Sounds </b> </summary>
-
-**Option 1: Audio files bundled in `res/raw`**
-
-- Put audio files in `res/raw` folder,
-- Then from `buildozer.spec` point to res folder `android.add_resources = res`
-- and includes it's format `source.include_exts = wav`.
-
-Lastly From the code 
-```py
-# Create a custom notification channel with a unique sound resource for android 8+
-Notification.createChannel(
-    id="weird_sound_tester",
-    name="Weird Sound Tester",
-    description="A test channel for custom sounds from the res/raw folder.",
-    res_sound_name="sneeze" # file name without .wav or .mp3
-)
-
-# Send a notification through the created channel
-n=Notification(
-    title="Custom Sound Notification",
-    message="This tests playback of a custom sound (sneeze.wav) stored in res/raw.",
-    channel_id="weird_sound_tester" # important tells notification to use right channel
-)
-n.setSound("sneeze")# for android 7 below 
-n.send()
-```
-
-**Option 2: Local file path or URI (`sound_path`)**
-
-You can use a local audio file, a `content://`, `file://`, or `android.resource://` URI directly:
-
-```py
-# Using a local file path
-Notification.createChannel(
-    id="local_sound",
-    name="Local Sound",
-    sound_path="/storage/emulated/0/Download/alert.mp3"
-)
-
-# Using a content URI (e.g., from media store)
-Notification.createChannel(
-    id="uri_sound",
-    name="URI Sound",
-    sound_path="content://media/external/audio/media/123"
-)
-
-# Send notification with custom sound path
-n = Notification(
-    title="Custom Sound",
-    message="Playing from local path",
-    channel_id="local_sound"
-)
-n.setSound(sound_path="/storage/emulated/0/Download/alert.mp3")
-n.send()
-```
-
-Private files (e.g., in app's `data/` directory) are automatically copied to external storage before playing.
-</details>
-
-
-<details>
 <summary> <b> Add Data to Notification</b> </summary>
 
 
