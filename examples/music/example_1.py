@@ -102,12 +102,6 @@ class MusicPlayerRoot(BoxLayout):
 
         # 1) Ask for All Files Access (needed to read /storage/emulated/0).
         requestAllFilesAccess()
-        notification = MusicNotification(
-                  on_next=self.next_track,
-                  on_previous=self.previous_track,
-        )
-        notification.setTitle(os.path.splitext(os.path.basename(path))[0] or "Unknown")
-        notification.setArtist("Example Artist")
 
         # 2) The player. SoundLoader is a singleton; `load` prepares the
         #    Android MediaPlayer asynchronously and fires on_load when ready.
@@ -117,14 +111,19 @@ class MusicPlayerRoot(BoxLayout):
         sound.bind(on_complete=self.on_track_finished)  # our end-of-track hook
         sound.bind(state=self.on_state_changed)         # play/pause from anywhere
         self.sound = sound
+        notification = MusicNotification(
+                    media_controller=sound,
+                  # on_next=self.next_track,
+                  # on_previous=self.previous_track,
+        )
+        notification.setTitle(os.path.splitext(os.path.basename(path))[0] or "Unknown")
+        notification.setArtist("Example Artist")
 
         # 3) The notification. It registers a MediaSession owned by the app
         #    and builds an Android media notification around it. All play /
         #    pause / seek commands from the notification come back into
         #    `sound`, so you only have to react to state changes.
 
-        notification.setSoundLoader(sound)              # wires state/on_load/on_seek
-        notification.set_skip_available(self.has_next, self.has_prev)
         self.notification = notification
 
         self.status_label.text = f"Loading {path}"

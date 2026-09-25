@@ -14,14 +14,8 @@ The music module is Android + Kivy only (it builds on `pyjnius` and Kivy's `Even
 
 ## Setup
 
-Add `android-notify` to your `buildozer.spec` requirements (see [Installation](installation.md)):
-
-```ini
-requirements = python3, kivy, pyjnius, android-notify
-```
-
 The media buttons are wired through a small **pre-compiled Java bridge**
-[`io.github.fector101:android-notify-music-bridge`](../bridges/android/CHANGELOG.md),
+[`io.github.fector101:android-notify-music-bridge`](https://github.com/Fector101/android_notify/blob/main/bridges/android/CHANGELOG.md),
 published on Maven Central. You do not write or copy any Java - just add one line
 to your `buildozer.spec`:
 
@@ -35,88 +29,6 @@ so no extra repository line is needed.
 ```{note}
 If the bridge dependency can't be resolved the notification still builds, but
 the media buttons do nothing.
-```
-
-### Legacy: `android.add_src` fallback
-
-Toolchains that can't pull a Gradle dependency (older p4a setups, forks) can ship
-the bridge as a Java source file instead. The file is **fixed** - you never edit
-a package line because the bridge always lives in `org.android_notify.music`.
-
-1. Create a `src` folder next to your `buildozer.spec` and add `src/MediaSessionCallback.java` to it.
-2. Paste the contents below into that file.
-3. Point buildozer at the folder in `buildozer.spec`:
-
-```ini
-android.add_src = ./src
-```
-
-`src/MediaSessionCallback.java`:
-
-```java
-// Android-Notify media bridge: receives MediaSession transport control events
-// (play/pause/seek/next/prev) and forwards them to a Python listener interface.
-// Keep the package line exactly as-is - it must match the pre-compiled bridge.
-
-package org.android_notify.music;
-
-import android.media.session.MediaSession;
-
-public class MediaSessionCallback extends MediaSession.Callback {
-
-    public interface MediaSessionListener {
-        void onPlay();
-        void onPause();
-        void onSeekTo(long pos);
-        void onSkipToNext();
-        void onSkipToPrevious();
-    }
-
-    private MediaSessionListener listener;
-
-    public MediaSessionCallback(MediaSessionListener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    public void onPlay() {
-        if (listener != null) {
-            listener.onPlay();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        if (listener != null) {
-            listener.onPause();
-        }
-    }
-
-    @Override
-    public void onSeekTo(long pos) {
-        if (listener != null) {
-            listener.onSeekTo(pos);
-        }
-    }
-
-    @Override
-    public void onSkipToNext() {
-        if (listener != null) {
-            listener.onSkipToNext();
-        }
-    }
-
-    @Override
-    public void onSkipToPrevious() {
-        if (listener != null) {
-            listener.onSkipToPrevious();
-        }
-    }
-}
-```
-
-```{note}
-If the Java file is missing the notification still builds, but the media buttons do nothing. The exact same file content is also shown in your logs when the bridge can't be found (`android_notify.media.music.helper.JAVA_CALLBACK_FILE_CONTENT`).
 ```
 
 ## Reading audio files

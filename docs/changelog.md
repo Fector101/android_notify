@@ -2,21 +2,14 @@
 
 Release notes for all versions of Android Notify.
 
-
-## Version 1.62
-
-**Changed**
-
-- Music notifications now use a pre-compiled Java bridge (`io.github.fector101:android-notify-music-bridge`, published on Maven Central) with a fixed package. No more copy-pasting and editing `MediaSessionCallback.java`; just add one line to `android.gradle_dependencies`. The legacy `android.add_src` setup still works as a fallback.
-
-
 ## Version 1.61
 
 **Improvements**
 
 - Lazy Java class loading keeps app start-up time at 0.
 - Support for Android 8 and below in the notification builder and permission checks.
-- Flet runtime detection and file-path fixes.
+- Flet and Androidx runtime detection and file-path fixes.
+- Flet file-path fixes.
 - Music notification with `SoundLoader` audio playback management.
 - Automatic resource extraction for Android packages.
 
@@ -39,8 +32,6 @@ New methods:
 - Permission check in a service raising `NoneType` errors.
 - Path issues in Flet apps.
 - Auto-strip the audio extension from `res_sound_name` with a warning.
-- Music notification: notification now also builds when `setSoundLoader` is given an already-loaded `SoundLoader` (its `on_load` already fired).
-- Music notification: the build is deferred until the `MediaSession` is ready, so the "bind before load" order works even when `on_load` fires before the session is created.
 
 **Docs**
 

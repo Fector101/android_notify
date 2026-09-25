@@ -485,8 +485,9 @@ class MActivity(Context):
         return self
 
 
-class PythonActivity:
+class PythonActivity(MActivity):
     def __init__(self):
+        super().__init__()
         logger.debug("[MOCK] PythonActivity initialized")
 
     @staticmethod
