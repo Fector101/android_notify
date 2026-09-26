@@ -27,7 +27,7 @@ from .internal.java_classes import autoclass, cast, String, BuildVersion, Notifi
 # Logger
 from .internal.logger import logger
 
-from .widgets.images import set_default_small_icon, get_bitmap_from_path, get_bitmap_from_url, \
+from .widgets.images import get_bitmap_from_path, get_bitmap_from_url, \
     set_small_icon_with_bitmap, get_img_absolute_path, find_and_set_default_icon, set_small_icon_color
 from .widgets.texts import set_big_text, set_sub_text, set_title, set_message, set_lines, set_custom_colors
 
