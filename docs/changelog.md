@@ -33,11 +33,13 @@ New methods:
 - Auto-strip the audio extension from `res_sound_name` with a warning.
 - Music notification: notification now also builds when `setSoundLoader` is given an already-loaded `SoundLoader` (its `on_load` already fired).
 - Music notification: the build is deferred until the `MediaSession` is ready, so the "bind before load" order works even when `on_load` fires before the session is created.
+- Kivy apps now get the bundled Kivy fallback icon, instead of falling through to the system default icon.
 
 **Docs**
 
 - Read the Docs site built with Sphinx, MyST and Furo.
 - New foreground services and help pages.
+- The `android.gradle_dependencies` example referred to music bridge 1.0.0; the published version is 1.0.1.
 
 ## Version 1.60
 
