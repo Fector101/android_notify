@@ -27,7 +27,7 @@ from .internal.java_classes import autoclass, cast, String, BuildVersion, Notifi
 # Logger
 from .internal.logger import logger
 
-from .widgets.images import set_default_small_icon, get_bitmap_from_path, get_bitmap_from_url, \
+from .widgets.images import get_bitmap_from_path, get_bitmap_from_url, \
     set_small_icon_with_bitmap, get_img_absolute_path, find_and_set_default_icon, set_small_icon_color
 from .widgets.texts import set_big_text, set_sub_text, set_title, set_message, set_lines, set_custom_colors
 
@@ -671,7 +671,7 @@ class Notification(BaseNotification):
                     set_small_icon_with_bitmap(bitmap=bitmap_from_url, builder=self.builder)
                 else:
                     logger.warning('No bitmap from url for small icon, Using Default Icon as fallback...')
-                    set_default_small_icon(self.builder)
+                    find_and_set_default_icon(self.builder)
                 self.__has_small_icon = True
 
             threading.Thread(
@@ -687,7 +687,7 @@ class Notification(BaseNotification):
             else:
                 logger.warning(
                     f'Failed getting bitmap for custom icon, Using Default...\n Tried absolute path: {image_absolute_path}')
-                set_default_small_icon(self.builder)
+                find_and_set_default_icon(self.builder)
             self.__has_small_icon = True
         # self.__has_small_icon = True # Can not set here because of threading when getting bitmap for url
 
