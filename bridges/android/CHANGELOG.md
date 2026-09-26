@@ -11,7 +11,7 @@ The bridge lives in a **fixed package** and is shipped pre-compiled, so users
 never have to copy or edit Java files. To use it, add it to your `buildozer.spec`:
 
 ```ini
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.0
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1
 ```
 
 See [Music Notifications](../../docs/music-notifications.md) for the full setup.
