@@ -2,18 +2,33 @@
     SoundLoader with events
     __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
 
+This module exposes a ``SoundLoader`` that is backed by Kivy's own
+``kivy.core.audio.SoundLoader`` (so users get normal Kivy behavior: volume,
+pitch, loop, per-provider playback), while the returned sound object carries
+the extra events above that the music notification binds to
+(``on_load``/``on_seek``/``state``) and that apps use for end-of-track /
+pause / seek handling (``on_complete``/``on_pause``).
+
+The extra layer is built lazily as a subclass of whatever provider Kivy
+selects for the file type (``SoundAndroidPlayer`` on Android,
+``SoundSDL2`` on desktop, ...), so no raw ``MediaPlayer`` plumbing lives here.
 """
 
 import os
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform
+
 try:
-    from kivy.properties import ObjectProperty
-    from kivy.event import EventDispatcher
-except:
-    logger.warning("Kivy not found.")
-    EventDispatcher = object
-    ObjectProperty = lambda default: None  # Dummy property for non-Kivy environments
+    from kivy.clock import Clock
+    from kivy.properties import OptionProperty
+    from kivy.core.audio import SoundLoader as _KivySoundLoader
+    from kivy.resources import resource_find as _resource_find
+except Exception as error_importing_kivy:
+    logger.warning(f"Kivy not found: {error_importing_kivy}")
+    Clock = None
+    OptionProperty = None
+    _KivySoundLoader = None
+    _resource_find = None
 
 def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
@@ -21,10 +36,8 @@ def requestAllFilesAccess():
         return None
     from kivy.clock import Clock
     from android_notify.config import get_python_activity_context
-    from android_notify.internal.java_classes import Intent
+    from android_notify.internal.java_classes import Intent, Uri, Settings, autoclass
     Environment = autoclass('android.os.Environment')
-    Settings = autoclass('android.provider.Settings')
-    Uri = autoclass('android.net.Uri')
     mActivity = get_python_activity_context()
     if not Environment.isExternalStorageManager():
         try:
@@ -37,219 +50,155 @@ def requestAllFilesAccess():
     print("requestAllFilesAccess OK")
     return None
 
-if on_android_platform():
-    from jnius import autoclass, PythonJavaClass, java_method
-    MediaPlayer = autoclass('android.media.MediaPlayer')
-    class PlayerReadyListener(PythonJavaClass):
-        __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
-        __javacontext__ = 'app'
+# The full event surface exposed by every sound this module loads. Keep in
+# sync with MusicNotification.setSoundLoader() (binds state/on_load/on_seek)
+# and with the events an app binds for end-of-track / pause / seek handling.
+EVENTS = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
 
-        def __init__(self, on_player_ready):
-            super().__init__()
-            self.on_player_ready = on_player_ready
-
-        # noinspection PyUnusedLocal
-        @java_method('(Landroid/media/MediaPlayer;)V')
-        def onPrepared(self, mp):
-            self.on_player_ready()
+# base provider class -> EnhancedSound subclass
+_enhanced_cache = {}
 
 
-    class CompletionListener(PythonJavaClass):
-        __javainterfaces__ = ['android/media/MediaPlayer$OnCompletionListener']
-        __javacontext__ = 'app'
+def _build_enhanced(base):
+    """Create a subclass of a Kivy Sound provider that adds pause + events.
 
-        def __init__(self, on_player_complete):
-            super().__init__()
-            self.on_player_complete = on_player_complete
+    The provider class (``base``) is whatever ``kivy.core.audio.SoundLoader``
+    would have selected for the file type, so we keep all of Kivy's property
+    plumbing (volume, pitch, loop, source...) while layering the notification
+    events on top.
+    """
 
-        # noinspection PyUnusedLocal
-        @java_method('(Landroid/media/MediaPlayer;)V')
-        def onCompletion(self, mp):
-            self.on_player_complete()
-else:
-    class MediaPlayer:
-        def setDataSource(self,path):
-            pass
-        def setOnPreparedListener(self,callback):
-            pass
-        def setOnCompletionListener(self,callback):
-            pass
-        def prepareAsync(self):
-            pass
-        def start(self):
-            pass
+    class EnhancedSound(base):
+        __events__ = EVENTS
+
+        # Kivy's stock state only allows 'stop'/'play'. The notification and
+        # music screens sync to a paused state too, so widen the options.
+        state = OptionProperty('stop', options=('stop', 'play', 'pause'))
+
+        def load(self):
+            super().load()
+            # Kivy providers load synchronously (e.g. prepare() on Android).
+            # Defer on_load to the next frame so callers that bind handlers
+            # right after SoundLoader.load() still receive it, matching the
+            # old async prepare behaviour. Only fire it when a sound actually
+            # made it into the provider (length known), so a failed decode or
+            # a missing file reports "not loaded" instead of a silent no-op.
+            Clock.schedule_once(lambda dt: self._dispatch_load_when_ready(), 0)
+
+        def _dispatch_load_when_ready(self):
+            try:
+                if getattr(self, "_player_ready", False) or bool(getattr(self, "length", 0)):
+                    self.dispatch("on_load", "")
+            except Exception as error:
+                logger.warning(f"on_load check failed: {error}")
+
         def pause(self):
+            """Pause playback (Kivy's Sound API has no pause()).
+
+            On Android the MediaPlayer is paused directly and play() resumes
+            at the current position. On providers without low-level pause
+            (desktop SDL2) we fall back to a position-preserving stop.
+            """
+            player = getattr(self, '_mediaplayer', None)
+            if player is not None:
+                player.pause()
+            else:
+                self._pause_position = self.get_pos()
+                self.stop()
+            self.state = 'pause'
+            self.dispatch('on_pause')
+
+        def play(self):
+            # Resume from the position recorded by the fallback pause().
+            if self.state == 'pause' and getattr(self, '_pause_position', None) is not None:
+                self.seek(self._pause_position)
+                self._pause_position = None
+            super().play()
+
+        def seek(self, position, *args):
+            super().seek(position, *args)
+            self.dispatch('on_seek', position)
+
+        def on_loop(self, instance, value):
+            # Loop is handled manually in _completion_callback so the
+            # MediaPlayer never uses setLooping() (which would swallow the
+            # completion callback and break on_complete + UI sync).
             pass
-        def stop(self):
+
+        def _completion_callback(self):
+            if getattr(self, 'loop', False):
+                self.seek(0)
+                player = getattr(self, '_mediaplayer', None)
+                if player is not None:
+                    player.start()
+            else:
+                self.state = 'stop'
+                player = getattr(self, '_mediaplayer', None)
+                if player is not None:
+                    player.seekTo(0)
+            self.dispatch('on_complete', self)
+
+        def on_pause(self, *args):
             pass
-        def seekTo(self,sec):
+
+        def on_load(self, *args):
             pass
-        def release(self):
+
+        def on_seek(self, *args):
             pass
-        @classmethod
-        def getCurrentPosition(cls):
-            return 0
-        @classmethod
-        def getDuration(cls):
-            return 0
 
-    class PlayerReadyListener:
-        pass
+        def on_complete(self, *args):
+            pass
 
-    class CompletionListener:
-        pass
-    PythonJavaClass = object
-    java_method = lambda signature: (lambda func: func)  # Dummy decorator for non-Android platforms
-
-class SoundLoader(EventDispatcher):
-    _instance = None
-    _player = None
-    _player_ready = False
-    source = ''
-    callback = None
-    state = ObjectProperty('stop')
-
-    length = property(lambda self: self._get_length(),
-                      doc="Get length of the sound (in seconds).")
-    loop=False
+    EnhancedSound.__name__ = f"Enhanced{base.__name__}"
+    return EnhancedSound
 
 
-    __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
+def _get_enhanced_class(base):
+    """Return (and cache) the enhanced subclass for a Kivy provider class."""
+    enhanced = _enhanced_cache.get(base)
+    if enhanced is None:
+        enhanced = _build_enhanced(base)
+        _enhanced_cache[base] = enhanced
+    return enhanced
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
 
-    def __init__(self, **kwargs):
-        # Prevent re-running Kivy's setup logic on subsequent instantiations
-        if getattr(self, "_initialized", False):
-            return
+class SoundLoader:
+    """Kivy SoundLoader with the extended event surface.
 
-        super().__init__(**kwargs)  # Crucial for Kivy Property & Event bindings
-        self._initialized = True
+    Loads through ``kivy.core.audio.SoundLoader``'s own provider selection
+    (same extension matching, no double-loading) and returns an enhanced
+    subclass carrying ``__events__ = EVENTS``.
+    """
 
-    @classmethod
-    def load(cls, source):
-        instance=cls()
-        instance.source = source
+    _last = None  # One-at-a-time contract, mirroring the old singleton player.
 
-        logger.info(f"audio source: {os.path.abspath(source)}")
-        instance._player_ready = False
-        instance._player = MediaPlayer()
-        instance._player.setDataSource(source)
-        # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
-        # otherwise garbage collection can drop the callbacks before they fire.
-        instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
-        instance._completion_listener = CompletionListener(instance.on_player_complete)
-        instance._player.setOnPreparedListener(instance._ready_listener)
-        instance._player.setOnCompletionListener(instance._completion_listener)
-        instance._player.prepareAsync()
-        return instance._instance
+    @staticmethod
+    def load(source):
+        if _KivySoundLoader is None:
+            raise RuntimeError("Kivy is not available; SoundLoader requires Kivy to be installed.")
 
-    def on_player_ready(self):
-        """Called by PlayerReadyListener when MediaPlayer is ready."""
-        self._player_ready = True
-        logger.debug("on_load dispatched")
-        self.dispatch("on_load",'')
+        found = _resource_find(source) if _resource_find is not None else None
+        filename = found if found is not None else source
+        ext = filename.split('.')[-1].lower()
+        if '?' in ext:
+            ext = ext.split('?')[0]
 
-    def on_player_complete(self):
-        """Called by CompletionListener when the track reaches its end."""
-        logger.debug("EVENT: COMPLETE")
-        if not self.loop:
-            self.state = "stop"
-        self.dispatch("on_complete", self._player)
-        if self.loop:
-            self.seek(0)
-            self._player.start()
+        base = None
+        for classobj in _KivySoundLoader._classes:
+            if ext in classobj.extensions():
+                base = classobj
+                break
+        if base is None:
+            raise ValueError(f"Unable to find a Kivy audio loader for <{source}>")
 
-    def get_pos(self):
-        """Get current playback position in seconds."""
-        if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
-            return 0.0
-
-        raw = self._player.getCurrentPosition() / 1000.0
-        pos = raw
-
-        duration = self._player.getDuration() / 1000.0
-        if pos < 0:
-            pos = 0
-        elif 0 < duration < pos:
-            pos = duration
-
-        # logger.debug(f"read_pos: raw_pos={raw:.3f} duration={duration:.3f} returning={pos}")
-        return pos
-
-    def play(self):
-        """Resume playback."""
-        if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
-            return None
-        self._player.start()
-        self.state = 'play'
-        logger.debug("EVENT: PLAY")
-        self.dispatch("on_play",self._player)
-        return None
-
-    def pause(self):
-        """Pause playback."""
-        if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
-            return None
-        self._player.pause()
-        self.state = 'pause'
-        logger.debug("EVENT: PAUSE")
-        self.dispatch("on_pause",self._player)
-        return None
-
-    def stop(self):
-        if not self._player:
-            return
-        self._player.stop()
-        self.state = 'stop'
-
-    def _get_length(self):
-        if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
-            return None
-
-        return self._player.getDuration() / 1000.0
-
-    def seek(self, position):
-        """Seek to a position (sec = seconds from start)."""
-        if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
-            return None
-        self._player.seekTo(int(position * 1000))
-        print(f"EVENT: SEEK {position:.1f}s")
-        self.dispatch("on_seek",'')
-        return None
-
-    def unload(self):
-        """Unload the file from memory."""
-        if self._player:
-            self._player.release()
-        else:
-            print("Warning player not loaded.")
-
-    def on_play(self,player):
-        pass
-
-    def on_stop(self,player):
-        pass
-
-    def on_pause(self,player):
-        pass
-
-    def on_load(self,player):
-        pass
-
-    def on_seek(self,player):
-        pass
-
-    def on_complete(self, player):
-        pass
+        logger.info(f"audio source: {os.path.abspath(filename)}")
+        sound = _get_enhanced_class(base)(source=filename)
+        previous = SoundLoader._last
+        if previous is not None and previous is not sound:
+            previous.unload()
+        SoundLoader._last = sound
+        return sound
 
 
 # Legacy fallback for setups that can't use the Maven bridge artifact:
