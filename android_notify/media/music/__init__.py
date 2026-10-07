@@ -166,56 +166,61 @@ class MediaSessionListener(PythonJavaClass):
             logger.warning("No prev music callback was found")
 
 
-# Users mediaController need to fulfill
+# Users media_controller instance needs to fulfill, This my current easiest idea for an interface in python
 class IMediaController:
     def __init__(self,media_controller):
-        self.media_controller = media_controller
+        self.instance = media_controller
+
+    @property
+    def source(self):
+        """
+        This returns the current media source path
+        """
+        return self.instance.source
 
     def play(self):
         """
         To play audio/video.
         """
-        self.media_controller.play()
+        self.instance.play()
 
     def pause(self):
         """
         To pause audio/video.
         """
-        self.media_controller.pause()
+        self.instance.pause()
 
     def seek(self, pos:float):
         """
-        pos: is the milliseconds to change current playing position of media
+        pos: is the seconds to change current playing position of media
         """
-        self.media_controller.seek(pos)
+        self.instance.seek(pos)
 
     def get_pos(self) -> float:
         """
         This returns the current media position in seconds
         """
-        return self.media_controller.get_pos()
+        return self.instance.get_pos()
 
     @property
     def length(self) -> float:
         """
         This returns the current media length in seconds
         """
-        return self.media_controller.length
+        return self.instance.length
 
     def isMediaPlaying(self):
         """
         Checks if media state is equivalent to "play"
         """
-        return self.media_controller.state == "play"
+        return self.instance.state == "play"
 
 
 class MediaNotification:
     listener = MediaSessionListener # so users can switch listener Class if needed
-    mediaController = None
 
     def __init__(self, on_next=None, on_previous = None):
-        self.media_controller = None # In kivy mediaController can be SoundLoader
-        self.mediaController = None
+        self.mediaController = None   # In kivy media_controller instance can be SoundLoader
         self.already_built = False
         self._build_pending = False
         global _active_music_notification
@@ -267,9 +272,9 @@ class MediaNotification:
         # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
         if MediaSessionCallback:
             self.listener = self.listener()
-            self.listener.play_music = self.media_controller.play
-            self.listener.pause_music = self.media_controller.pause
-            self.listener.seek_music = self.media_controller.seek
+            self.listener.play_music = self.mediaController.play
+            self.listener.pause_music = self.mediaController.pause
+            self.listener.seek_music = self.mediaController.seek
 
             self.listener.next_music = self.on_next
             self.listener.prev_music = self.on_previous
@@ -310,7 +315,7 @@ class MediaNotification:
         # Add prev, play/pause, and next action buttons using Android
         # built-in media icons from android.
         # Prev/next are only added when a self.on_next and/or self.on_previous exists.
-        is_playing = self.media_controller.isMediaPlaying()
+        is_playing = self.mediaController.isMediaPlaying()
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
 
@@ -373,8 +378,8 @@ class MediaNotification:
         session is ready.
         """
         if self.session is not None:
-            if self.media_controller:
-                is_playing = self.media_controller.isMediaPlaying()
+            if self.mediaController:
+                is_playing = self.mediaController.isMediaPlaying()
             else:
                 logger.debug("No media controller available, notification not built.")
                 return
@@ -383,7 +388,7 @@ class MediaNotification:
             self._build_pending = True
 
     def setMediaController(self, sound_load_instance: object) -> None:
-        self.media_controller = IMediaController(sound_load_instance)
+        self.mediaController = IMediaController(sound_load_instance)
         try:
             if not on_flet_app():
                 self.mediaController.bind(
@@ -412,8 +417,8 @@ class MediaNotification:
             logger.error("MediaSession not initialized.")
             return
 
-        length_of_song = self.media_controller.length
-        song_position = self.media_controller.get_pos()
+        length_of_song = self.mediaController.length
+        song_position = self.mediaController.get_pos()
 
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")
 
@@ -456,8 +461,10 @@ class MediaNotification:
         """Tell the notification whether prev/next tracks exist around the current one."""
         if new_next:
             self.on_next = new_next
+            self.listener.next_music = self.on_next
         if new_prev:
             self.on_previous = new_prev
+            self.listener.prev_music = self.on_previous
 
         if not self.already_built or not self.mediaController:
             return
@@ -523,8 +530,8 @@ class MediaNotification:
         if not self.mediaController:
             return None
 
-        is_playing = self.media_controller.isMediaPlaying()
-        current_ms = int(self.media_controller.get_pos() * 1000)
+        is_playing = self.mediaController.isMediaPlaying()
+        current_ms = int(self.mediaController.get_pos() * 1000)
         logger.debug(f"updating progress bar to milliseconds:{current_ms}")
 
         actions = (
