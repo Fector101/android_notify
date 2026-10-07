@@ -176,30 +176,45 @@ class IMediaController:
         """
         This returns the current media source path
         """
+        if not hasattr(self.instance, 'source'):
+            logger.error(f"No source attribute was found in {self.instance}")
+            return None
         return self.instance.source
 
     def play(self):
         """
         To play audio/video.
         """
+        if not hasattr(self.instance, 'play'):
+            logger.error(f"No play method was found in {self.instance}")
+            return
         self.instance.play()
 
     def pause(self):
         """
         To pause audio/video.
         """
+        if not hasattr(self.instance, 'pause'):
+            logger.error(f"No pause method was found in {self.instance}")
+            return
         self.instance.pause()
 
     def seek(self, pos:float):
         """
         pos: is the seconds to change current playing position of media
         """
+        if not hasattr(self.instance, 'seek'):
+            logger.error(f"No seek method was found in {self.instance}")
+            return
         self.instance.seek(pos)
 
     def get_pos(self) -> float:
         """
         This returns the current media position in seconds
         """
+        if not hasattr(self.instance, 'get_pos'):
+            logger.error(f"No get_pos method was found in {self.instance}")
+            return 0
         return self.instance.get_pos()
 
     @property
@@ -207,13 +222,22 @@ class IMediaController:
         """
         This returns the current media length in seconds
         """
+        if not hasattr(self.instance, 'length'):
+            logger.error(f"No length property was found in {self.instance}")
+            return 0
         return self.instance.length
 
-    def isMediaPlaying(self):
+    @property
+    def state(self) -> str:
         """
-        Checks if media state is equivalent to "play"
+        This returns the current media length in seconds
         """
-        return self.instance.state == "play"
+        if not hasattr(self.instance, 'state'):
+            logger.error(f"No state property was found in {self.instance}")
+            return ''
+        return self.instance.state
+
+
 
 
 class MediaNotification:
@@ -315,7 +339,7 @@ class MediaNotification:
         # Add prev, play/pause, and next action buttons using Android
         # built-in media icons from android.
         # Prev/next are only added when a self.on_next and/or self.on_previous exists.
-        is_playing = self.mediaController.isMediaPlaying()
+        is_playing = isMediaPlaying(self.mediaController)
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
 
@@ -379,7 +403,7 @@ class MediaNotification:
         """
         if self.session is not None:
             if self.mediaController:
-                is_playing = self.mediaController.isMediaPlaying()
+                is_playing = isMediaPlaying(self.mediaController)
             else:
                 logger.debug("No media controller available, notification not built.")
                 return
@@ -530,7 +554,7 @@ class MediaNotification:
         if not self.mediaController:
             return None
 
-        is_playing = self.mediaController.isMediaPlaying()
+        is_playing = isMediaPlaying(self.mediaController)
         current_ms = int(self.mediaController.get_pos() * 1000)
         logger.debug(f"updating progress bar to milliseconds:{current_ms}")
 
@@ -565,3 +589,9 @@ class MediaNotification:
         if self.session:
             self.session.setActive(False)
             self.session.release()
+
+def isMediaPlaying(media_controller_instance):
+    """
+    Checks if media state is equivalent to "play"
+    """
+    return media_controller_instance.state == "play"
