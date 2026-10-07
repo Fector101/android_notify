@@ -16,8 +16,8 @@ from android_notify.widgets.texts import set_title, set_message
 
 JAVA_FILE_NAME = "MediaSessionCallback"
 # The bridge ships pre-compiled in a fixed package (io.github.fector101:android-notify-music-bridge)
-# so users never have to copy or edit Java. `bridge_interface_class` matches the
-# nested interface embedded in that Java class.
+# so users never have to copy or edit Java.
+# `bridge_interface_class` matches the nested interface embedded in that Java class.
 MUSIC_BRIDGE_PACKAGE = "org.android_notify.music"
 bridge_interface_class = f'{MUSIC_BRIDGE_PACKAGE.replace(".", "/")}/{JAVA_FILE_NAME}$MediaSessionListener'
 
@@ -35,13 +35,6 @@ if on_android_platform():
     MediaMetadataBuilder = autoclass('android.media.MediaMetadata$Builder')
     MediaStyle = autoclass('android.app.Notification$MediaStyle')
     MediaMetadataRetriever = autoclass('android.media.MediaMetadataRetriever')
-
-    # MediaSession = autoclass('android.support.v4.media.session.MediaSessionCompat')
-    # PlaybackState = autoclass('android.support.v4.media.session.PlaybackStateCompat')
-    # PlaybackStateBuilder = autoclass('android.support.v4.media.session.PlaybackStateCompat$Builder')
-    # MediaMetadata = autoclass('android.support.v4.media.MediaMetadataCompat')
-    # MediaMetadataBuilder = autoclass('android.support.v4.media.MediaMetadataCompat$Builder')
-    # MediaStyle = autoclass('androidx.media.app.NotificationCompat$MediaStyle')
 
     java_bridge_class = f'{MUSIC_BRIDGE_PACKAGE}.{JAVA_FILE_NAME}'
     try:
@@ -111,7 +104,7 @@ class AndroidRunnable(PythonJavaClass):
             traceback.print_exc()
 
 
-_active_music_notification: Optional["MusicNotification"] = None
+_active_music_notification: Optional["MediaNotification"] = None
 class MediaSessionListener(PythonJavaClass):
     __javainterfaces__ = [
         bridge_interface_class
@@ -216,7 +209,7 @@ class IMediaController:
         return self.media_controller.state == "play"
 
 
-class MusicNotification:
+class MediaNotification:
     listener = MediaSessionListener # so users can switch listener Class if needed
     mediaController = None
 
@@ -236,13 +229,14 @@ class MusicNotification:
         self.on_next = on_next
         self.on_previous = on_previous
 
-        self.channel_id = "music_channel"
-        self.channel_name = "Music"
+        self.channel_id = "media_channel"
+        self.channel_name = "Media"
         self.notification_id = get_unique_id()
 
         self.context = None
         self.callback = None
-        self.session = None # for auto seek updates, lock-screen control and speakers
+        # for action buttons & auto seek updates on notification, speakers and lock-screen control.
+        self.session = None
 
         if on_android_platform():
             self.context = get_python_activity_context()
@@ -291,7 +285,7 @@ class MusicNotification:
         # If a build was deferred while the MediaSession was being created,
         # finish it now that the session exists.
         if self._build_pending and self.mediaController is not None:
-            self._build_or_defer(is_playing=self.media_controller.isMediaPlaying())
+            self._build_or_defer()
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
@@ -361,7 +355,7 @@ class MusicNotification:
     @staticmethod
     def _sound_is_loaded(sound):
         """True if the sound's on_load has already fired (player is ready)."""
-        if getattr(sound, "_player_ready", False):
+        if getattr(sound, "_player_ready", False): # _player_ready android notify custom loader
             return True
         try:
             # Plain Kivy Sound: length is only available once loaded.
@@ -371,7 +365,7 @@ class MusicNotification:
             traceback.print_exc()
             return False
 
-    def _build_or_defer(self, is_playing):
+    def _build_or_defer(self):
         """Build the notification now, or defer once the MediaSession exists.
 
         build_notification bails out when the MediaSession isn't created yet;
@@ -379,6 +373,11 @@ class MusicNotification:
         session is ready.
         """
         if self.session is not None:
+            if self.media_controller:
+                is_playing = self.media_controller.isMediaPlaying()
+            else:
+                logger.debug("No media controller available, notification not built.")
+                return
             self.build_notification(is_playing=is_playing)
         else:
             self._build_pending = True
@@ -389,7 +388,7 @@ class MusicNotification:
             if not on_flet_app():
                 self.mediaController.bind(
                     state=self._parse_state,
-                    on_load=lambda instance,v: self._build_or_defer(is_playing=self.media_controller.isMediaPlaying()),
+                    on_load=lambda instance,v: self._build_or_defer(),
                     on_seek=lambda _,pos: self.syncMediaSession()
                 )
         except Exception as failed_to_bind_to_value:
@@ -398,7 +397,7 @@ class MusicNotification:
         # If the sound was already loaded when we bound to it, it's on_load
         # has already fired and will never fire again - build now instead.
         if not self.already_built and self._sound_is_loaded(sound_load_instance):
-            self._build_or_defer(is_playing=1 if self.media_controller.isMediaPlaying() else 0)
+            self._build_or_defer()
 
     def build_notification(self, is_playing):
         """Fully builds and dispatches the media notification.
