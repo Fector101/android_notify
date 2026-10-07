@@ -37,6 +37,7 @@ New methods:
 
 - Read the Docs site built with Sphinx, MyST and Furo.
 - New foreground services and help pages.
+- The `android.gradle_dependencies` example referred to music bridge 1.0.0; the published version is 1.0.1.
 
 ## Version 1.60
 

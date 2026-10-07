@@ -122,19 +122,16 @@ def find_and_set_default_icon(builder):
     Logic for finding small icon
     """
 
-    fallback_icon_path = None
     if on_flet_app():
         fallback_icon_path = icon_finder("flet-appicon.png")
     elif on_pydroid_app():
         fallback_icon_path = icon_finder("pydroid3-appicon.png")
-
-    if fallback_icon_path:
-        successful = set_small_icon_from_path(image_absolute_path=fallback_icon_path, builder=builder)
-        if not successful:
-            logger.warning("issue using fallback_appicon, using default icon...")
-            set_default_small_icon(builder)
-
     else:
+        fallback_icon_path = icon_finder("kivy-appicon.png")
+
+    successful = set_small_icon_from_path(image_absolute_path=fallback_icon_path, builder=builder)
+    if not successful:
+        logger.warning("issue using fallback_appicon, using default icon...")
         set_default_small_icon(builder)
 
 
