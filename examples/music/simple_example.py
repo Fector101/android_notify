@@ -22,7 +22,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 
 from android_notify.media.music import MediaNotification
-from android_notify.media.music.helper import SoundLoader, requestAllFilesAccess
+from android_notify.media.music.helper import SoundLoader, requestAllFilesAccess, has_permission_to_access_files
 from android_notify import logger
 
 logger.setLevel(logging.DEBUG)
@@ -70,7 +70,9 @@ class TestApp(App):
         # permission that Google Play policy restricts for music apps: prefer
         # READ_MEDIA_AUDIO and the Storage Access Framework
         # (ACTION_OPEN_DOCUMENT) for Play-published apps.
-        requestAllFilesAccess()
+        if not has_permission_to_access_files():
+            requestAllFilesAccess()
+            return
 
         # Load the sound
         self.sound = SoundLoader.load(AUDIO_ABSOLUTE_PATH)

@@ -15,17 +15,23 @@ except:
     EventDispatcher = object
     ObjectProperty = lambda default: None  # Dummy property for non-Kivy environments
 
+def has_permission_to_access_files():
+    try:
+        return autoclass('android.os.Environment').isExternalStorageManager()
+    except Exception as error_checking_permission_state:
+        logger.error(error_checking_permission_state)
+        return False
+
 def requestAllFilesAccess():
     """Requests 'All Files Access' permission for Android 11+"""
     if not on_android_platform():
         return None
     from android_notify.config import get_python_activity_context
     from android_notify.internal.java_classes import Intent
-    Environment = autoclass('android.os.Environment')
     Settings = autoclass('android.provider.Settings')
     Uri = autoclass('android.net.Uri')
     mActivity = get_python_activity_context()
-    if not Environment.isExternalStorageManager():
+    if not has_permission_to_access_files():
         try:
             intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
             print(f"package:{mActivity.getPackageName()}")
@@ -144,6 +150,9 @@ class SoundLoader(EventDispatcher):
                 logger.error("Permission denied while loading sound source.")
             else:
                 logger.error(e)
+            instance._player.release()
+            instance._player = None
+            return instance._instance
         # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
         # otherwise garbage collection can drop the callbacks before they fire.
         instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
