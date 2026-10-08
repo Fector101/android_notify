@@ -37,7 +37,8 @@ def requestAllFilesAccess():
     return None
 
 if on_android_platform():
-    from jnius import autoclass, PythonJavaClass, java_method
+    from jnius import autoclass, PythonJavaClass, java_method, jnius
+
     MediaPlayer = autoclass('android.media.MediaPlayer')
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
@@ -136,7 +137,13 @@ class SoundLoader(EventDispatcher):
         logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player_ready = False
         instance._player = MediaPlayer()
-        instance._player.setDataSource(source)
+        try:
+            instance._player.setDataSource(source)
+        except jnius.JavaException as e:
+            if "Permission denied" in str(e):
+                logger.error("Permission denied while loading sound source.")
+            else:
+                logger.error(e)
         # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
         # otherwise garbage collection can drop the callbacks before they fire.
         instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
@@ -154,9 +161,9 @@ class SoundLoader(EventDispatcher):
 
     def on_player_complete(self):
         """Called by CompletionListener when the track reaches its end."""
-        logger.debug("EVENT: COMPLETE")
         if not self.loop:
             self.state = "stop"
+        logger.debug("sound Dispatching: COMPLETE")
         self.dispatch("on_complete", self._player)
         if self.loop:
             self.seek(0)
@@ -187,7 +194,7 @@ class SoundLoader(EventDispatcher):
             return None
         self._player.start()
         self.state = 'play'
-        logger.debug("EVENT: PLAY")
+        logger.debug("sound dispatching: PLAY")
         self.dispatch("on_play",self._player)
         return None
 
@@ -198,7 +205,7 @@ class SoundLoader(EventDispatcher):
             return None
         self._player.pause()
         self.state = 'pause'
-        logger.debug("EVENT: PAUSE")
+        logger.debug("sound dispatching: PAUSE")
         self.dispatch("on_pause",self._player)
         return None
 
@@ -221,7 +228,7 @@ class SoundLoader(EventDispatcher):
             print("Warning player is not ready...")
             return None
         self._player.seekTo(int(position * 1000))
-        print(f"EVENT: SEEK {position:.1f}s")
+        print(f"sound dispatching: SEEK {position:.1f}s")
         self.dispatch("on_seek",'')
         return None
 

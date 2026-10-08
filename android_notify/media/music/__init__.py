@@ -52,9 +52,10 @@ if on_android_platform():
                     bridge_interface_class = f'{get_package_name().replace(".", "/")}/{JAVA_FILE_NAME}$MediaSessionListener'
                     logger.warning(f"Bridge not found at '{java_bridge_class}', fell back to legacy: {legacy_bridge_class}")
                 except jnius.jnius.JavaException:
-                    logger.error("Couldn't find the media bridge anywhere. Add android-notify-music-bridge to "
-                                 "android.gradle_dependencies (see docs/music-notifications.html), or add the "
-                                 "legacy src/MediaSessionCallback.java via android.add_src.")
+                    logger.error(""
+                                 "Couldn't find the media bridge anywhere. Add android-notify-music-bridge to "
+                                 "buildozer.spec android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1"
+                                 "")
                     logger.info(JAVA_CALLBACK_FILE_CONTENT)
             else:
                 logger.error("Media bridge missing: add android-notify-music-bridge to android.gradle_dependencies "
@@ -243,8 +244,9 @@ class IMediaController:
 class MediaNotification:
     listener = MediaSessionListener # so users can switch listener Class if needed
 
-    def __init__(self, on_next=None, on_previous = None):
-        self.mediaController = None   # In kivy media_controller instance can be SoundLoader
+    def __init__(self, mediaController, on_next=None, on_previous = None):
+        self.mediaController = None # In kivy media_controller instance can be SoundLoader
+
         self.already_built = False
         self._build_pending = False
         global _active_music_notification
@@ -267,6 +269,7 @@ class MediaNotification:
         # for action buttons & auto seek updates on notification, speakers and lock-screen control.
         self.session = None
 
+        self.setMediaController(mediaController)
         if on_android_platform():
             self.context = get_python_activity_context()
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
@@ -371,9 +374,8 @@ class MediaNotification:
     def _parse_state(self, _,state): #_ is loader_instance
         logger.debug(f'sound load state changed: {state}')
         if not self.already_built:
-            return None
-        else:
             logger.error("Not built but trying play or pause")
+            return None
 
         if state == 'play':
             self.showPauseIcon()
@@ -415,7 +417,7 @@ class MediaNotification:
         self.mediaController = IMediaController(sound_load_instance)
         try:
             if not on_flet_app():
-                self.mediaController.bind(
+                self.mediaController.instance.bind(
                     state=self._parse_state,
                     on_load=lambda instance,v: self._build_or_defer(),
                     on_seek=lambda _,pos: self.syncMediaSession()

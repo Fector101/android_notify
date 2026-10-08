@@ -21,7 +21,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
-from android_notify.media.music import MusicNotification
+from android_notify.media.music import MediaNotification
 from android_notify.media.music.helper import SoundLoader, requestAllFilesAccess
 from android_notify import logger
 
@@ -32,6 +32,12 @@ AUDIO_ABSOLUTE_PATH = "/storage/emulated/0/Music/test.mp3"
 
 
 class TestApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.status_label = None
+        self.sound = None
+        self.notification = None
+
     def build(self):
         self.sound = None
         self.notification = None
@@ -66,20 +72,17 @@ class TestApp(App):
         # (ACTION_OPEN_DOCUMENT) for Play-published apps.
         requestAllFilesAccess()
 
-        # Create notification Instance
-        self.notification = MusicNotification()
-        # No queue in this example: don't advertise prev/next skip controls.
-        self.notification.set_skip_available(False, False)
-        self.notification.setTitle(os.path.splitext(os.path.basename(AUDIO_ABSOLUTE_PATH))[0] or "Unknown")
-        self.notification.setArtist("Example Artist")
-
         # Load the sound
         self.sound = SoundLoader.load(AUDIO_ABSOLUTE_PATH)
         self.sound.loop = True
         self.sound.bind(on_load=self.on_loaded)
 
-        # Wire the notification to the sound
-        self.notification.setSoundLoader(self.sound)
+        # Create notification Instance
+        self.notification = MediaNotification(mediaController=self.sound)
+        # No queue in this example: don't advertise prev/next skip controls.
+        self.notification.set_Next_and_Prev(False, False)
+        self.notification.setTitle(os.path.splitext(os.path.basename(AUDIO_ABSOLUTE_PATH))[0] or "Unknown")
+        self.notification.setArtist("Example Artist")
 
         self.status_label.text = f"Loaded:\n{AUDIO_ABSOLUTE_PATH}"
 
