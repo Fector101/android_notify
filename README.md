@@ -340,3 +340,7 @@ When reporting a bug, try to include:
 - Screenshots or logs (if possible)
 
 Feature suggestions are also welcome.
+
+
+---
+with great power comes great responsibility don't spam users notification tray
