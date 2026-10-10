@@ -286,6 +286,7 @@ class MusicPlayerRoot(BoxLayout):
 
         self.status_label = Label(text="Tap 'Scan device' to find music", size_hint_y=None, height=dp(24))
         self.add_widget(self.status_label)
+        Clock.schedule_once(lambda _:self.scan_device(),2)
 
     def scan_device(self):
         if self._scan_in_progress:
@@ -384,7 +385,6 @@ class MusicPlayerRoot(BoxLayout):
         else:
             self.notification.setTitle(str(title))
             self.notification.setArtist(artist)
-            self.notification.setMediaController(self.sound)
 
         # Reset seek bar
         self.seek_bar.max = 1
