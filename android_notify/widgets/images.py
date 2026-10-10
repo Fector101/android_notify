@@ -122,19 +122,16 @@ def find_and_set_default_icon(builder):
     Logic for finding small icon
     """
 
-    fallback_icon_path = None
     if on_flet_app():
         fallback_icon_path = icon_finder("flet-appicon.png")
     elif on_pydroid_app():
         fallback_icon_path = icon_finder("pydroid3-appicon.png")
-
-    if fallback_icon_path:
-        successful = set_small_icon_from_path(image_absolute_path=fallback_icon_path, builder=builder)
-        if not successful:
-            logger.warning("issue using fallback_appicon, using default icon...")
-            set_default_small_icon(builder)
-
     else:
+        fallback_icon_path = icon_finder("kivy-appicon.png")
+
+    successful = set_small_icon_from_path(image_absolute_path=fallback_icon_path, builder=builder)
+    if not successful:
+        logger.warning("issue using fallback_appicon, using default icon...")
         set_default_small_icon(builder)
 
 
@@ -163,6 +160,13 @@ def set_small_icon_with_bitmap(bitmap, builder):
         builder.setSmallIcon(icon)
         return True
     except Exception as autoclass_icon_error:
+        # TODO: Fix later, Music module only uses android base classes no androidx
+        if "Invalid instance of 'androidx/core/graphics/drawable/IconCompat' passed for a 'android/graphics/drawable/Icon'" in str(autoclass_icon_error):
+            try:
+                builder.setSmallIcon(autoclass('android.graphics.drawable.Icon').createWithBitmap(bitmap))
+                return True
+            except Exception as autoclass_icon_error1:
+                logger.exception(f"Couldn't find class to set custom icon_: {autoclass_icon_error1}")
         logger.exception(f"Couldn't find class to set custom icon: {autoclass_icon_error}")
         set_default_small_icon(builder)
         return False
