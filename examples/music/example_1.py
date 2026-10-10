@@ -11,10 +11,10 @@ Standalone example: media notification for music playback
 
 Tracks are read from MediaStore with scoped storage (``content://`` URIs), so
 the app needs ``READ_MEDIA_AUDIO`` (Android 13+) / ``READ_EXTERNAL_STORAGE``
-(Android 12 and below) — no All Files Access. Add the permission to
-buildozer.spec:
+(Android 12 and below) — no All Files Access. Add the permissions (plus
+``POST_NOTIFICATIONS`` for the notification) to buildozer.spec:
 
-    android.permissions = READ_MEDIA_AUDIO, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32)
+    android.permissions = POST_NOTIFICATIONS, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), READ_MEDIA_AUDIO
 
 Paste this file into your own project (it is self-contained)
 """

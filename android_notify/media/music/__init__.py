@@ -247,9 +247,15 @@ class MediaNotification:
         return cls._instance
 
     def __init__(self, mediaController, on_next=None, on_previous = None):
-        self.on_next = on_next
-        self.on_previous = on_previous
         if getattr(self, "_initialized", False):
+            # MediaNotification is a singleton, but it can be constructed again
+            # for a new track. Refresh the controller (without double-binding),
+            # keep the skip callbacks in sync with the MediaSession listener and
+            # force a rebuild for the new track.
+            self.already_built = False
+            self.setMediaController(mediaController)
+            self.setNext(on_next)
+            self.setPrev(on_previous)
             return
 
         self.mediaController = None  # In kivy media_controller instance can be SoundLoader
@@ -407,10 +413,25 @@ class MediaNotification:
             self._build_pending = True
 
     def setMediaController(self, sound_load_instance: object) -> None:
+        previously_bound = getattr(self, "_bound_instance", None)
+        # Kivy SoundLoader is a singleton, so re-loading a track hands back the
+        # same object. Re-binding it would stack duplicate handlers; skip the
+        # bind/unbind dance unless the controller instance actually changed.
+        if previously_bound is not None and previously_bound is not sound_load_instance:
+            try:
+                previously_bound.unbind(
+                    state=self._parse_state,
+                    on_load=self._build_if_media_session_setup_is_done,
+                    on_seek=self.syncMediaSession
+                )
+            except Exception as failed_to_unbind_old_controller:
+                logger.error(failed_to_unbind_old_controller)
+                traceback.print_exc()
+
+        self._bound_instance = sound_load_instance
         self.mediaController = IMediaController(sound_load_instance)
         try:
-            if not on_flet_app():
-                # safe to bind once self.mediaController.instance is a singleton
+            if not on_flet_app() and previously_bound is not sound_load_instance:
                 self.mediaController.instance.bind(
                     state=self._parse_state,
                     on_load=self._build_if_media_session_setup_is_done,
@@ -419,6 +440,13 @@ class MediaNotification:
         except Exception as failed_to_bind_to_value:
             logger.error(failed_to_bind_to_value)
             traceback.print_exc()
+
+        # A changed controller means the MediaSession listener still points its
+        # play/pause/seek callbacks at the old adapter - move them over.
+        if self.listener is not None:
+            self.listener.play_music = self.mediaController.play
+            self.listener.pause_music = self.mediaController.pause
+            self.listener.seek_music = self.mediaController.seek
 
         # If the sound was already loaded when we bound to it, it's on_load
         # has already fired and will never fire again - build now instead.
@@ -438,8 +466,6 @@ class MediaNotification:
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
-
-        print("_build_notification")
 
         length_of_song = self.mediaController.length
         song_position = self.mediaController.get_pos()
@@ -480,7 +506,6 @@ class MediaNotification:
         self.already_built=1
         # A build happened: consume any queued build request (see setMediaController).
         self._build_pending = False
-        print("done _build_notification")
 
     def _set_skip_callback(self, which_, callback):
         """Assign or clear a skip callback and keep the UI/session in sync.
@@ -625,9 +650,7 @@ def isMediaPlaying(media_controller_instance):
 def _sound_is_loaded(sound):
     """True if the sound's on_load has already fired (player is ready)."""
     if hasattr(sound,"_player_ready"): # _player_ready android notify custom loader
-        state = getattr(sound, "_player_ready", False)
-        print(f"_sound_is_loaded: {state}")
-        return state
+        return getattr(sound, "_player_ready", False)
     try:
         logger.debug(f'running kivy default soundLoader: {sound}')
         # Plain Kivy Sound: length is only available once loaded.

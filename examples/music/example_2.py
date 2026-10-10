@@ -323,8 +323,20 @@ class MusicPlayerRoot(BoxLayout):
     def _on_scan_done(self, tracks):
         self._scan_in_progress = False
         self.scan_btn.disabled = False
+
+        # A rescan can add or reorder tracks. Capture the URI that is currently
+        # playing so Next/Prev don't jump to the wrong track and the current-row
+        # marker survives the replacement.
+        playing_uri = self.tracks[self.current_index]["uri"] if 0 <= self.current_index < len(self.tracks) else None
         self.tracks = tracks
-        self.track_list.set_tracks(tracks)
+        if playing_uri is not None:
+            for index, track in enumerate(tracks):
+                if track["uri"] == playing_uri:
+                    self.current_index = index
+                    break
+            else:
+                self.current_index = -1
+        self.track_list.set_tracks(tracks, current_uri=playing_uri)
 
         if self._permission_status == "missing_manifest":
             self.status_label.text = (
@@ -373,6 +385,12 @@ class MusicPlayerRoot(BoxLayout):
 
         # Track titles/artists come from MediaStore metadata (no file path needed).
         self.sound = SoundLoader.load(uri)
+        if self.sound is None:
+            # Unreadable URI or missing permission: don't dereference None below.
+            logger.error("Failed to load track: %s", uri)
+            self.now_playing.text = f"Failed to load: {title}"
+            self.status_label.text = "Could not load track (unreadable or permission denied)"
+            return
         self.sound.loop = self.loop_track
         self.sound.bind(
             on_load=self._on_loaded,

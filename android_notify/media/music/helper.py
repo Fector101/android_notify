@@ -230,7 +230,7 @@ class SoundLoader(EventDispatcher):
             logger.warning("Warning player is not ready...no seek")
             return None
         self._player.seekTo(int(position * 1000))
-        print(f"sound dispatching: SEEK {position:.1f}s")
+        logger.debug(f"sound dispatching: SEEK {position:.1f}s")
         self.dispatch("on_seek",'')
         return None
 
@@ -239,7 +239,7 @@ class SoundLoader(EventDispatcher):
         if self._player:
             self._player.release()
         else:
-            print("Warning player not loaded.")
+            logger.warning("Warning player not loaded.")
 
     def on_play(self,player):
         pass
