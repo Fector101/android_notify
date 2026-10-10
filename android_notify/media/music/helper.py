@@ -7,6 +7,8 @@
 import os
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform
+from android_notify.internal.permissions import ask_audio_permission, has_permission_to_read_audio
+
 try:
     from kivy.properties import ObjectProperty
     from kivy.event import EventDispatcher
@@ -15,30 +17,11 @@ except:
     EventDispatcher = object
     ObjectProperty = lambda default: None  # Dummy property for non-Kivy environments
 
-def requestAllFilesAccess():
-    """Requests 'All Files Access' permission for Android 11+"""
-    if not on_android_platform():
-        return None
-    from kivy.clock import Clock
-    from android_notify.config import get_python_activity_context
-    from android_notify.internal.java_classes import Intent
-    Environment = autoclass('android.os.Environment')
-    Settings = autoclass('android.provider.Settings')
-    Uri = autoclass('android.net.Uri')
-    mActivity = get_python_activity_context()
-    if not Environment.isExternalStorageManager():
-        try:
-            intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            print(f"package:{mActivity.getPackageName()}")
-            intent.setData(Uri.parse(f"package:{mActivity.getPackageName()}"))
-            Clock.schedule_once(lambda dt: mActivity.startActivity(intent), 2)
-        except Exception as error_opening_permission_screen:
-            print('PermissionHandler.requestAllFilesAccess --> ', error_opening_permission_screen)
-    print("requestAllFilesAccess OK")
-    return None
+
 
 if on_android_platform():
-    from jnius import autoclass, PythonJavaClass, java_method
+    from jnius import autoclass, PythonJavaClass, java_method, jnius
+
     MediaPlayer = autoclass('android.media.MediaPlayer')
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
@@ -68,7 +51,7 @@ if on_android_platform():
             self.on_player_complete()
 else:
     class MediaPlayer:
-        def setDataSource(self,path):
+        def setDataSource(self,path=None,context=None,uri=None):
             pass
         def setOnPreparedListener(self,callback):
             pass
@@ -113,7 +96,6 @@ class SoundLoader(EventDispatcher):
                       doc="Get length of the sound (in seconds).")
     loop=False
 
-
     __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
 
     def __new__(cls, *args, **kwargs):
@@ -130,15 +112,41 @@ class SoundLoader(EventDispatcher):
         self._initialized = True
 
     @classmethod
-    def load(cls, source):
+    def load(cls, source, use_path=False):
+        """Load a source into the shared MediaPlayer.
+
+        source: an absolute file path or a "content://" URI.
+        use_path: force the file-path datasource logic even when the source looks
+            like a content URI. Defaults to False, in which case content://
+            sources are opened through the resolver (scoped storage safe).
+        """
         instance=cls()
         instance.source = source
 
-        logger.info(f"audio source: {os.path.abspath(source)}")
+        if str(source).startswith("content://"):
+            logger.info(f"audio source: {source}")
+        else:
+            logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player_ready = False
         instance._player = MediaPlayer()
-        instance._player.setDataSource(source)
-        # Keep strong refs to the PyJNIus proxies while MediaPlayer holds them,
+        try:
+            if not use_path and str(source).startswith("content://"):
+                from android_notify.config import get_python_activity_context
+                from android_notify.internal.java_classes import Uri
+                context = get_python_activity_context()
+                instance._player.setDataSource(context, Uri.parse(source))
+            else:
+                instance._player.setDataSource(source)
+        except jnius.JavaException as e:
+            if "Permission denied" in str(e):
+                logger.error("Permission denied while loading sound source.")
+            else:
+                logger.error(e)
+            instance._player.release()
+            instance._player = None
+            instance._player_ready = False
+            return None
+        # Keep strong refs to the Pyjnius proxies while MediaPlayer holds them,
         # otherwise garbage collection can drop the callbacks before they fire.
         instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
         instance._completion_listener = CompletionListener(instance.on_player_complete)
@@ -155,9 +163,9 @@ class SoundLoader(EventDispatcher):
 
     def on_player_complete(self):
         """Called by CompletionListener when the track reaches its end."""
-        logger.debug("EVENT: COMPLETE")
         if not self.loop:
             self.state = "stop"
+        logger.debug("sound Dispatching: COMPLETE")
         self.dispatch("on_complete", self._player)
         if self.loop:
             self.seek(0)
@@ -166,7 +174,7 @@ class SoundLoader(EventDispatcher):
     def get_pos(self):
         """Get current playback position in seconds."""
         if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
+            logger.warning("Warning player is not ready... get_pos")
             return 0.0
 
         raw = self._player.getCurrentPosition() / 1000.0
@@ -184,22 +192,22 @@ class SoundLoader(EventDispatcher):
     def play(self):
         """Resume playback."""
         if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
+            logger.warning("Warning player is not ready... no play")
             return None
         self._player.start()
         self.state = 'play'
-        logger.debug("EVENT: PLAY")
+        logger.debug("sound dispatching: PLAY")
         self.dispatch("on_play",self._player)
         return None
 
     def pause(self):
         """Pause playback."""
         if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
+            logger.warning("Warning player is not ready... no pause")
             return None
         self._player.pause()
         self.state = 'pause'
-        logger.debug("EVENT: PAUSE")
+        logger.debug("sound dispatching: PAUSE")
         self.dispatch("on_pause",self._player)
         return None
 
@@ -211,7 +219,7 @@ class SoundLoader(EventDispatcher):
 
     def _get_length(self):
         if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
+            logger.warning("Warning player is not ready... no _get_length")
             return None
 
         return self._player.getDuration() / 1000.0
@@ -219,10 +227,10 @@ class SoundLoader(EventDispatcher):
     def seek(self, position):
         """Seek to a position (sec = seconds from start)."""
         if not self._player or not self._player_ready:
-            print("Warning player is not ready...")
+            logger.warning("Warning player is not ready...no seek")
             return None
         self._player.seekTo(int(position * 1000))
-        print(f"EVENT: SEEK {position:.1f}s")
+        logger.debug(f"sound dispatching: SEEK {position:.1f}s")
         self.dispatch("on_seek",'')
         return None
 
@@ -231,7 +239,7 @@ class SoundLoader(EventDispatcher):
         if self._player:
             self._player.release()
         else:
-            print("Warning player not loaded.")
+            logger.warning("Warning player not loaded.")
 
     def on_play(self,player):
         pass
@@ -251,6 +259,62 @@ class SoundLoader(EventDispatcher):
     def on_complete(self, player):
         pass
 
+
+class MediaPermissionHandler:
+    __requesting_permission = False
+
+    @classmethod
+    def has_permission_to_access_audio_files(cls):
+        """
+        Checks if app has permission to read the audio files
+        :return: True if it's allowed, False otherwise
+        """
+        return has_permission_to_read_audio()
+
+    @classmethod
+    def ask_permission_to_access_audio_files(cls, callback=None):
+        """
+        Asks permission to read the audio files
+        """
+
+        if cls.__requesting_permission:
+            logger.warning("still requesting permission to reading audio files")
+            return
+
+        def requesting_state(state):
+            cls.__requesting_permission = state
+
+        ask_audio_permission(callback=callback, set_requesting_state=requesting_state)
+
+
+# RELICS --- I'm keeping these for visible reference, for when I implement other features
+
+# def has_permission_to_access_files():
+#     try:
+#         return autoclass('android.os.Environment').isExternalStorageManager()
+#     except Exception as error_checking_permission_state:
+#         logger.error(error_checking_permission_state)
+#         return False
+#
+# def requestAllFilesAccess():
+#     """Requests 'All Files Access' permission for Android 11+"""
+#     if not on_android_platform():
+#         return None
+#     from android_notify.config import get_python_activity_context
+#     from android_notify.internal.java_classes import Intent
+#     Settings = autoclass('android.provider.Settings')
+#     Uri = autoclass('android.net.Uri')
+#     mActivity = get_python_activity_context()
+#     if not has_permission_to_access_files():
+#         try:
+#             intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+#             print(f"package:{mActivity.getPackageName()}")
+#             intent.setData(Uri.parse(f"package:{mActivity.getPackageName()}"))
+#             mActivity.startActivity(intent)
+#         except Exception as error_opening_permission_screen:
+#             print("PermissionHandler.requestAllFilesAccess --> ", error_opening_permission_screen)
+#     print("requestAllFilesAccess OK")
+#     return None
 
 # Legacy fallback for setups that can't use the Maven bridge artifact:
 # copy this file into "./src/MediaSessionCallback.java" and point buildozer at it

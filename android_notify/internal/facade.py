@@ -21,8 +21,6 @@ class String(str):
         return str.__new__(cls, value)
 
 
-
-
 class Intent(IntFlag):
     NONE = 0
     FLAG_ACTIVITY_CLEAR_TOP = auto()
@@ -98,6 +96,7 @@ class Intent(IntFlag):
     def setPackage(self, param):
         pass
 
+
 class PendingIntent:
     FLAG_UPDATE_CURRENT = 0x08000000
     FLAG_IMMUTABLE = 0x04000000
@@ -132,6 +131,8 @@ class BuildVersion:
 
 class Manifest:
     POST_NOTIFICATIONS = 'FACADE_IMPORT'
+    READ_EXTERNAL_STORAGE = 'FACADE_IMPORT1'
+    READ_MEDIA_AUDIO = 'FACADE_IMPORT2'
 
 
 class Settings:
@@ -485,8 +486,9 @@ class MActivity(Context):
         return self
 
 
-class PythonActivity:
+class PythonActivity(MActivity):
     def __init__(self):
+        super().__init__()
         logger.debug("[MOCK] PythonActivity initialized")
 
     @staticmethod
@@ -517,6 +519,10 @@ class PackageManager:
     def PERMISSION_GRANTED(self):
         logger.debug("[MOCK] PackageManager.PERMISSION_GRANTED called")
         return 1
+    @property
+    def GET_PERMISSIONS(self):
+        logger.debug("[MOCK] PackageManager.GET_PERMISSIONS called")
+        return 0x00001000
 
 
 class KeyEvent:
@@ -686,7 +692,7 @@ class MediaMetadataRetriever:
     def __init__(self):
         logger.debug("[MOCK] MediaMetadataRetriever initialized")
 
-    def setDataSource(self, path):
+    def setDataSource(self, path=None, context=None, uri=None):
         logger.debug(f"[MOCK] MediaMetadataRetriever.setDataSource called with path={path}")
 
     def getEmbeddedPicture(self):
