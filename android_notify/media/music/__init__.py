@@ -497,7 +497,7 @@ class MediaNotification:
         # Until __setup_media_session runs, self.listener is still the listener
         # *class*; writing to it would mutate the class for every notification.
         # Setup copies self.on_next / self.on_previous into the instance itself.
-        if not isinstance(self.listener, type):
+        if self.listener is not None:
             if which_ == "next":
                 self.listener.next_music = callback
             else:

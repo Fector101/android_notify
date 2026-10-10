@@ -165,7 +165,6 @@ class SoundLoader(EventDispatcher):
         """Called by CompletionListener when the track reaches its end."""
         if not self.loop:
             self.state = "stop"
-        self._player_ready = False
         logger.debug("sound Dispatching: COMPLETE")
         self.dispatch("on_complete", self._player)
         if self.loop:
