@@ -313,7 +313,7 @@ def ask_audio_permission(callback=None, set_requesting_state=None):
     else:
         permissions = [Manifest.READ_MEDIA_AUDIO]
 
-    if not is_first_permission_ask("AUDIO_PERMISSION.txt") and not can_show_permission_request_popup(Manifest.POST_NOTIFICATIONS):
+    if not is_first_permission_ask("AUDIO_PERMISSION.txt") and not can_show_permission_request_popup(permissions[0]):
         logger.warning("""
         Permission to access audio has been denied permanently.
         This can happen when the user denies permission twice from the popup.

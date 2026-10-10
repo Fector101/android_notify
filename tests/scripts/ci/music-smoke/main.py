@@ -24,7 +24,7 @@ from kivy.clock import Clock
 from kivy.uix.label import Label
 
 from android_notify.media.music.helper import SoundLoader
-from android_notify.media.music import MediaSessionCallback, MusicNotification
+from android_notify.media.music import MediaSessionCallback, MediaNotification
 from android_notify.core import asks_permission_if_needed
 
 
@@ -74,15 +74,15 @@ class SmokeApp(App):
         self._built_printed = False
         self._first_play_printed = False
 
-        self.mn = MusicNotification(
+        self.sound = SoundLoader.load(tone_path)
+
+        self.mn = MediaNotification(
+            self.sound,
             on_next=lambda: print("MUSIC_SKIPPED: next", flush=True),
             on_previous=lambda: print("MUSIC_SKIPPED: prev", flush=True),
         )
         self.mn.setTitle("Smoke Test - android-notify")
         self.mn.setArtist("music notification")
-
-        self.sound = SoundLoader.load(tone_path)
-        self.mn.setSoundLoader(self.sound)
 
         self.sound.bind(state=self._on_state)
         # Wait for MediaPlayer.prepareAsync() to complete before

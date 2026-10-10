@@ -144,7 +144,8 @@ class SoundLoader(EventDispatcher):
                 logger.error(e)
             instance._player.release()
             instance._player = None
-            return instance._instance
+            instance._player_ready = False
+            return None
         # Keep strong refs to the Pyjnius proxies while MediaPlayer holds them,
         # otherwise garbage collection can drop the callbacks before they fire.
         instance._ready_listener = PlayerReadyListener(instance.on_player_ready)

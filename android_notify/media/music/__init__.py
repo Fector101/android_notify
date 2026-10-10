@@ -479,17 +479,29 @@ class MediaNotification:
         manager = get_notification_manager()
         manager.notify(self.notification_id, self.builder.build())
         self.already_built=1
-        # A build happened: consume any queued build request (see setSoundLoader).
+        # A build happened: consume any queued build request (see setMediaController).
         self._build_pending = False
 
-    def set_Next_and_Prev(self, new_next=None, new_prev=None):
-        """Tell the notification whether prev/next tracks exist around the current one."""
-        if new_next:
-            self.on_next = new_next
-            self.listener.next_music = self.on_next
-        if new_prev:
-            self.on_previous = new_prev
-            self.listener.prev_music = self.on_previous
+    def _set_skip_callback(self, which_, callback):
+        """Assign or clear a skip callback and keep the UI/session in sync.
+
+        A callback enables the matching notification action; an explicit None
+        removes it.
+        """
+
+        if which_ == "next":
+            self.on_next = callback
+        else:
+            self.on_previous = callback
+
+        # Until __setup_media_session runs, self.listener is still the listener
+        # *class*; writing to it would mutate the class for every notification.
+        # Setup copies self.on_next / self.on_previous into the instance itself.
+        if not isinstance(self.listener, type):
+            if which_ == "next":
+                self.listener.next_music = callback
+            else:
+                self.listener.prev_music = callback
 
         if not self.already_built or not self.mediaController:
             return
@@ -500,6 +512,14 @@ class MediaNotification:
             self._media_style.setShowActionsInCompactView(1 if self.on_previous else 0)
             self.builder.setStyle(self._media_style)
         self.refresh()
+
+    def setNext(self, callback):
+        """Set the Next-track callback, or clear it with an explicit None."""
+        self._set_skip_callback("next", callback)
+
+    def setPrev(self, callback):
+        """Set the Previous-track callback, or clear it with an explicit None."""
+        self._set_skip_callback("prev", callback)
 
     def showPauseIcon(self):
         logger.debug("showing pause icon")
@@ -586,7 +606,7 @@ class MediaNotification:
         if self.already_built:
             get_notification_manager().notify(self.notification_id,self.builder.build())
         else:
-            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MusicNotification.build_notification")
+            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MediaNotification.build_notification")
 
     def release(self):
         """Clean up resources when the app shuts down."""
