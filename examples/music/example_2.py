@@ -1,134 +1,58 @@
 """
-Complete music player app: scan device for audio files, play with notification controls.
+Complete music player app: scan MediaStore for audio, play with notification controls.
 =========================================================================================
 
 Features:
-- Scans device storage for audio files (.mp3, .m4a, .ogg, .wav, .flac, .aac)
+- Scans MediaStore (scoped storage) for audio tracks — no All Files Access needed
 - List view of all found tracks, tap to play
-- Prev / Next / Play / Pause with notification, lock screen & bluetooth controls
+- Prev / Next / Play / Pause with notification, lock screen & Bluetooth controls
 - Draggable seek bar synced with playback
 - Loop / Shuffle toggles
 - Auto-advance to next track on completion
 - Reads embedded album art for the notification
-- Requests All Files Access on Android 11+
 - Self-contained — paste into your Kivy project
 """
 
 import os
-import random
 import threading
-
-from kivy.app import App
-from kivy.clock import Clock, mainthread
-from kivy.metrics import dp
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.recycleboxlayout import RecycleBoxLayout
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.uix.slider import Slider
-from kivy.properties import BooleanProperty, StringProperty, NumericProperty
-from kivy.utils import platform
-from kivy.lang import Builder
-
+import traceback
 import logging
 
-from android_notify.media.music import MusicNotification
-from android_notify.media.music.helper import SoundLoader, requestAllFilesAccess
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.properties import BooleanProperty, StringProperty, NumericProperty
+from kivy.clock import Clock, mainthread
+
+from kivy.metrics import dp
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.slider import Slider
+
 from android_notify import logger as android_notify_logger
+from android_notify.config import on_android_platform, get_python_activity_context
+from android_notify.media.music import MediaNotification
+from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
+from android_notify.internal.permissions import is_music_permission_in_manifest
 
 android_notify_logger.setLevel(logging.INFO)
 logger = logging.getLogger("MusicApp")
 
 
-# --------------------------------------------------------------------------- #
-# Config
-# --------------------------------------------------------------------------- #
-AUDIO_EXTENSIONS = (".mp3", ".m4a", ".ogg", ".wav", ".flac", ".aac",)# ".opus")
-
-# Where to scan. On Android we try the most common public music dirs first,
-# then fall back to a broader scan. Add or remove roots to fit your needs.
-ANDROID_SCAN_ROOTS = [
-    "/storage/emulated/0/Music",
-    "/storage/emulated/0/Download",
-    "/storage/emulated/0/Downloads",
-    "/storage/emulated/0/Android/media",
-    "/sdcard/Music",
-    "/sdcard/Download",
-]
-
-# If nothing is found in the roots above, do a full scan of this root.
-# Set to None to disable the fallback (faster, but may miss files).
-ANDROID_FALLBACK_ROOT = "/storage/emulated/0"
-
-
-def _fmt(seconds):
-    """Seconds -> "mm:ss"."""
-    seconds = int(max(0, seconds))
-    return f"{seconds // 60:02d}:{seconds % 60:02d}"
-
-
-def scan_audio_files():
-    """Return a list of absolute paths to audio files found on the device.
-
-    Scans a set of well-known folders first; if nothing is found and a
-    fallback root is configured, does a broader walk. Silently skips
-    directories it can't read.
-    """
-    found = []
-    seen = set()
-
-    def add(path):
-        if path in seen:
-            return
-        seen.add(path)
-        found.append(path)
-
-    def walk(root):
-        for dirpath, dirnames, filenames in os.walk(root, onerror=lambda e: None):
-            # Skip common non-music directories to speed things up.
-            dirnames[:] = [
-                d for d in dirnames
-                if d not in (".thumbnails", "cache", "Cache", "Android/data", "obb")
-            ]
-            for name in filenames:
-                if name.lower().endswith(AUDIO_EXTENSIONS):
-                    add(os.path.join(dirpath, name))
-
-    roots = ANDROID_SCAN_ROOTS if platform == "android" else [
-        os.path.expanduser("~/Music"),
-        os.path.expanduser("~/Downloads"),
-    ]
-
-    for root in roots:
-        if os.path.isdir(root):
-            walk(root)
-
-    if not found and ANDROID_FALLBACK_ROOT and os.path.isdir(ANDROID_FALLBACK_ROOT):
-        logger.info("No audio in common folders, scanning %s ...", ANDROID_FALLBACK_ROOT)
-        walk(ANDROID_FALLBACK_ROOT)
-
-    found.sort(key=lambda p: os.path.basename(p).lower())
-    logger.info("Scan complete: %d tracks", len(found))
-    return found
-
-
-# --------------------------------------------------------------------------- #
-# RecycleView row for a single track
-# --------------------------------------------------------------------------- #
 class TrackRow(RecycleDataViewBehavior, BoxLayout):
     """One row in the track list. Tapping it sends `on_release` up to the
-    RecycleView, which forwards `selected_path` to the app."""
+    RecycleView, which forwards `selected_uri` to the app."""
     index = NumericProperty(0)
     filename = StringProperty("")
-    path = StringProperty("")
+    uri = StringProperty("")
     is_current = BooleanProperty(False)
 
     def refresh_view_attrs(self, rv, index, data):
         self.index = index
         self.filename = data.get("filename", "")
-        self.path = data.get("path", "")
+        self.uri = data.get("uri", "")
         self.is_current = data.get("is_current", False)
         return super().refresh_view_attrs(rv, index, data)
 
@@ -138,10 +62,9 @@ class TrackRow(RecycleDataViewBehavior, BoxLayout):
             while rv is not None and not isinstance(rv, RecycleView):
                 rv = rv.parent
             if rv is not None:
-                rv.select_track(self.path)
+                rv.select_track(self.uri)
             return True
         return super().on_touch_down(touch)
-
 
 Builder.load_string("""
 <TrackRow>:
@@ -175,65 +98,147 @@ Builder.load_string("""
         spacing: dp(1)
 """)
 
+if on_android_platform():
+    from jnius import autoclass
+else:
+    autoclass = None
+
+def _fmt(seconds):
+    """Seconds -> "mm:ss"."""
+    seconds = int(max(0, seconds))
+    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+def _basename_of_uri(uri):
+    """Best-effort human name for a content:// URI."""
+    try:
+        return os.path.basename(uri.rstrip("/"))
+    except Exception as error_requesting_uri:
+        logger.exception(f"_basename_of_uri failed: {error_requesting_uri}")
+        return uri
+
+def request_audio_permission(on_result=None):
+    """Ask for read access to audio only.
+
+    Android 13+ uses READ_MEDIA_AUDIO; older releases use READ_EXTERNAL_STORAGE.
+    Returns a plain-string status:
+    "desktop" | "missing_manifest" | "granted" | "requested" | "error".
+    """
+    if not on_android_platform():
+        return "desktop"
+
+    if not is_music_permission_in_manifest():
+        return "missing_manifest"
+
+    if MediaPermissionHandler.has_permission_to_access_audio_files():
+        logger.info("App already has permission to read audio")
+        return "granted"
+
+    try:
+        MediaPermissionHandler.ask_permission_to_access_audio_files(callback=on_result)
+    except Exception as error_requesting_audio_permission:
+        logger.exception("request_audio_permissions failed: %s", error_requesting_audio_permission)
+        traceback.print_exc()
+        return "error"
+
+    return "requested"
+
+def scan_audio_files():
+    """Return track dicts from MediaStore using scoped storage.
+
+    The restricted '_data' (file path) column is intentionally NOT requested;
+    on Android 10+ it needs All Files Access. The content:// URI built from the
+    MediaStore '_id' is the correct handle for scoped storage.
+
+    Each item: {"uri", "title", "artist", "duration"(ms), "filename"}.
+
+    """
+    if not on_android_platform():
+        return []
+
+    context = get_python_activity_context()
+    if not context:
+        logger.error("scan_audio_files: no activity context")
+        return []
+    resolver = context.getContentResolver()
+    uri = autoclass("android.provider.MediaStore$Audio$Media").EXTERNAL_CONTENT_URI
+    projection = ["_id", "title", "artist", "duration"]
+    cursor = resolver.query(uri, projection, None, None, None)
+    tracks = []
+
+    if cursor:
+        title_idx = cursor.getColumnIndex("title")
+        artist_idx = cursor.getColumnIndex("artist")
+        duration_idx = cursor.getColumnIndex("duration")
+        id_idx = cursor.getColumnIndex("_id")
+        while cursor.moveToNext():
+            media_id = cursor.getLong(id_idx)
+            title = cursor.getString(title_idx) or "(unknown title)"
+            tracks.append(
+                {
+                    "uri": f"content://media/external/audio/media/{media_id}",
+                    "title": title,
+                    "artist": cursor.getString(artist_idx) or "",
+                    "duration": cursor.getLong(duration_idx),
+                    "filename": title,
+                }
+            )
+        cursor.close()
+    tracks.sort(key=lambda track: track["filename"].lower())
+    logger.info("Scan complete: %d tracks", len(tracks))
+    return tracks
+
 
 class TrackList(RecycleView):
     def __init__(self, on_track_selected, **kwargs):
         super().__init__(**kwargs)
         self.on_track_selected = on_track_selected
 
-    def select_track(self, path):
-        self.on_track_selected(path)
+    def select_track(self, uri):
+        self.on_track_selected(uri)
 
-    def set_tracks(self, paths, current_path=None):
+    def set_tracks(self, tracks, current_uri=None):
         self.data = [
             {
-                "filename": os.path.basename(p),
-                "path": p,
-                "is_current": p == current_path,
+
+                "filename": track.get("filename") or track.get("title") or "",
+                "uri": track["uri"],
+                "is_current": track["uri"] == current_uri,
             }
-            for p in paths
+            for track in tracks
         ]
 
-    def mark_current(self, current_path):
+    def mark_current(self, current_uri):
         for item in self.data:
-            item["is_current"] = (item["path"] == current_path)
+            item["is_current"] = (item["uri"] == current_uri)
         self.refresh_from_data()
 
 
-# --------------------------------------------------------------------------- #
-# Root UI
-# --------------------------------------------------------------------------- #
 class MusicPlayerRoot(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", padding=dp(10), spacing=dp(8), **kwargs)
 
-        # --- state ---------------------------------------------------------
-        self.tracks = []             # list[str] absolute paths
-        self.current_index = -1      # index into self.tracks
+        self.tracks = []  # list[dict] MediaStore track info
+        self.current_index = -1  # index into self.tracks
         self.sound = None
         self.notification = None
         self._tick = None
         self._seeking = False
         self._pending_seek = None
-        self.loop_track = False      # repeat one
-        self.shuffle = False
+        self.loop_track = False  # repeat one
         self._scan_in_progress = False
+        self._rescan_pending = False
+        self._permission_status = None
 
-        # --- top bar: scan + shuffle + loop --------------------------------
+        # --- top bar: scan + loop --------------------------------
         top = BoxLayout(size_hint_y=None, height=dp(48), spacing=dp(8))
 
         self.scan_btn = Button(text="Scan device")
         self.scan_btn.bind(on_release=lambda *_: self.scan_device())
         top.add_widget(self.scan_btn)
 
-        self.shuffle_btn = Button(text="Shuffle: OFF")
-        self.shuffle_btn.bind(on_release=lambda *_: self.toggle_shuffle())
-        top.add_widget(self.shuffle_btn)
-
         self.loop_btn = Button(text="Loop: OFF")
         self.loop_btn.bind(on_release=lambda *_: self.toggle_loop())
         top.add_widget(self.loop_btn)
-
         self.add_widget(top)
 
         # --- now playing label ---------------------------------------------
@@ -247,14 +252,16 @@ class MusicPlayerRoot(BoxLayout):
         self.add_widget(self.now_playing)
 
         # --- track list ----------------------------------------------------
-        self.track_list = TrackList(on_track_selected=self.play_track_by_path)
+        self.track_list = TrackList(on_track_selected=self.play_track_by_uri)
         self.add_widget(self.track_list)
 
         # --- seek bar ------------------------------------------------------
         self.seek_bar = Slider(min=0, max=1, value=0)
-        self.seek_bar.bind(on_touch_down=self._on_seek_touch_down)
-        self.seek_bar.bind(on_touch_up=self._on_seek_touch_up)
-        self.seek_bar.bind(on_value=lambda *_: self._on_seek_value_changed())
+        self.seek_bar.bind(
+            on_touch_down=self._on_seek_touch_down,
+            on_touch_up=self._on_seek_touch_up,
+            on_value=lambda *_: self._on_seek_value_changed()
+        )
         self.add_widget(self.seek_bar)
 
         self.time_label = Label(text="00:00 / 00:00", size_hint_y=None, height=dp(28))
@@ -275,31 +282,41 @@ class MusicPlayerRoot(BoxLayout):
         self.next_btn = Button(text="Next")
         self.next_btn.bind(on_release=lambda *_: self.next_track())
         controls.add_widget(self.next_btn)
-
         self.add_widget(controls)
 
         self.status_label = Label(text="Tap 'Scan device' to find music", size_hint_y=None, height=dp(24))
         self.add_widget(self.status_label)
 
-    # ------------------------------------------------------------------ #
-    # Scanning                                                             #
-    # ------------------------------------------------------------------ #
     def scan_device(self):
         if self._scan_in_progress:
             return
         self._scan_in_progress = True
         self.scan_btn.disabled = True
         self.status_label.text = "Scanning..."
+        # Don't block the scan when permission is absent: public audio still shows.
+        self._permission_status = request_audio_permission(on_result=self._on_audio_permission_result)
+        self._perform_scan()
 
+    def _perform_scan(self):
         def worker():
             try:
                 tracks = scan_audio_files()
-            except Exception:
-                logger.exception("scan failed")
+            except Exception as e:
+                logger.exception(f"scan failed:{e}")
                 tracks = []
             self._on_scan_done(tracks)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    @mainthread
+    def _on_audio_permission_result(self, granted):
+        # Fresh grant: the running scan only saw public audio, so scan again.
+        if not granted:
+            return
+        if self._scan_in_progress:
+            self._rescan_pending = True
+        else:
+            self.scan_device()
 
     @mainthread
     def _on_scan_done(self, tracks):
@@ -307,49 +324,68 @@ class MusicPlayerRoot(BoxLayout):
         self.scan_btn.disabled = False
         self.tracks = tracks
         self.track_list.set_tracks(tracks)
-        if tracks:
+
+        if self._permission_status == "missing_manifest":
+            self.status_label.text = (
+                "Audio permission missing from buildozer.spec "
+                "(android.permissions=... READ_MEDIA_AUDIO) - showing public audio only"
+            )
+        elif tracks:
             self.status_label.text = f"Found {len(tracks)} track(s)"
         else:
-            self.status_label.text = "No audio files found - check storage permission"
+            self.status_label.text = "No audio files found - grant audio permission and rescan"
 
-    # ------------------------------------------------------------------ #
-    # Playback control                                                     #
-    # ------------------------------------------------------------------ #
-    def play_track_by_path(self, path):
-        try:
-            self.current_index = self.tracks.index(path)
-        except ValueError:
-            # File not in our list (shouldn't happen), just load it directly.
-            self.tracks.append(path)
+        if self._rescan_pending:
+            self._rescan_pending = False
+            self.scan_device()
+
+    def play_track_by_uri(self, uri):
+
+        for index, track in enumerate(self.tracks):
+            if track["uri"] == uri:
+                self.current_index = index
+                break
+        else:
+            # Track not in our list (shouldn't happen), just load it directly.
+            self.tracks.append(
+                {
+                    "uri": uri,
+                    "title": _basename_of_uri(uri),
+                    "artist": "",
+                    "duration": 0,
+                    "filename": _basename_of_uri(uri),
+                }
+            )
             self.current_index = len(self.tracks) - 1
         self.load_current()
 
     def load_current(self):
         if not (0 <= self.current_index < len(self.tracks)):
             return
-        path = self.tracks[self.current_index]
+
+        track = self.tracks[self.current_index]
+        uri = track["uri"]
+        title = track.get("title") or _basename_of_uri(uri)
 
         # Release previous player/notification first (SoundLoader is a singleton).
         self._release_player()
 
-        requestAllFilesAccess()
-
-        notification = MusicNotification(
-            on_next=self.next_track,
-            on_previous=self.previous_track,
-        )
-        notification.setTitle(os.path.splitext(os.path.basename(path))[0])
-        notification.setArtist("Unknown Artist")
-
-        sound = SoundLoader.load(path)
+        # Track titles/artists come from MediaStore metadata (no file path needed).
+        sound = SoundLoader.load(uri)
         sound.loop = self.loop_track
         sound.bind(on_load=self._on_loaded)
         sound.bind(on_complete=self._on_track_finished)
         sound.bind(state=self._on_state_changed)
         self.sound = sound
 
-        notification.setSoundLoader(sound)
-        notification.set_skip_available(self._has_next(), self._has_prev())
+        notification = MediaNotification(
+            sound,
+            on_next=self.next_track,
+            on_previous=self.previous_track,
+        )
+        notification.setTitle(str(title))
+        notification.setArtist(track.get("artist") or "Unknown Artist")
+
         self.notification = notification
 
         # Reset seek bar
@@ -358,10 +394,9 @@ class MusicPlayerRoot(BoxLayout):
         self._pending_seek = None
         self._seeking = False
         self.time_label.text = "00:00 / 00:00"
-
-        self.now_playing.text = f"Loading: {os.path.basename(path)}"
+        self.now_playing.text = f"Loading: {title}"
         self.status_label.text = f"Track {self.current_index + 1} / {len(self.tracks)}"
-        self.track_list.mark_current(path)
+        self.track_list.mark_current(uri)
 
     def _release_player(self):
         self._stop_ticker()
@@ -369,14 +404,15 @@ class MusicPlayerRoot(BoxLayout):
             try:
                 self.sound.stop()
                 self.sound.unload()
-            except Exception:
-                logger.exception("error releasing sound")
+            except Exception as e:
+                logger.exception(f"error releasing sound: {e}")
             self.sound = None
         if self.notification is not None:
             try:
                 self.notification.release()
-            except Exception:
-                logger.exception("error releasing notification")
+            except Exception as e:
+                logger.exception(f"error releasing notification: {e}")
+
             self.notification = None
 
     @mainthread
@@ -385,32 +421,12 @@ class MusicPlayerRoot(BoxLayout):
         self.seek_bar.max = max(duration, 1)
         self.seek_bar.value = 0
         self._pending_seek = None
-
         self.sound.play()
 
-        # Use embedded title/artist if available so notification is nicer.
-        self._apply_metadata_from_file()
-
-        self.now_playing.text = os.path.basename(self.sound.source)
-
-    def _apply_metadata_from_file(self):
-        """Read ID3 tags for title/artist if the tags library is available."""
-        try:
-            from mutagen import File as MutagenFile  # optional dependency
-        except Exception:
-            return
-        try:
-            tags = MutagenFile(self.sound.source, easy=True)
-            if not tags:
-                return
-            title = (tags.get("title") or [None])[0]
-            artist = (tags.get("artist") or [None])[0]
-            if title:
-                self.notification.setTitle(title)
-            if artist:
-                self.notification.setArtist(artist)
-        except Exception:
-            logger.exception("failed reading tags")
+        if 0 <= self.current_index < len(self.tracks):
+            self.now_playing.text = self.tracks[self.current_index].get("title") or _basename_of_uri(self.sound.source)
+        else:
+            self.now_playing.text = _basename_of_uri(self.sound.source)
 
     def toggle_play_pause(self):
         if self.sound is None:
@@ -462,9 +478,6 @@ class MusicPlayerRoot(BoxLayout):
             self.seek_bar.value = min(pos, self.seek_bar.max)
         self.time_label.text = f"{_fmt(pos)} / {_fmt(length)}"
 
-    # ------------------------------------------------------------------ #
-    # Seek bar                                                             #
-    # ------------------------------------------------------------------ #
     def _on_seek_touch_down(self, slider, touch):
         if slider.collide_point(*touch.pos):
             self._seeking = True
@@ -492,39 +505,28 @@ class MusicPlayerRoot(BoxLayout):
         length = self.sound.length or 0
         self.time_label.text = f"{_fmt(target)} / {_fmt(length)}"
         try:
-            self.sound.seek(target)   # SoundLoader.seek takes seconds
-        except Exception:
-            logger.exception("seek failed")
+            self.sound.seek(target)  # SoundLoader.seek takes seconds
+        except Exception as e:
+            logger.exception(f"seek failed: {e}")
             self._pending_seek = None
 
-    # ------------------------------------------------------------------ #
-    # Track changes                                                        #
-    # ------------------------------------------------------------------ #
     def _has_next(self):
-        if self.shuffle:
-            return len(self.tracks) > 1
         return self.current_index + 1 < len(self.tracks) or self.loop_track
 
     def _has_prev(self):
-        if self.shuffle:
-            return len(self.tracks) > 1
         return self.current_index > 0
 
     def next_track(self):
         if not self.tracks:
             return
-        if self.shuffle and len(self.tracks) > 1:
-            choices = [i for i in range(len(self.tracks)) if i != self.current_index]
-            self.current_index = random.choice(choices)
+        if self.current_index + 1 < len(self.tracks):
+            self.current_index += 1
+        elif self.loop_track:
+            # loop one is handled by the player, but keep index consistent
+            pass
         else:
-            if self.current_index + 1 < len(self.tracks):
-                self.current_index += 1
-            elif self.loop_track:
-                # loop one is handled by the player, but keep index consistent
-                pass
-            else:
-                # End of list - stop at the last track
-                return
+            # End of list - stop at the last track
+            return
         self.load_current()
 
     def previous_track(self):
@@ -534,10 +536,7 @@ class MusicPlayerRoot(BoxLayout):
         if self.sound is not None and self.sound.get_pos() > 3:
             self._perform_seek(0)
             return
-        if self.shuffle and len(self.tracks) > 1:
-            choices = [i for i in range(len(self.tracks)) if i != self.current_index]
-            self.current_index = random.choice(choices)
-        elif self.current_index > 0:
+        if self.current_index > 0:
             self.current_index -= 1
         else:
             return
@@ -553,9 +552,7 @@ class MusicPlayerRoot(BoxLayout):
             self._reset_seek_ui()
             return
         # Auto-advance
-        if self.shuffle and len(self.tracks) > 1:
-            self.next_track()
-        elif self.current_index + 1 < len(self.tracks):
+        if self.current_index + 1 < len(self.tracks):
             self.next_track()
         else:
             # Last track, stop
@@ -570,26 +567,13 @@ class MusicPlayerRoot(BoxLayout):
         length = (self.sound.length if self.sound else 0) or 0
         self.time_label.text = f"00:00 / {_fmt(length)}"
 
-    # ------------------------------------------------------------------ #
-    # Toggles                                                              #
-    # ------------------------------------------------------------------ #
     def toggle_loop(self):
         self.loop_track = not self.loop_track
         if self.sound is not None:
             self.sound.loop = self.loop_track
         self.loop_btn.text = f"Loop: {'ON' if self.loop_track else 'OFF'}"
-        if self.notification is not None:
-            self.notification.set_skip_available(self._has_next(), self._has_prev())
 
-    def toggle_shuffle(self):
-        self.shuffle = not self.shuffle
-        self.shuffle_btn.text = f"Shuffle: {'ON' if self.shuffle else 'OFF'}"
-        if self.notification is not None:
-            self.notification.set_skip_available(self._has_next(), self._has_prev())
-
-    # ------------------------------------------------------------------ #
-    # Lifecycle                                                            #
-    # ------------------------------------------------------------------ #
+    # Lifecycle
     def cleanup(self):
         self._release_player()
 

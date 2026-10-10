@@ -5,7 +5,7 @@ from typing import Optional
 from android_notify.internal.logger import logger
 from android_notify.config import on_android_platform, get_python_activity_context, get_package_name, \
     get_notification_manager, on_flet_app
-from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory
+from android_notify.internal.java_classes import autoclass, cast,Intent, PendingIntent, BuildVersion, String, BitmapFactory, Uri
 from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
 from android_notify.internal.channels import create_channel
@@ -65,7 +65,6 @@ if on_android_platform():
         else:
             logger.error(e)
             traceback.print_exc()
-
 else:
     from android_notify.internal.facade import (
         NotificationCompatBuilder, R_drawable,
@@ -167,10 +166,10 @@ class MediaSessionListener(PythonJavaClass):
             logger.warning("No prev music callback was found")
 
 
-# Users media_controller instance needs to fulfill, This my current easiest idea for an interface in python
+# Users media_controller_instance needs to fulfill, This my current easiest idea for an interface in python
 class IMediaController:
-    def __init__(self,media_controller):
-        self.instance = media_controller
+    def __init__(self,media_controller_instance):
+        self.instance = media_controller_instance
 
     @property
     def source(self):
@@ -533,7 +532,10 @@ class MediaNotification:
         elif music_path:
             try:
                 retriever = MediaMetadataRetriever()
-                retriever.setDataSource(music_path)
+                if str(music_path).startswith("content://"):
+                    retriever.setDataSource(self.context, Uri.parse(music_path))
+                else:
+                    retriever.setDataSource(music_path)
                 art_bytes = retriever.getEmbeddedPicture()
                 if art_bytes:
                     bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
