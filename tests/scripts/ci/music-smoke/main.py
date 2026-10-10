@@ -75,6 +75,10 @@ class SmokeApp(App):
         self._first_play_printed = False
 
         self.sound = SoundLoader.load(tone_path)
+        if self.sound is None:
+            print("MUSIC_LOAD_FAILED", flush=True)
+            self.stop()
+            return
 
         self.mn = MediaNotification(
             self.sound,
