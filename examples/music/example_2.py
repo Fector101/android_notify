@@ -37,7 +37,7 @@ from android_notify.media.music import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
 
-android_notify_logger.setLevel(logging.INFO)
+android_notify_logger.setLevel(logging.DEBUG)
 logger = logging.getLogger("MusicApp")
 
 
@@ -366,27 +366,25 @@ class MusicPlayerRoot(BoxLayout):
         track = self.tracks[self.current_index]
         uri = track["uri"]
         title = track.get("title") or _basename_of_uri(uri)
-
+        artist = track.get("artist") or "Unknown Artist"
         # Release previous player/notification first (SoundLoader is a singleton).
         self._release_player()
 
         # Track titles/artists come from MediaStore metadata (no file path needed).
-        sound = SoundLoader.load(uri)
-        sound.loop = self.loop_track
-        sound.bind(on_load=self._on_loaded)
-        sound.bind(on_complete=self._on_track_finished)
-        sound.bind(state=self._on_state_changed)
-        self.sound = sound
-
-        notification = MediaNotification(
-            sound,
-            on_next=self.next_track,
-            on_previous=self.previous_track,
+        self.sound = SoundLoader.load(uri)
+        self.sound.loop = self.loop_track
+        self.sound.bind(
+            on_load=self._on_loaded,
+            on_complete=self._on_track_finished,
+            state=self._on_state_changed
         )
-        notification.setTitle(str(title))
-        notification.setArtist(track.get("artist") or "Unknown Artist")
 
-        self.notification = notification
+        if not self.notification:
+            self.init_notification(title,artist)
+        else:
+            self.notification.setTitle(str(title))
+            self.notification.setArtist(artist)
+            self.notification.setMediaController(self.sound)
 
         # Reset seek bar
         self.seek_bar.max = 1

@@ -238,10 +238,8 @@ class IMediaController:
         return self.instance.state
 
 
-
-
 class MediaNotification:
-    _instance = None
+    _instance = None # MediaNotification
     listener = None # MediaSessionListener
 
     def __new__(cls, *args, **kwargs):
@@ -250,7 +248,10 @@ class MediaNotification:
         return cls._instance
 
     def __init__(self, mediaController, on_next=None, on_previous = None):
+        self.on_next = on_next
+        self.on_previous = on_previous
         if getattr(self, "_initialized", False):
+            self.setMediaController(mediaController)
             return
 
         self.mediaController = None # In kivy media_controller instance can be SoundLoader
@@ -326,7 +327,7 @@ class MediaNotification:
         # If a build was deferred while the MediaSession was being created,
         # finish it now that the session exists.
         if self._build_pending and self.mediaController is not None:
-            self.__build_if_media_session_setup_is_done()
+            self.runBuild()
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
@@ -392,7 +393,7 @@ class MediaNotification:
             self._showPlayIcon()
         return None
 
-    def __build_if_media_session_setup_is_done(self):
+    def runBuild(self,*args, **kwargs):
         """Build the notification now, or defer once the MediaSession exists.
 
         _build_notification bails out when the MediaSession isn't created yet;
@@ -410,14 +411,27 @@ class MediaNotification:
             self._build_pending = True
 
     def setMediaController(self, sound_load_instance: object) -> None:
+        if self.mediaController and not on_flet_app():
+            try:
+                self.mediaController.instance.unbind(
+                    state=self._parse_state,
+                    on_load=self.runBuild,
+                    on_seek=self.syncMediaSession
+                )
+            except Exception as failed_to_unbind_from_value:
+                logger.error(failed_to_unbind_from_value)
+                traceback.print_exc()
+
         self.mediaController = IMediaController(sound_load_instance)
         try:
             if not on_flet_app():
                 self.mediaController.instance.bind(
                     state=self._parse_state,
-                    on_load=lambda instance,v: self.__build_if_media_session_setup_is_done(),
-                    on_seek=lambda _,pos: self.syncMediaSession()
+                    on_load=lambda instance,v: self.runBuild,
+                    on_seek=lambda _,pos: self.syncMediaSession
                 )
+            else:
+                logger.warning("On Flet use: runBuild, setState and syncMediaSession to control when media is loaded, play/pause/seek by users hand\n Android auto updates `Seek` no need to poll, only call when pos changed by in-app action")
         except Exception as failed_to_bind_to_value:
             logger.error(failed_to_bind_to_value)
             traceback.print_exc()
@@ -426,7 +440,7 @@ class MediaNotification:
         # has already fired and will never fire again - build now instead.
         # Or synchronous kivy SoundLoader
         if not self.already_built and _sound_is_loaded(sound_load_instance):
-            self.__build_if_media_session_setup_is_done()
+            self.runBuild()
 
     def _build_notification(self, is_playing):
         """Fully builds and dispatches the media notification.
@@ -566,7 +580,7 @@ class MediaNotification:
                 logger.exception(error_getting_art_bytes)
                 traceback.print_exc()
 
-    def syncMediaSession(self):
+    def syncMediaSession(self, *args, **kwargs):
         """
         This syncs notification Slider position and buttons with current Media state
         This method doesn't require polling, that's auto handled by Android
