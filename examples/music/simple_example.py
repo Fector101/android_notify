@@ -136,8 +136,7 @@ class TestApp(App):
     def load_track(self):
         track = self.tracks[self.current_index]
 
-        # Release the previous player/notification first (SoundLoader is a singleton).
-        self.cleanup()
+        self._release_sound()
 
         sound = SoundLoader.load(track["uri"])
         if sound is None:
@@ -171,11 +170,15 @@ class TestApp(App):
             self.current_index -= 1
             self.load_track()
 
-    def cleanup(self):
+    def _release_sound(self):
         if self.sound is not None:
             self.sound.stop()
             self.sound.unload()
             self.sound = None
+
+    def cleanup(self):
+        """Full teardown (app shutdown only)."""
+        self._release_sound()
         if self.notification is not None:
             self.notification.release()
             self.notification = None

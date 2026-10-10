@@ -179,10 +179,7 @@ class MusicPlayerRoot(BoxLayout):
             return
         track = self.tracks[self.current_index]
 
-        # Release the previous track/notification first: SoundLoader is a
-        # singleton, so a new load would otherwise leak the old MediaPlayer,
-        # and the previous notification's callbacks/session would stay active.
-        self.cleanup()
+        self._release_sound()
 
         sound = SoundLoader.load(track["uri"])
         if sound is None:
@@ -214,8 +211,8 @@ class MusicPlayerRoot(BoxLayout):
         self.sound.play()
         self.status_label.text = f"Playing:\n{self.tracks[self.current_index]['title']}"
 
-    def cleanup(self):
-        """Release everything (call it from App.on_stop)."""
+    def _release_sound(self):
+        """Stop and drop the current player, keeping the notification/session."""
         self.stop_ticker()
         if self.sound is not None:
             try:
@@ -224,6 +221,10 @@ class MusicPlayerRoot(BoxLayout):
             except Exception as error:
                 print("cleanup error:", error)
             self.sound = None
+
+    def cleanup(self):
+        """Full teardown (call it from App.on_stop)."""
+        self._release_sound()
         if self.notification is not None:
             self.notification.release()
             self.notification = None

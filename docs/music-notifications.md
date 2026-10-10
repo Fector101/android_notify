@@ -78,7 +78,10 @@ from android_notify.internal.permissions import is_music_permission_in_manifest
 
 # 1) Make sure the permission is declared in buildozer.spec.
 if not is_music_permission_in_manifest():
-    raise RuntimeError("add READ_MEDIA_AUDIO to android.permissions")
+    raise RuntimeError(
+        "add READ_MEDIA_AUDIO (Android 13+) / READ_EXTERNAL_STORAGE "
+        "(Android 12 and below) to android.permissions"
+    )
 
 # 2) Check / request runtime access.
 if not MediaPermissionHandler.has_permission_to_access_audio_files():
@@ -116,8 +119,11 @@ def scan_audio_files():
         cursor.close()
     return tracks
 
-track = scan_audio_files()[0]
-sound = SoundLoader.load(track["uri"])
+tracks = scan_audio_files()
+if tracks:
+    sound = SoundLoader.load(tracks[0]["uri"])
+else:
+    sound = None  # no audio found - show an empty state instead
 ```
 
 ```{note}
@@ -239,4 +245,4 @@ refreshes the bound controller and skip callbacks and rebuilds the notification.
 - `setNext(callback)` / `setPrev(callback)` - set the next/previous track callbacks; an explicit `None` clears the matching action. Buttons and the `MediaSession` actions follow the registered callbacks.
 - `syncMediaSession()` - sync the seek bar and playback state (called automatically).
 - `refresh()` - re-post the built notification.
-- `release()` - clean up the `MediaSession` (call it in `App.on_stop()`).
+- `release()` - final teardown of the shared `MediaSession` (call it once in `App.on_stop()`). `MediaNotification` is a singleton that reuses one `MediaSession` for the whole app, so don't release between tracks - only the `SoundLoader` is swapped per track.

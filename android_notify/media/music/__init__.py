@@ -634,10 +634,20 @@ class MediaNotification:
             logger.warning("Can't refresh notification because it doesn't have Base parameters created in MediaNotification._build_notification")
 
     def release(self):
-        """Clean up resources when the app shuts down."""
+        """Clean up resources when the app shuts down.
+
+        Final teardown: call it once from ``App.on_stop()``. ``MediaNotification``
+        is a singleton that keeps a single ``MediaSession`` for the whole app and
+        intentionally does not recreate it on later constructions, so releasing
+        between tracks would leave the next track with a dead session (controls
+        and lock-screen stop working). Only the sound player is swapped per track.
+        """
         if self.session:
             self.session.setActive(False)
             self.session.release()
+        self.session = None
+        self.listener = None
+        self.already_built = False
 
 
 def isMediaPlaying(media_controller_instance):
