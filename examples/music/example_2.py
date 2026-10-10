@@ -398,6 +398,15 @@ class MusicPlayerRoot(BoxLayout):
         self.status_label.text = f"Track {self.current_index + 1} / {len(self.tracks)}"
         self.track_list.mark_current(uri)
 
+    def init_notification(self, title, artist):
+        self.notification = MediaNotification(
+            mediaController=self.sound,
+            on_next=self.next_track,
+            on_previous=self.previous_track,
+        )
+        self.notification.setTitle(title)
+        self.notification.setArtist(artist)
+
     def _release_player(self):
         self._stop_ticker()
         if self.sound is not None:
@@ -407,13 +416,6 @@ class MusicPlayerRoot(BoxLayout):
             except Exception as e:
                 logger.exception(f"error releasing sound: {e}")
             self.sound = None
-        if self.notification is not None:
-            try:
-                self.notification.release()
-            except Exception as e:
-                logger.exception(f"error releasing notification: {e}")
-
-            self.notification = None
 
     @mainthread
     def _on_loaded(self, *_):
@@ -576,6 +578,12 @@ class MusicPlayerRoot(BoxLayout):
     # Lifecycle
     def cleanup(self):
         self._release_player()
+        if self.notification is not None:
+            try:
+                self.notification.release()
+            except Exception as e:
+                logger.exception(f"error releasing notification: {e}")
+            self.notification = None
 
 
 class MusicPlayerApp(App):

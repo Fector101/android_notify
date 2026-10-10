@@ -123,7 +123,7 @@ class MediaSessionListener(PythonJavaClass):
     @java_method('()V')
     def onPlay(self):
         logger.debug("nEventListener - PLAY EVENT RECEIVED")
-        # _active_music_notification.showPauseIcon() # comment out because bound mediaController play event to notification, leaving this comment for future reference when implement on Flet Apps
+        # _active_music_notification._showPauseIcon() # comment out because bound mediaController play event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.play_music:
             self.play_music()
         else:
@@ -132,7 +132,7 @@ class MediaSessionListener(PythonJavaClass):
     @java_method('()V')
     def onPause(self):
         logger.debug("nEventListener - PAUSE EVENT RECEIVED")
-        # _active_music_notification.showPlayIcon() # comment out because bound mediaController pause event to notification, leaving this comment for future reference when implement on Flet Apps
+        # _active_music_notification._showPlayIcon() # comment out because bound mediaController pause event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.pause_music:
             self.pause_music()
         else:
@@ -241,9 +241,18 @@ class IMediaController:
 
 
 class MediaNotification:
-    listener = MediaSessionListener # so users can switch listener Class if needed
+    _instance = None
+    listener = None # MediaSessionListener
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self, mediaController, on_next=None, on_previous = None):
+        if getattr(self, "_initialized", False):
+            return
+
         self.mediaController = None # In kivy media_controller instance can be SoundLoader
 
         self.already_built = False
@@ -273,13 +282,14 @@ class MediaNotification:
             self.context = get_python_activity_context()
             self.builder = NotificationCompatBuilder(self.context, self.channel_id)
             try:
-                if self.context is not None: # lint
-                    # Run init on Android's UI thread (required by MediaSession)
-                    runnable = AndroidRunnable(self.__setup_media_session)
-                    self.context.runOnUiThread(runnable)
+                # Run init on Android's UI thread (required by MediaSession)
+                runnable = AndroidRunnable(self.__setup_media_session)
+                self.context.runOnUiThread(runnable)
             except Exception as error_setting_controls:
                 logger.error(error_setting_controls)
                 traceback.print_exc()
+        self._initialized = True
+
 
     def __setup_media_session(self):
         """
@@ -297,7 +307,7 @@ class MediaNotification:
 
         # Wire the Java callback (MediaSessionCallback) to the Python MediaSessionListener
         if MediaSessionCallback:
-            self.listener = self.listener()
+            self.listener = MediaSessionListener()
             self.listener.play_music = self.mediaController.play
             self.listener.pause_music = self.mediaController.pause
             self.listener.seek_music = self.mediaController.seek
@@ -316,7 +326,7 @@ class MediaNotification:
         # If a build was deferred while the MediaSession was being created,
         # finish it now that the session exists.
         if self._build_pending and self.mediaController is not None:
-            self._build_or_defer()
+            self.__build_if_media_session_setup_is_done()
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
@@ -377,28 +387,15 @@ class MediaNotification:
             return None
 
         if state == 'play':
-            self.showPauseIcon()
+            self._showPauseIcon()
         elif state in ('pause', 'stop'):
-            self.showPlayIcon()
+            self._showPlayIcon()
         return None
 
-    @staticmethod
-    def _sound_is_loaded(sound):
-        """True if the sound's on_load has already fired (player is ready)."""
-        if getattr(sound, "_player_ready", False): # _player_ready android notify custom loader
-            return True
-        try:
-            # Plain Kivy Sound: length is only available once loaded.
-            return bool(getattr(sound, "length", 0))
-        except Exception as error_getting_length_value:
-            logger.error(error_getting_length_value)
-            traceback.print_exc()
-            return False
-
-    def _build_or_defer(self):
+    def __build_if_media_session_setup_is_done(self):
         """Build the notification now, or defer once the MediaSession exists.
 
-        build_notification bails out when the MediaSession isn't created yet;
+        _build_notification bails out when the MediaSession isn't created yet;
         queue the build so __setup_media_session retries it as soon as the
         session is ready.
         """
@@ -406,9 +403,9 @@ class MediaNotification:
             if self.mediaController:
                 is_playing = isMediaPlaying(self.mediaController)
             else:
-                logger.debug("No media controller available, notification not built.")
+                logger.error("No media controller available, notification not built.")
                 return
-            self.build_notification(is_playing=is_playing)
+            self._build_notification(is_playing=is_playing)
         else:
             self._build_pending = True
 
@@ -418,18 +415,20 @@ class MediaNotification:
             if not on_flet_app():
                 self.mediaController.instance.bind(
                     state=self._parse_state,
-                    on_load=lambda instance,v: self._build_or_defer(),
+                    on_load=lambda instance,v: self.__build_if_media_session_setup_is_done(),
                     on_seek=lambda _,pos: self.syncMediaSession()
                 )
         except Exception as failed_to_bind_to_value:
             logger.error(failed_to_bind_to_value)
             traceback.print_exc()
+
         # If the sound was already loaded when we bound to it, it's on_load
         # has already fired and will never fire again - build now instead.
-        if not self.already_built and self._sound_is_loaded(sound_load_instance):
-            self._build_or_defer()
+        # Or synchronous kivy SoundLoader
+        if not self.already_built and _sound_is_loaded(sound_load_instance):
+            self.__build_if_media_session_setup_is_done()
 
-    def build_notification(self, is_playing):
+    def _build_notification(self, is_playing):
         """Fully builds and dispatches the media notification.
 
         This is a "heavy" operation - it rebuilds the entire notification
@@ -441,6 +440,8 @@ class MediaNotification:
         if self.session is None:
             logger.error("MediaSession not initialized.")
             return
+
+        print("_build_notification")
 
         length_of_song = self.mediaController.length
         song_position = self.mediaController.get_pos()
@@ -481,6 +482,7 @@ class MediaNotification:
         self.already_built=1
         # A build happened: consume any queued build request (see setMediaController).
         self._build_pending = False
+        print("done _build_notification")
 
     def _set_skip_callback(self, which_, callback):
         """Assign or clear a skip callback and keep the UI/session in sync.
@@ -521,14 +523,14 @@ class MediaNotification:
         """Set the Previous-track callback, or clear it with an explicit None."""
         self._set_skip_callback("prev", callback)
 
-    def showPauseIcon(self):
+    def _showPauseIcon(self):
         logger.debug("showing pause icon")
         self._format_buttons()
         # On Android 13+, MediaSession playback state needs sync to display buttons properly
         self.syncMediaSession()
         self.refresh()
 
-    def showPlayIcon(self):
+    def _showPlayIcon(self):
         logger.debug("showing play icon")
         self._format_buttons()
         # On Android 13+, MediaSession playback state needs sync to display buttons properly
@@ -606,7 +608,7 @@ class MediaNotification:
         if self.already_built:
             get_notification_manager().notify(self.notification_id,self.builder.build())
         else:
-            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MediaNotification.build_notification")
+            logger.warning("Can't refresh notification because it doesn't have Base parameters created in MediaNotification._build_notification")
 
     def release(self):
         """Clean up resources when the app shuts down."""
@@ -619,3 +621,16 @@ def isMediaPlaying(media_controller_instance):
     Checks if media state is equivalent to "play"
     """
     return media_controller_instance.state == "play"
+
+def _sound_is_loaded(sound):
+    """True if the sound's on_load has already fired (player is ready)."""
+    if hasattr(sound,"_player_ready") and getattr(sound, "_player_ready", False): # _player_ready android notify custom loader
+        return True
+    try:
+        logger.debug('running kivy default soundLoader')
+        # Plain Kivy Sound: length is only available once loaded.
+        return bool(getattr(sound, "length", 0))
+    except Exception as error_getting_length_value:
+        logger.error(error_getting_length_value)
+        traceback.print_exc()
+        return False
