@@ -733,3 +733,4 @@ def _sound_is_loaded(sound):
         logger.error(error_getting_length_value)
         traceback.print_exc()
         return False
+
