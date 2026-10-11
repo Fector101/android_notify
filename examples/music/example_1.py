@@ -4,7 +4,8 @@ Example 1: a small music player with a media notification
 
 The middle example: a compact player you can paste into a Kivy project. It
 shows the notification's transport controls (play / pause, prev / next) plus a
-Repeat toggle, auto-advance at the end of a track and a time readout. For the
+Repeat toggle, auto-advance at the end of a track, a time readout and an
+in-app, level-colored log panel fed by ``install_kivy_log_handler()``. For the
 absolute minimum see ``simple_example.py``; for a full app with a track list,
 seek bar, album art and shuffle see ``example_2.py``.
 
@@ -34,7 +35,6 @@ from kivy.metrics import dp, sp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.widget import Widget
 import logging
 
 from android_notify.media.music import MediaNotification
@@ -42,8 +42,12 @@ from android_notify.media.music.helper import SoundLoader, MediaPermissionHandle
 from android_notify.internal.permissions import is_music_permission_in_manifest
 from android_notify.config import on_android_platform, get_python_activity_context
 from android_notify import logger as android_notify_logger
+from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
 android_notify_logger.setLevel(logging.DEBUG)
+
+# On-screen log panel: the handler forwards LogRecords into the panel below.
+_LOG_HANDLER = install_kivy_log_handler()
 
 if on_android_platform():
     from jnius import autoclass
@@ -102,7 +106,7 @@ class MusicPlayerRoot(BoxLayout):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(orientation="vertical", padding=dp(12), spacing=dp(8), **kwargs)
+        super().__init__(orientation="vertical", padding=[dp(12),dp(50)], spacing=dp(8), **kwargs)
 
         self.sound = None
         self.notification = None
@@ -132,9 +136,6 @@ class MusicPlayerRoot(BoxLayout):
         )
         self.add_widget(self.now_playing)
 
-        # Flexible gap so the controls sit near the bottom instead of filling.
-        self.add_widget(Widget())
-
         self.time_label = Label(text="00:00 / 00:00", size_hint_y=None, height=dp(22), font_size=sp(14))
         self.add_widget(self.time_label)
 
@@ -154,6 +155,10 @@ class MusicPlayerRoot(BoxLayout):
 
         self.status_label = Label(text="Scan for music to begin", size_hint_y=None, height=dp(22), font_size=sp(13))
         self.add_widget(self.status_label)
+
+        # In-app log panel; takes the remaining space at the bottom.
+        self.log_panel = LogPanel(handler=_LOG_HANDLER, size_hint_y=1)
+        self.add_widget(self.log_panel)
 
     def _btn(self, text, callback):
         button = Button(text=text)
@@ -260,6 +265,8 @@ class MusicPlayerRoot(BoxLayout):
         if self.notification is not None:
             self.notification.release()
             self.notification = None
+        for name in ("", "android_notify"):
+            logging.getLogger(name).removeHandler(_LOG_HANDLER)
 
     # ------------------------------------------------------------------ #
     # Play / pause / state                                                #
