@@ -18,6 +18,8 @@ The notification does not depend on `SoundLoader` directly. It works against any
 
 `SoundLoader` already implements this, so most apps can use it as-is. Pass a Kivy `Sound` (or any wrapper) to use a different player - just keep the contract above.
 
+If your controller is **not** a Kivy `EventDispatcher` (or does not expose `state` and `on_seek` events), the notification skips event binding and falls back to the manual sync described in [Controllers that don't dispatch events](#controllers-that-dont-dispatch-events).
+
 ```{note}
 The music module is Android + Kivy only (it builds on `pyjnius` and Kivy's `EventDispatcher`). It does not run on desktop.
 ```
@@ -45,10 +47,11 @@ the media buttons do nothing.
 
 `SoundLoader.load()` accepts either an absolute file path or a `content://` URI.
 
-Some files load with **no runtime permission at all**. The built-in sounds in
-the internal-storage `Ringtones`, `Notifications` and `Alarms` folders (and
-under `/system/media/audio/...`) play by absolute path on a device that has not
-been granted the audio permission - verified on a real device:
+Playing audio **requires the audio read permission**: `READ_MEDIA_AUDIO` on
+Android 13+, `READ_EXTERNAL_STORAGE` on Android 12 and below. This applies to
+external-storage files too - including `Ringtones`, `Notifications` and `Alarms`
+under `/storage/emulated/0/...`. Without it, `SoundLoader.load()` fails with
+`Couldn't open asset`:
 
 ```python
 sound = SoundLoader.load("/storage/emulated/0/Ringtones/my_ringtone.ogg")
@@ -60,11 +63,8 @@ resolver and everything else (like the path above) straight to the file. Pass
 `use_path=True` only if a real file path happens to start with `content://`.
 ```
 
-To play and enumerate **the user's own music** - files other apps created in
-`Music/`, `Download/` and the like - you need the read-audio permission:
-`READ_MEDIA_AUDIO` on Android 13+, `READ_EXTERNAL_STORAGE` on Android 12 and
-below. Add both - plus `POST_NOTIFICATIONS` for the notification itself - to
-`buildozer.spec`:
+Declare both permissions - plus `POST_NOTIFICATIONS` for the notification itself
+- in `buildozer.spec`:
 
 ```ini
 android.permissions = POST_NOTIFICATIONS, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), READ_MEDIA_AUDIO
@@ -137,9 +137,9 @@ never walk the filesystem yourself. On a real device the query above returned
 Don't request the `_data` (file path) column: it is restricted on Android 10+,
 so read tracks through the `content://` URI built from `_id` instead. Also avoid
 `MANAGE_EXTERNAL_STORAGE` ("All files access") - it is a restricted permission
-under Google Play policy. Absolute paths to built-in sounds (ringtone/alarm
-files) load without the permission, but the `content://` route is the portable
-one for the user's own library.
+under Google Play policy. Absolute paths work too, but they still require the
+audio permission and are less portable across devices than the `content://`
+route built from `_id`.
 ```
 
 ## Minimal example
@@ -160,7 +160,8 @@ from kivy.uix.button import Button
 from android_notify.media.music import MediaNotification
 from android_notify.media.music.helper import SoundLoader
 
-# A built-in ringtone: loads by absolute path without any runtime permission.
+# An external-storage ringtone. Reading it needs the audio permission (see
+# "Reading audio files"); otherwise the load fails with "Couldn't open asset".
 TRACK = "/storage/emulated/0/Ringtones/my_ringtone.ogg"
 
 
@@ -220,6 +221,64 @@ Ready-to-run variants live in the repository under `examples/music/`:
 - `examples/music/simple_example.py` - load + play only.
 - `examples/music/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
 - `examples/music/example_2.py` - MediaStore-based player with scoped-storage scan, permission handling and a track list.
+- `examples/music/plain_controller_example.py` - a Kivy `SoundLoader` wrapped in a plain controller that does not dispatch events, demonstrating `syncPlaybackState()`.
+
+## Controllers that don't dispatch events
+
+`SoundLoader` is a Kivy `EventDispatcher`, so it emits `state`, `on_load` and
+`on_seek` and the notification updates itself automatically. A plain object that
+only fulfills the `IMediaController` contract, however, has no events to bind to.
+In that case the notification:
+
+- still routes its own play / pause / seek / next / previous buttons into your
+  controller, and refreshes itself after a transport button press;
+- will **not** notice playback changes your own code makes (e.g. a play button in
+  your UI) unless you tell it.
+
+Call `syncPlaybackState()` whenever your code changes playback on a
+non-dispatching controller. Call it once after the player becomes ready too, so
+the notification gets built:
+
+```python
+from android_notify.media.music import MediaNotification
+
+class MyPlayer:
+    def __init__(self):
+        self.source = "/storage/emulated/0/Ringtones/my_ringtone.ogg"
+        self.state = "stop"
+        self.length = 0.0
+        self._pos = 0.0
+        # ... start your own audio backend here ...
+
+    def play(self):
+        self.state = "play"
+        # ... start the backend, then tell the notification:
+        self.notification.syncPlaybackState()
+
+    def pause(self):
+        self.state = "pause"
+        self.notification.syncPlaybackState()
+
+    def seek(self, seconds):
+        self._pos = seconds
+        self.notification.syncPlaybackState()
+
+    def get_pos(self):
+        return self._pos
+
+
+player = MyPlayer()
+player.notification = MediaNotification(player)
+# once your backend is ready:
+player.notification.syncPlaybackState()
+```
+
+```{note}
+`syncMediaSession()` is the lower-level call that only updates the seek bar and
+playback state; `syncPlaybackState()` additionally flips the play/pause icon and
+builds the notification if it hasn't been built yet. Prefer `syncPlaybackState()`
+for plain controllers.
+```
 
 ## `SoundLoader` reference
 
@@ -234,6 +293,11 @@ Ready-to-run variants live in the repository under `examples/music/`:
 - `sound.unload()` - release the MediaPlayer.
 - Events: `on_load`, `on_play`, `on_pause`, `on_stop`, `on_seek`, `on_complete`.
 
+After a track ends, `get_pos()` and `length` report the finished duration without
+querying the underlying `MediaPlayer` (which is leaving the playback state and
+would raise `IllegalStateException`). React to `on_complete` to advance instead
+of polling position on the `stop` transition.
+
 ## `MediaNotification` reference
 
 `MediaNotification` is a singleton too: constructing it again for a new track
@@ -241,8 +305,9 @@ refreshes the bound controller and skip callbacks and rebuilds the notification.
 
 - `MediaNotification(mediaController, on_next=None, on_previous=None)` - create the notification and bind a media controller (e.g. a `SoundLoader`); pass callbacks for the skip buttons.
 - `setTitle(text)` / `setArtist(text)` - track metadata (also shown on the lock screen).
-- `setMediaController(media_controller)` - bind or replace the media controller; wires state/load/seek updates to the notification automatically. Builds on `on_load`, or immediately if the controller is already loaded. Re-binding the same controller instance is a no-op (no duplicate handlers).
+- `setMediaController(media_controller)` - bind or replace the media controller; wires state/load/seek updates to the notification automatically when the controller dispatches them. Builds on `on_load`, or immediately if the controller is already loaded. Re-binding the same controller instance is a no-op (no duplicate handlers). For a plain controller without those events, see [Controllers that don't dispatch events](#controllers-that-dont-dispatch-events).
 - `setNext(callback)` / `setPrev(callback)` - set the next/previous track callbacks; an explicit `None` clears the matching action. Buttons and the `MediaSession` actions follow the registered callbacks.
 - `syncMediaSession()` - sync the seek bar and playback state (called automatically).
+- `syncPlaybackState()` - flip the play/pause icon, sync the seek bar and build the notification if needed. Call it after your own code changes playback on a controller that does not dispatch `state`/`on_seek` events.
 - `refresh()` - re-post the built notification.
 - `release()` - final teardown of the shared `MediaSession` (call it once in `App.on_stop()`). `MediaNotification` is a singleton that reuses one `MediaSession` for the whole app, so don't release between tracks - only the `SoundLoader` is swapped per track.

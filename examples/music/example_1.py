@@ -1,31 +1,40 @@
 """
-Standalone example: media notification for music playback
+Example 1: a small music player with a media notification
 =========================================================
 
-``android_notify.media.music.MediaNotification``:
+The middle example: a compact player you can paste into a Kivy project. It
+shows the notification's transport controls (play / pause, prev / next) plus a
+Repeat toggle, auto-advance at the end of a track and a time readout. For the
+absolute minimum see ``simple_example.py``; for a full app with a track list,
+seek bar, album art and shuffle see ``example_2.py``.
 
-- Play / pause controls on the notification, lock screen and quick settings are auto bound to SoundLoader.
-- The seek bar progress moves while playing and can be dragged to seek, no app-side polling of the notification needed.
-- Prev / next buttons that appear only when a neighbouring track exists
-  (``setNext`` / ``setPrev``).
+The two objects that matter, wired in ``load_current``:
+
+- ``SoundLoader`` - the player. It emits ``state`` / ``on_load`` / ``on_complete``
+  so the notification can follow playback without any polling.
+- ``MediaNotification`` - registers the MediaSession and builds the Android
+  media notification around the player. Play / pause / seek / prev / next from
+  the notification, lock screen or a headset come back into ``SoundLoader``.
 
 Tracks are read from MediaStore with scoped storage (``content://`` URIs), so
 the app needs ``READ_MEDIA_AUDIO`` (Android 13+) / ``READ_EXTERNAL_STORAGE``
-(Android 12 and below) — no All Files Access. Add the permissions (plus
+(Android 12 and below) - no All Files Access. Add the permissions (plus
 ``POST_NOTIFICATIONS`` for the notification) to buildozer.spec:
 
     android.permissions = POST_NOTIFICATIONS, (name=android.permission.READ_EXTERNAL_STORAGE;maxSdkVersion=32), READ_MEDIA_AUDIO
 
-Paste this file into your own project (it is self-contained)
+Paste this file into your own project (it is self-contained).
 """
 
 import threading
 
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.metrics import dp, sp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.widget import Widget
 import logging
 
 from android_notify.media.music import MediaNotification
@@ -93,7 +102,7 @@ class MusicPlayerRoot(BoxLayout):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(orientation="vertical", padding=20, spacing=12, **kwargs)
+        super().__init__(orientation="vertical", padding=dp(12), spacing=dp(8), **kwargs)
 
         self.sound = None
         self.notification = None
@@ -102,26 +111,48 @@ class MusicPlayerRoot(BoxLayout):
         self._tick = None
         self.loop_enabled = True
 
+        # Top bar: Scan + Repeat side by side, kept small on purpose.
+        top = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
         self.scan_btn = self._btn("Scan device", self.scan_device)
-        self.add_widget(self.scan_btn)
+        top.add_widget(self.scan_btn)
+        self.repeat_btn = self._btn("Repeat: ON", self.toggle_loop)
+        self.repeat_btn.size_hint_x = None
+        self.repeat_btn.width = dp(120)
+        top.add_widget(self.repeat_btn)
+        self.add_widget(top)
 
-        nav = BoxLayout(size_hint_y=None, height=48, spacing=6)
+        # Current track title.
+        self.now_playing = Label(
+            text="Nothing playing",
+            size_hint_y=None,
+            height=dp(36),
+            font_size=sp(18),
+            shorten=True,
+            shorten_from="right",
+        )
+        self.add_widget(self.now_playing)
+
+        # Flexible gap so the controls sit near the bottom instead of filling.
+        self.add_widget(Widget())
+
+        self.time_label = Label(text="00:00 / 00:00", size_hint_y=None, height=dp(22), font_size=sp(14))
+        self.add_widget(self.time_label)
+
+        # Transport controls share one row rather than stretching full width.
+        nav = BoxLayout(size_hint_y=None, height=dp(52), spacing=dp(10), padding=(dp(20), 0))
         self.prev_btn = self._btn("Prev", self.previous_track)
+        self.prev_btn.size_hint_x = 0.3
         nav.add_widget(self.prev_btn)
         self.play_btn = self._btn("Play", self.toggle_play_pause)
+        self.play_btn.size_hint_x = 0.4
         self.play_btn.disabled = True
         nav.add_widget(self.play_btn)
         self.next_btn = self._btn("Next", self.next_track)
+        self.next_btn.size_hint_x = 0.3
         nav.add_widget(self.next_btn)
         self.add_widget(nav)
 
-        self.repeat_btn = self._btn("Repeat: ON", self.toggle_loop)
-        self.add_widget(self.repeat_btn)
-
-        self.time_label = Label(text="00:00 / 00:00", size_hint_y=None, height=48)
-        self.add_widget(self.time_label)
-
-        self.status_label = Label(text="Scan for music to begin", size_hint_y=None)
+        self.status_label = Label(text="Scan for music to begin", size_hint_y=None, height=dp(22), font_size=sp(13))
         self.add_widget(self.status_label)
 
     def _btn(self, text, callback):
@@ -204,12 +235,13 @@ class MusicPlayerRoot(BoxLayout):
         notification.setArtist(track["artist"] or "Unknown Artist")
         self.notification = notification
 
-        self.status_label.text = f"Loading:\n{track['title']}"
+        self.now_playing.text = f"Loading: {track['title']}"
+        self.status_label.text = f"Track {self.current_index + 1} / {len(self.tracks)}"
 
     def on_loaded(self, *_):
         """MediaPlayer is ready -> start playing (fires on_load)."""
         self.sound.play()
-        self.status_label.text = f"Playing:\n{self.tracks[self.current_index]['title']}"
+        self.now_playing.text = self.tracks[self.current_index]["title"]
 
     def _release_sound(self):
         """Stop and drop the current player, keeping the notification/session."""
@@ -274,16 +306,18 @@ class MusicPlayerRoot(BoxLayout):
     def on_track_finished(self, *_):
         """Fired once per track-end by SoundLoader's completion listener.
 
-        SoundLoader automatically restarts the track (seek 0 + play) when
-        ``loop`` is True, so we only have to decide what happens in each mode.
+        With ``Repeat: ON`` the current track repeats: SoundLoader restarts it
+        (seek 0 + play), so we only snap the readout back to 00:00. With repeat
+        off we advance to the next track, or stop at the end of the queue.
         """
+        if self.loop_enabled:
+            # Repeat the current track; the player restart is already handled.
+            self.snap_to_zero()
+            return
         if self.current_index + 1 < len(self.tracks):
             self.next_track()
-        elif self.loop_enabled:
-            # Restart is already handled -> snap the UI back to 00:00.
-            self.snap_to_zero()
         else:
-            # "Play once": stop at the beginning of the track.
+            # "Play once": stop at the beginning of the last track.
             self.sound.seek(0)
             self.sound.state = "pause"   # syncs the play button + notification
             self.snap_to_zero()
