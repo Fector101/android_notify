@@ -122,18 +122,18 @@ class MediaSessionListener(PythonJavaClass):
     @java_method('()V')
     def onPlay(self):
         logger.debug("nEventListener - PLAY EVENT RECEIVED")
-        # _active_music_notification._showPauseIcon() # comment out because bound mediaController play event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.play_music:
             self.play_music()
+            _sync_notification_without_events()
         else:
             logger.error("No play music callback was found")
 
     @java_method('()V')
     def onPause(self):
         logger.debug("nEventListener - PAUSE EVENT RECEIVED")
-        # _active_music_notification._showPlayIcon() # comment out because bound mediaController pause event to notification, leaving this comment for future reference when implement on Flet Apps
         if self.pause_music:
             self.pause_music()
+            _sync_notification_without_events()
         else:
             logger.error("No pause music callback was found")
 
@@ -163,6 +163,20 @@ class MediaSessionListener(PythonJavaClass):
             self.prev_music()
         else:
             logger.warning("No prev music callback was found")
+
+
+def _sync_notification_without_events():
+    """Refresh the notification after a transport button, for plain controllers.
+
+    Controllers that dispatch ``state`` already update the notification from
+    their own events (synchronously), so this is a no-op for them.
+    """
+    if _active_music_notification is None:
+        return
+    bound = getattr(_active_music_notification, "_bound_instance", None)
+    if bound is None or _controller_dispatches_events(bound):
+        return
+    _active_music_notification.syncPlaybackState()
 
 
 # Users media_controller_instance needs to fulfill, This my current easiest idea for an interface in python
@@ -418,28 +432,38 @@ class MediaNotification:
         # same object. Re-binding it would stack duplicate handlers; skip the
         # bind/unbind dance unless the controller instance actually changed.
         if previously_bound is not None and previously_bound is not sound_load_instance:
-            try:
-                previously_bound.unbind(
-                    state=self._parse_state,
-                    on_load=self._build_if_media_session_setup_is_done,
-                    on_seek=self.syncMediaSession
-                )
-            except Exception as failed_to_unbind_old_controller:
-                logger.error(failed_to_unbind_old_controller)
-                traceback.print_exc()
+            if _controller_dispatches_events(previously_bound):
+                try:
+                    previously_bound.unbind(
+                        state=self._parse_state,
+                        on_load=self._build_if_media_session_setup_is_done,
+                        on_seek=self.syncMediaSession
+                    )
+                except Exception as failed_to_unbind_old_controller:
+                    logger.error(failed_to_unbind_old_controller)
+                    traceback.print_exc()
 
         self._bound_instance = sound_load_instance
         self.mediaController = IMediaController(sound_load_instance)
-        try:
-            if not on_flet_app() and previously_bound is not sound_load_instance:
-                self.mediaController.instance.bind(
-                    state=self._parse_state,
-                    on_load=self._build_if_media_session_setup_is_done,
-                    on_seek=self.syncMediaSession
+        # Only wire Kivy events when the controller actually emits them. Plain
+        # controllers (not a Kivy EventDispatcher, or missing state/on_seek) are
+        # driven by the MediaSessionListener callbacks and syncPlaybackState().
+        if not on_flet_app() and previously_bound is not sound_load_instance:
+            if _controller_dispatches_events(sound_load_instance):
+                try:
+                    self.mediaController.instance.bind(
+                        state=self._parse_state,
+                        on_load=self._build_if_media_session_setup_is_done,
+                        on_seek=self.syncMediaSession
+                    )
+                except Exception as failed_to_bind_to_value:
+                    logger.error(failed_to_bind_to_value)
+                    traceback.print_exc()
+            else:
+                logger.debug(
+                    f"{type(sound_load_instance).__name__} does not dispatch state/on_seek; "
+                    "the notification will rely on transport callbacks and syncPlaybackState()."
                 )
-        except Exception as failed_to_bind_to_value:
-            logger.error(failed_to_bind_to_value)
-            traceback.print_exc()
 
         # A changed controller means the MediaSession listener still points its
         # play/pause/seek callbacks at the old adapter - move them over.
@@ -626,6 +650,24 @@ class MediaNotification:
         self.session.setPlaybackState(state_builder.build())
         return None
 
+    def syncPlaybackState(self):
+        """Refresh the notification for a controller whose playback changed.
+
+        Controllers that dispatch ``state``/``on_seek`` (e.g. ``SoundLoader``)
+        update the notification automatically. Call this after your own code
+        starts, pauses or seeks a media controller that does not dispatch those
+        events - including once when your custom player becomes ready, so the
+        notification can be built.
+        """
+        if self.mediaController is None:
+            return None
+        if not self.already_built:
+            if _sound_is_loaded(self._bound_instance):
+                self._build_if_media_session_setup_is_done()
+            return None
+        self._parse_state(None, self.mediaController.state)
+        return None
+
     def refresh(self):
         """Refresh the notification."""
         if self.already_built:
@@ -655,6 +697,28 @@ def isMediaPlaying(media_controller_instance):
     Checks if media state is equivalent to "play"
     """
     return media_controller_instance.state == "play"
+
+
+def _controller_dispatches_events(instance) -> bool:
+    """True when a controller can emit the Kivy events the notification binds to.
+
+    A controller that is not a Kivy ``EventDispatcher`` (or that lacks ``state``
+    and ``on_seek`` events) cannot drive the notification through bindings. Those
+    controllers are updated by the MediaSessionListener callbacks and by an
+    explicit ``MediaNotification.syncPlaybackState()`` call instead.
+    """
+    if not (hasattr(instance, "bind") and hasattr(instance, "dispatch")):
+        return False
+    try:
+        # Kivy's EventDispatcher.events() only lists the declared __events__
+        # (the "on_*" names). Property events such as "state" are NOT in the
+        # event stack - they live in properties(). Check both, otherwise a
+        # real EventDispatcher would look like it dispatches nothing.
+        events = set(instance.events())
+        props = set(instance.properties().keys())
+    except Exception:
+        return False
+    return "state" in props and "on_seek" in events
 
 
 def _sound_is_loaded(sound):
