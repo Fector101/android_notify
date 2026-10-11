@@ -221,10 +221,12 @@ class SoundLoader(EventDispatcher):
                 player.start()
             except _JAVA_ERRORS as error:
                 logger.debug(f"loop restart unavailable: {error}")
+                self._completed = True # self.seek mutates this to False
 
     def on_player_error(self, what, extra):
         """Called by ErrorListener so player errors don't fake a completion."""
-        logger.debug(f"player error: what={what} extra={extra}")
+        logger.error(f"player error: what={what} extra={extra}")
+        self.state = "stop"
 
     def get_pos(self):
         """Get current playback position in seconds."""

@@ -29,6 +29,10 @@ Caveats of Kivy's SoundLoader:
 - there is no ``on_complete`` event, so this minimal demo does not auto-advance.
 """
 
+# An audio file path on the device. Reading it needs the audio permission, which
+# is requested after the UI is up (see _start_after_ui). Swap for any file path.
+TRACK = "/storage/emulated/0/Ringtones/test.mp3"
+
 import logging
 
 from kivy.app import App
@@ -38,11 +42,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.slider import Slider
-from kivy.core.audio_output import SoundLoader as KivySoundLoader
+try:
+    from kivy.core.audio_output import SoundLoader as KivySoundLoader
+except ModuleNotFoundError:
+    from kivy.core.audio import SoundLoader
 
-# On-screen logging is installed before android_notify is imported so the panel
-# also captures its import-time logs. The kivy logger keeps its INFO level to
-# avoid flooding the terminal with Kivy debug output.
+
 from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
 _LOG_HANDLER = install_kivy_log_handler()
@@ -50,9 +55,6 @@ _LOG_HANDLER = install_kivy_log_handler()
 from android_notify.media.music import MediaNotification
 from android_notify.media.music.helper import MediaPermissionHandler
 
-# An audio file path on the device. Reading it needs the audio permission, which
-# is requested after the UI is up (see _start_after_ui). Swap for any file path.
-TRACK = "/storage/emulated/0/Ringtones/test.mp3"
 
 logger = logging.getLogger("PlainControllerExample")
 
