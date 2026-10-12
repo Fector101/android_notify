@@ -45,7 +45,7 @@ from kivy.uix.slider import Slider
 try:
     from kivy.core.audio_output import SoundLoader as KivySoundLoader
 except ModuleNotFoundError:
-    from kivy.core.audio import SoundLoader
+    from kivy.core.audio import SoundLoader as KivySoundLoader
 
 
 from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
