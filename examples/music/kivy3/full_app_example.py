@@ -524,11 +524,13 @@ class PlainPlayerRoot(BoxLayout):
         self.notification.syncPlaybackState()
 
     def toggle_play_pause(self):
-        if self.controller is None or self.controller.source is None:
+        if self.controller is None:
             # Nothing loaded yet - play the first track if we have any.
             if self.tracks and self.current_index < 0:
                 self.current_index = 0
                 self.load_current()
+            return
+        if self.controller.source is None:
             return
         if self.controller.state == "play":
             self.controller.pause()
@@ -647,7 +649,7 @@ class PlainPlayerRoot(BoxLayout):
         self.time_label.text = f"{_fmt(self.seek_bar.value)} / {_fmt(length)}"
 
     def _perform_seek(self, seconds):
-        if self.controller is None:
+        if self.controller is None or self.controller.source is None:
             return
         target = float(max(0.0, seconds))
         self._pending_seek = target
