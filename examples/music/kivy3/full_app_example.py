@@ -53,7 +53,7 @@ from kivy.uix.slider import Slider
 try:
     from kivy.core.audio_output import SoundLoader as KivySoundLoader
 except ModuleNotFoundError:
-    from kivy.core.audio import SoundLoader
+    from kivy.core.audio import SoundLoader as KivySoundLoader
 
 from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
@@ -524,7 +524,7 @@ class PlainPlayerRoot(BoxLayout):
         self.notification.syncPlaybackState()
 
     def toggle_play_pause(self):
-        if self.controller is None:
+        if self.controller is None or self.controller.source is None:
             # Nothing loaded yet - play the first track if we have any.
             if self.tracks and self.current_index < 0:
                 self.current_index = 0
