@@ -22,6 +22,11 @@ except:
 if on_android_platform():
     from jnius import autoclass, PythonJavaClass, java_method, jnius
 
+    # Raised by pyjnius when the underlying Java object is in an invalid
+    # lifecycle state (e.g. calling getCurrentPosition() on a player that has
+    # completed, stopped or been released).
+    _JAVA_ERRORS = (jnius.JavaException,)
+
     MediaPlayer = autoclass('android.media.MediaPlayer')
     class PlayerReadyListener(PythonJavaClass):
         __javainterfaces__ = ['android/media/MediaPlayer$OnPreparedListener']
@@ -49,6 +54,23 @@ if on_android_platform():
         @java_method('(Landroid/media/MediaPlayer;)V')
         def onCompletion(self, mp):
             self.on_player_complete()
+
+
+    class ErrorListener(PythonJavaClass):
+        __javainterfaces__ = ['android/media/MediaPlayer$OnErrorListener']
+        __javacontext__ = 'app'
+
+        def __init__(self, on_player_error):
+            super().__init__()
+            self.on_player_error = on_player_error
+
+        # noinspection PyUnusedLocal
+        @java_method('(Landroid/media/MediaPlayer;II)Z')
+        def onError(self, mp, what, extra):
+            self.on_player_error(what, extra)
+            # Returning True marks the error as handled; otherwise Android
+            # routes it into OnCompletionListener, which would fake a track end.
+            return True
 else:
     class MediaPlayer:
         def setDataSource(self,path=None,context=None,uri=None):
@@ -56,6 +78,8 @@ else:
         def setOnPreparedListener(self,callback):
             pass
         def setOnCompletionListener(self,callback):
+            pass
+        def setOnErrorListener(self,callback):
             pass
         def prepareAsync(self):
             pass
@@ -81,13 +105,23 @@ else:
 
     class CompletionListener:
         pass
+
+    class ErrorListener:
+        pass
     PythonJavaClass = object
     java_method = lambda signature: (lambda func: func)  # Dummy decorator for non-Android platforms
+    _JAVA_ERRORS = (Exception,)
 
 class SoundLoader(EventDispatcher):
     _instance = None
     _player = None
     _player_ready = False
+    # Set while the track is at its end (PlaybackCompleted). Reading position or
+    # duration from a MediaPlayer in that transition can raise
+    # java.lang.IllegalStateException, so we serve the last known duration
+    # instead of touching the JVM. Cleared on load/ready/play/seek.
+    _completed = False
+    _duration = 0.0
     source = ''
     callback = None
     state = ObjectProperty('stop')
@@ -128,6 +162,8 @@ class SoundLoader(EventDispatcher):
         else:
             logger.info(f"audio source: {os.path.abspath(source)}")
         instance._player_ready = False
+        instance._completed = False
+        instance._duration = 0.0
         instance._player = MediaPlayer()
         try:
             if not use_path and str(source).startswith("content://"):
@@ -150,26 +186,47 @@ class SoundLoader(EventDispatcher):
         # otherwise garbage collection can drop the callbacks before they fire.
         instance._ready_listener = PlayerReadyListener(instance.on_player_ready)
         instance._completion_listener = CompletionListener(instance.on_player_complete)
+        instance._error_listener = ErrorListener(instance.on_player_error)
         instance._player.setOnPreparedListener(instance._ready_listener)
         instance._player.setOnCompletionListener(instance._completion_listener)
+        instance._player.setOnErrorListener(instance._error_listener)
         instance._player.prepareAsync()
         return instance._instance
 
     def on_player_ready(self):
         """Called by PlayerReadyListener when MediaPlayer is ready."""
         self._player_ready = True
+        self._completed = False
         logger.debug("on_load dispatched")
         self.dispatch("on_load",'')
 
     def on_player_complete(self):
         """Called by CompletionListener when the track reaches its end."""
+        player = self._player
+        if player is None:
+            return
+        self._completed = True
         if not self.loop:
             self.state = "stop"
         logger.debug("sound Dispatching: COMPLETE")
-        self.dispatch("on_complete", self._player)
-        if self.loop:
+        self.dispatch("on_complete", player)
+        # A listener (e.g. an auto-advance handler) may have loaded the next
+        # track during the dispatch, swapping/releasing this player. Only
+        # auto-restart the player that actually completed; touching the fresh
+        # not-yet-prepared player would error and (with no OnErrorListener)
+        # be routed back into onCompletion, causing an endless COMPLETE loop.
+        if self.loop and self._player is player and self._player_ready:
             self.seek(0)
-            self._player.start()
+            try:
+                player.start()
+            except _JAVA_ERRORS as error:
+                logger.debug(f"loop restart unavailable: {error}")
+                self._completed = True # self.seek mutates this to False
+
+    def on_player_error(self, what, extra):
+        """Called by ErrorListener so player errors don't fake a completion."""
+        logger.error(f"player error: what={what} extra={extra}")
+        self.state = "stop"
 
     def get_pos(self):
         """Get current playback position in seconds."""
@@ -177,10 +234,22 @@ class SoundLoader(EventDispatcher):
             logger.warning("Warning player is not ready... get_pos")
             return 0.0
 
-        raw = self._player.getCurrentPosition() / 1000.0
-        pos = raw
+        if self._completed:
+            # Track reached its end; report the last known duration instead of
+            # querying a MediaPlayer that is leaving the playback state.
+            return self._duration
 
-        duration = self._player.getDuration() / 1000.0
+        try:
+            raw = self._player.getCurrentPosition() / 1000.0
+            duration = self._player.getDuration() / 1000.0
+        except _JAVA_ERRORS as error:
+            # Player stopped/released between our readiness check and the call;
+            # report the last known duration instead of crashing.
+            logger.debug(f"get_pos unavailable at this lifecycle point: {error}")
+            return self._duration
+
+        self._duration = duration
+        pos = raw
         if pos < 0:
             pos = 0
         elif 0 < duration < pos:
@@ -194,7 +263,12 @@ class SoundLoader(EventDispatcher):
         if not self._player or not self._player_ready:
             logger.warning("Warning player is not ready... no play")
             return None
-        self._player.start()
+        try:
+            self._player.start()
+        except _JAVA_ERRORS as error:
+            logger.debug(f"play unavailable at this lifecycle point: {error}")
+            return None
+        self._completed = False
         self.state = 'play'
         logger.debug("sound dispatching: PLAY")
         self.dispatch("on_play",self._player)
@@ -205,7 +279,11 @@ class SoundLoader(EventDispatcher):
         if not self._player or not self._player_ready:
             logger.warning("Warning player is not ready... no pause")
             return None
-        self._player.pause()
+        try:
+            self._player.pause()
+        except _JAVA_ERRORS as error:
+            logger.debug(f"pause unavailable at this lifecycle point: {error}")
+            return None
         self.state = 'pause'
         logger.debug("sound dispatching: PAUSE")
         self.dispatch("on_pause",self._player)
@@ -214,7 +292,11 @@ class SoundLoader(EventDispatcher):
     def stop(self):
         if not self._player:
             return
-        self._player.stop()
+        try:
+            self._player.stop()
+        except _JAVA_ERRORS as error:
+            logger.debug(f"stop unavailable at this lifecycle point: {error}")
+            return
         self.state = 'stop'
 
     def _get_length(self):
@@ -222,14 +304,27 @@ class SoundLoader(EventDispatcher):
             logger.warning("Warning player is not ready... no _get_length")
             return None
 
-        return self._player.getDuration() / 1000.0
+        if self._completed:
+            return self._duration
+
+        try:
+            self._duration = self._player.getDuration() / 1000.0
+            return self._duration
+        except _JAVA_ERRORS as error:
+            logger.debug(f"_get_length unavailable at this lifecycle point: {error}")
+            return self._duration
 
     def seek(self, position):
         """Seek to a position (sec = seconds from start)."""
         if not self._player or not self._player_ready:
             logger.warning("Warning player is not ready...no seek")
             return None
-        self._player.seekTo(int(position * 1000))
+        try:
+            self._player.seekTo(int(position * 1000))
+        except _JAVA_ERRORS as error:
+            logger.debug(f"seek unavailable at this lifecycle point: {error}")
+            return None
+        self._completed = False
         logger.debug(f"sound dispatching: SEEK {position:.1f}s")
         self.dispatch("on_seek",'')
         return None
@@ -237,9 +332,20 @@ class SoundLoader(EventDispatcher):
     def unload(self):
         """Unload the file from memory."""
         if self._player:
-            self._player.release()
+            try:
+                self._player.release()
+            except _JAVA_ERRORS as error:
+                logger.debug(f"unload release failed: {error}")
         else:
             logger.warning("Warning player not loaded.")
+        # Clear references so a released player no longer looks ready; otherwise
+        # later get_pos()/play()/... calls hit a dead MediaPlayer and raise
+        # java.lang.IllegalStateException.
+        self._player = None
+        self._player_ready = False
+        self._completed = False
+        self._duration = 0.0
+        self.state = "stop"
 
     def on_play(self,player):
         pass

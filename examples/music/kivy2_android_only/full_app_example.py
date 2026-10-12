@@ -215,7 +215,7 @@ class TrackList(RecycleView):
 
 class MusicPlayerRoot(BoxLayout):
     def __init__(self, **kwargs):
-        super().__init__(orientation="vertical", padding=dp(10), spacing=dp(8), **kwargs)
+        super().__init__(orientation="vertical", padding=[dp(10),dp(50)], spacing=dp(8), **kwargs)
 
         self.tracks = []  # list[dict] MediaStore track info
         self.current_index = -1  # index into self.tracks
@@ -256,7 +256,7 @@ class MusicPlayerRoot(BoxLayout):
         self.add_widget(self.track_list)
 
         # --- seek bar ------------------------------------------------------
-        self.seek_bar = Slider(min=0, max=1, value=0)
+        self.seek_bar = Slider(min=0, max=1, value=0,size_hint_y=None,height=dp(50))
         self.seek_bar.bind(
             on_touch_down=self._on_seek_touch_down,
             on_touch_up=self._on_seek_touch_up,
