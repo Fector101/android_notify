@@ -33,7 +33,7 @@ from kivy.uix.slider import Slider
 
 from android_notify import logger as android_notify_logger
 from android_notify.config import on_android_platform, get_python_activity_context
-from android_notify.media.music import MediaNotification
+from android_notify.media import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
 

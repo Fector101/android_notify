@@ -9,8 +9,8 @@ the MediaSessionListener transport callbacks) keep the notification in sync.
 import unittest
 from unittest import mock
 
-import android_notify.media.music as music
-from android_notify.media.music import (
+import android_notify.media as music
+from android_notify.media import (
     MediaNotification,
     MediaSessionListener,
     _controller_dispatches_events,

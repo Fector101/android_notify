@@ -13,7 +13,7 @@ import unittest
 class TestMusicBridgeIdentifiers(unittest.TestCase):
 
     def test_fixed_bridge_identifiers(self):
-        import android_notify.media.music as music
+        import android_notify.media as music
 
         self.assertEqual(music.MUSIC_BRIDGE_PACKAGE, "org.android_notify.music")
         self.assertEqual(music.JAVA_FILE_NAME, "MediaSessionCallback")

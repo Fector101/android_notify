@@ -24,7 +24,7 @@ from kivy.clock import Clock
 from kivy.uix.label import Label
 
 from android_notify.media.music.helper import SoundLoader
-from android_notify.media.music import MediaSessionCallback, MediaNotification
+from android_notify.media import MediaSessionCallback, MediaNotification
 from android_notify.core import asks_permission_if_needed
 
 

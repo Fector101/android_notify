@@ -52,7 +52,7 @@ from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
 _LOG_HANDLER = install_kivy_log_handler()
 
-from android_notify.media.music import MediaNotification
+from android_notify.media import MediaNotification
 from android_notify.media.music.helper import MediaPermissionHandler
 
 

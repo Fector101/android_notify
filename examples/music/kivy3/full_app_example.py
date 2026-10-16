@@ -61,7 +61,7 @@ _LOG_HANDLER = install_kivy_log_handler()
 
 from android_notify import logger as android_notify_logger
 from android_notify.config import on_android_platform, get_python_activity_context
-from android_notify.media.music import MediaNotification
+from android_notify.media import MediaNotification
 from android_notify.media.music.helper import MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
 

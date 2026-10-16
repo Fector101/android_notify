@@ -73,7 +73,7 @@ android.permissions = POST_NOTIFICATIONS, (name=android.permission.READ_EXTERNAL
 Then check/request the audio permission at runtime:
 
 ```python
-from android_notify.media.music.helper import MediaPermissionHandler
+from android_notify.media.music import MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
 
 # 1) Make sure the permission is declared in buildozer.spec.
@@ -157,8 +157,8 @@ import os
 from kivy.app import App
 from kivy.uix.button import Button
 
-from android_notify.media.music import MediaNotification
-from android_notify.media.music.helper import SoundLoader
+from android_notify.media import MediaNotification
+from android_notify.media.music import SoundLoader
 
 # An external-storage ringtone. Reading it needs the audio permission (see
 # "Reading audio files"); otherwise the load fails with "Couldn't open asset".
@@ -219,10 +219,11 @@ if __name__ == "__main__":
 
 Ready-to-run variants live in the repository under `examples/music/`:
 
-- `examples/music/simple_example.py` - load + play only.
-- `examples/music/example_1.py` - full player UI with loop toggle, end-of-track handling and next/previous wiring.
-- `examples/music/example_2.py` - MediaStore-based player with scoped-storage scan, permission handling and a track list.
-- `examples/music/plain_controller_example.py` - a Kivy `SoundLoader` wrapped in a plain controller that does not dispatch events, demonstrating `syncPlaybackState()`.
+- `examples/music/kivy2_android_only/simple_example.py` - standalone player: MediaStore scan, load and play, with the notification bound to `SoundLoader`.
+- `examples/music/kivy2_android_only/example_1.py` - compact player: transport controls, Repeat toggle, auto-advance and an in-app log panel.
+- `examples/music/kivy2_android_only/full_app_example.py` - full app: track list, draggable seek bar, loop/shuffle, auto-advance and album art.
+- `examples/music/kivy3/example.py` - plain controller (Kivy `SoundLoader` with no events) driven through `syncPlaybackState()`.
+- `examples/music/kivy3/full_app_example.py` - full-size plain-controller player: track list, seek bar, loop and auto-advance.
 
 ## Controllers that don't dispatch events
 
@@ -245,7 +246,7 @@ non-dispatching controller. Call it once after the player becomes ready too, so
 the notification gets built:
 
 ```python
-from android_notify.media.music import MediaNotification
+from android_notify.media import MediaNotification
 
 class MyPlayer:
     def __init__(self):

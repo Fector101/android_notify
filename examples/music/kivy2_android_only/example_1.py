@@ -37,7 +37,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 import logging
 
-from android_notify.media.music import MediaNotification
+from android_notify.media import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
 from android_notify.config import on_android_platform, get_python_activity_context

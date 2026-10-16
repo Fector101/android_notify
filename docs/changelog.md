@@ -2,6 +2,13 @@
 
 Release notes for all versions of Android Notify.
 
+## Unreleased
+
+**Improvements**
+
+- `MediaNotification.setNowPlaying(title, artist)` updates the live notification (title, artist, artwork and lock-screen metadata) in one call on a track change.
+- Media notification module moved to `android_notify.media` (was `android_notify.media.music`). `SoundLoader` and `MediaPermissionHandler` stay under `android_notify.media.music` and can be imported from `android_notify.media.music` or `android_notify.media.music.helper`.
+
 ## Version 1.61
 
 **Improvements**
