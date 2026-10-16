@@ -492,7 +492,7 @@ class MediaNotification:
         self.setLargeIcon(music_path=self.mediaController.source)
         # Attach metadata (title, artist, duration) to the MediaSession
         # so the system UI can display it
-        length_of_song = self.mediaController.length
+        length_of_song = self.mediaController.length or 0
         metadata = (
             MediaMetadataBuilder()
             .putString(MediaMetadata.METADATA_KEY_TITLE, String(self._title))

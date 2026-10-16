@@ -302,7 +302,7 @@ class SoundLoader(EventDispatcher):
     def _get_length(self):
         if not self._player or not self._player_ready:
             logger.warning("Warning player is not ready... no _get_length")
-            return None
+            return 0.0
 
         if self._completed:
             return self._duration

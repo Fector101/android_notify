@@ -400,6 +400,46 @@ class TestNowPlayingUpdates(unittest.TestCase):
         self.assertEqual(music.set_message.call_args.kwargs["message"], "A")
         self.manager.notify.assert_called_once()
 
+    def test_set_now_playing_tolerates_unknown_length(self):
+        # Regression: setNowPlaying runs right after load(), before the player
+        # reports its duration - a None length must not crash the track change.
+        self.controller._length = None
+
+        self.notification.setNowPlaying("T", "A")
+
+        metadata = self.notification.session.metadata
+        self.assertEqual(metadata[music.MediaMetadata.METADATA_KEY_DURATION], 0)
+        self.manager.notify.assert_called_once()
+
+    def test_refresh_does_not_propagate_errors(self):
+        # A refresh is best-effort: it must never raise into the caller's
+        # transport handler / Kivy dispatch.
+        self.notification._apply_now_playing = mock.Mock(side_effect=TypeError("boom"))
+
+        self.notification.refresh()  # must not raise
+
+
+class TestSoundLoaderLength(unittest.TestCase):
+    """``SoundLoader.length`` must be numeric before the player is ready.
+
+    Kivy's own ``Sound._get_length()`` returns 0 (never None) when there is no
+    player, so callers can safely do arithmetic with ``length`` at any time.
+    """
+
+    def setUp(self):
+        SoundLoader._instance = None
+
+    def tearDown(self):
+        SoundLoader._instance = None
+
+    def test_length_is_zero_before_player_ready(self):
+        instance = SoundLoader()
+        instance._player = None
+        instance._player_ready = False
+
+        self.assertEqual(instance._get_length(), 0.0)
+        self.assertEqual(instance.length, 0.0)
+
 
 class TestLargeIconCache(unittest.TestCase):
     """refresh() re-applies now-playing on every transport update, so the album
