@@ -401,8 +401,7 @@ class MusicPlayerRoot(BoxLayout):
         if not self.notification:
             self.init_notification(title,artist)
         else:
-            self.notification.setTitle(str(title))
-            self.notification.setArtist(artist)
+            self.notification.setNowPlaying(str(title), artist)
 
         # Reset seek bar
         self.seek_bar.max = 1
@@ -420,8 +419,7 @@ class MusicPlayerRoot(BoxLayout):
             on_next=self.next_track,
             on_previous=self.previous_track,
         )
-        self.notification.setTitle(title)
-        self.notification.setArtist(artist)
+        self.notification.setNowPlaying(title, artist)
 
     def _release_player(self):
         self._stop_ticker()

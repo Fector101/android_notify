@@ -236,8 +236,7 @@ class MusicPlayerRoot(BoxLayout):
             on_next=self.next_track if self.current_index + 1 < len(self.tracks) else None,
             on_previous=self.previous_track if self.current_index > 0 else None,
         )
-        notification.setTitle(track["title"])
-        notification.setArtist(track["artist"] or "Unknown Artist")
+        notification.setNowPlaying(track["title"], track["artist"] or "Unknown Artist")
         self.notification = notification
 
         self.now_playing.text = f"Loading: {track['title']}"

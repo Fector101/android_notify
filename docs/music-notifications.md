@@ -183,8 +183,9 @@ class MyApp(App):
             on_next=self.next_track,
             on_previous=self.previous_track,
         )
-        self.notification.setTitle(os.path.splitext(os.path.basename(TRACK))[0])
-        self.notification.setArtist("Example Artist")
+        title=os.path.splitext(os.path.basename(TRACK))[0]
+        artist="Example Artist"
+        self.notification.setNowPlaying(title, artist)
 
         return Button(text="Playing...")
 
@@ -234,6 +235,10 @@ In that case the notification:
   controller, and refreshes itself after a transport button press;
 - will **not** notice playback changes your own code makes (e.g. a play button in
   your UI) unless you tell it.
+
+Track changes don't need `syncPlaybackState()`: `setTitle()` / `setArtist()` /
+`setNowPlaying()` update the live notification directly (on a dispatching
+controller too, they simply cover the window before the next rebuild).
 
 Call `syncPlaybackState()` whenever your code changes playback on a
 non-dispatching controller. Call it once after the player becomes ready too, so
@@ -304,10 +309,11 @@ of polling position on the `stop` transition.
 refreshes the bound controller and skip callbacks and rebuilds the notification.
 
 - `MediaNotification(mediaController, on_next=None, on_previous=None)` - create the notification and bind a media controller (e.g. a `SoundLoader`); pass callbacks for the skip buttons.
-- `setTitle(text)` / `setArtist(text)` - track metadata (also shown on the lock screen).
+- `setNowPlaying(title, artist)` - set the track metadata and immediately update the live notification (title, artist, artwork and lock-screen metadata) in one step. Preferred on a track change.
+- `setTitle(text)` / `setArtist(text)` - track metadata (also shown on the lock screen). Each one updates the live notification if it has already been built, so an existing notification never shows a stale track.
 - `setMediaController(media_controller)` - bind or replace the media controller; wires state/load/seek updates to the notification automatically when the controller dispatches them. Builds on `on_load`, or immediately if the controller is already loaded. Re-binding the same controller instance is a no-op (no duplicate handlers). For a plain controller without those events, see [Controllers that don't dispatch events](#controllers-that-dont-dispatch-events).
 - `setNext(callback)` / `setPrev(callback)` - set the next/previous track callbacks; an explicit `None` clears the matching action. Buttons and the `MediaSession` actions follow the registered callbacks.
 - `syncMediaSession()` - sync the seek bar and playback state (called automatically).
 - `syncPlaybackState()` - flip the play/pause icon, sync the seek bar and build the notification if needed. Call it after your own code changes playback on a controller that does not dispatch `state`/`on_seek` events.
-- `refresh()` - re-post the built notification.
+- `refresh()` - re-post the built notification, re-applying the current title/artist/artwork and `MediaSession` metadata first.
 - `release()` - final teardown of the shared `MediaSession` (call it once in `App.on_stop()`). `MediaNotification` is a singleton that reuses one `MediaSession` for the whole app, so don't release between tracks - only the `SoundLoader` is swapped per track.

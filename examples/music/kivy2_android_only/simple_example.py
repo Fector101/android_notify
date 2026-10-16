@@ -151,8 +151,7 @@ class TestApp(App):
             on_next=self.next_track if self.current_index + 1 < len(self.tracks) else None,
             on_previous=self.previous_track if self.current_index > 0 else None,
         )
-        self.notification.setTitle(track["title"])
-        self.notification.setArtist(track["artist"] or "Unknown Artist")
+        self.notification.setNowPlaying(track["title"], track["artist"] or "Unknown Artist")
 
         self.status_label.text = f"Loading:\n{track['title']}"
 

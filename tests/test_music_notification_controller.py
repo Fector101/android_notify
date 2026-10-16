@@ -287,5 +287,164 @@ class TestCompletionLoopRestartGuard(unittest.TestCase):
         self.assertEqual(completed.start_calls, 0)
 
 
+class _RecordingBuilder:
+    """NotificationCompat.Builder stand-in that records title/message."""
+
+    def __init__(self):
+        self.title = None
+        self.message = None
+
+    def setContentTitle(self, value):
+        self.title = str(value)
+
+    def setContentText(self, value):
+        self.message = str(value)
+
+    def build(self):
+        return self
+
+
+class _RecordingSession:
+    def __init__(self):
+        self.metadata = None
+
+    def setMetadata(self, metadata):
+        self.metadata = metadata
+
+
+class _RecordingMetadataBuilder:
+    def __init__(self):
+        self.values = {}
+
+    def putString(self, key, value):
+        self.values[key] = str(value)
+        return self
+
+    def putLong(self, key, value):
+        self.values[key] = value
+        return self
+
+    def build(self):
+        return self.values
+
+
+class TestNowPlayingUpdates(unittest.TestCase):
+    """setTitle/setArtist/setNowPlaying/refresh must update a live notification.
+
+    Regression: a plain (non-dispatching) controller never triggers a rebuild
+    via on_load, so the setters themselves have to push the new track into the
+    already-built notification instead of only storing fields.
+    """
+
+    def setUp(self):
+        music.MediaNotification._instance = None
+        music._active_music_notification = None
+        self.controller = FakePlainController(length=12.0, state="play")
+        self.notification = MediaNotification(self.controller)
+        self.notification.builder = _RecordingBuilder()
+        self.notification.session = _RecordingSession()
+        self.notification.already_built = True
+        self.manager = mock.Mock()
+        self._patchers = [
+            mock.patch.object(music, "get_notification_manager", return_value=self.manager),
+            mock.patch.object(music, "set_title"),
+            mock.patch.object(music, "set_message"),
+            mock.patch.object(music, "MediaMetadataBuilder", _RecordingMetadataBuilder),
+        ]
+        for patcher in self._patchers:
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def tearDown(self):
+        music.MediaNotification._instance = None
+        music._active_music_notification = None
+
+    def test_set_title_updates_live_notification(self):
+        self.notification.setTitle("New title")
+
+        music.set_title.assert_called_once()
+        self.assertEqual(music.set_title.call_args.kwargs["title"], "New title")
+        self.assertEqual(
+            self.notification.session.metadata[music.MediaMetadata.METADATA_KEY_TITLE],
+            "New title",
+        )
+        self.manager.notify.assert_called_once()
+
+    def test_set_now_playing_applies_both_fields_in_one_refresh(self):
+        self.notification.setNowPlaying("T", "A")
+
+        self.assertEqual(music.set_title.call_args.kwargs["title"], "T")
+        self.assertEqual(music.set_message.call_args.kwargs["message"], "A")
+        metadata = self.notification.session.metadata
+        self.assertEqual(metadata[music.MediaMetadata.METADATA_KEY_TITLE], "T")
+        self.assertEqual(metadata[music.MediaMetadata.METADATA_KEY_ARTIST], "A")
+        self.manager.notify.assert_called_once()
+
+    def test_set_now_playing_before_first_build_is_quiet(self):
+        self.notification.already_built = False
+
+        self.notification.setNowPlaying("T", "A")
+
+        self.assertEqual(self.notification._title, "T")
+        self.assertEqual(self.notification._artist, "A")
+        music.set_title.assert_not_called()
+        self.manager.notify.assert_not_called()
+
+    def test_refresh_reapplies_now_playing(self):
+        self.notification._title = "T"
+        self.notification._artist = "A"
+
+        self.notification.refresh()
+
+        self.assertEqual(music.set_title.call_args.kwargs["title"], "T")
+        self.assertEqual(music.set_message.call_args.kwargs["message"], "A")
+        self.manager.notify.assert_called_once()
+
+
+class TestLargeIconCache(unittest.TestCase):
+    """refresh() re-applies now-playing on every transport update, so the album
+    art decode must not repeat while the source is unchanged."""
+
+    def setUp(self):
+        music.MediaNotification._instance = None
+        music._active_music_notification = None
+        self.retriever_calls = []
+        retriever_calls = self.retriever_calls
+
+        class CountingRetriever:
+            def __init__(self):
+                retriever_calls.append(1)
+
+            def setDataSource(self, *args, **kwargs):
+                pass
+
+            def getEmbeddedPicture(self):
+                return None
+
+        patcher = mock.patch.object(music, "MediaMetadataRetriever", CountingRetriever)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.controller = FakePlainController(length=12.0)
+        self.notification = MediaNotification(self.controller)
+        self.notification.builder = _RecordingBuilder()
+
+    def tearDown(self):
+        music.MediaNotification._instance = None
+        music._active_music_notification = None
+
+    def test_same_source_decodes_once(self):
+        self.notification.setLargeIcon(music_path="/tmp/track.ogg")
+        self.notification.setLargeIcon(music_path="/tmp/track.ogg")
+
+        self.assertEqual(len(self.retriever_calls), 1)
+
+    def test_new_source_decodes_again(self):
+        self.notification.setLargeIcon(music_path="/tmp/track.ogg")
+        self.notification.setLargeIcon(music_path="/tmp/other.ogg")
+
+        self.assertEqual(len(self.retriever_calls), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

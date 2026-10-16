@@ -478,6 +478,30 @@ class MediaNotification:
         if not self.already_built and _sound_is_loaded(sound_load_instance):
             self._build_if_media_session_setup_is_done()
 
+    def _apply_now_playing(self):
+        """Write the current title/artist/artwork into the builder and session.
+
+        Shared by the full ``_build_notification`` and by ``refresh()``, so a
+        track change on an already-built notification still updates even when
+        the controller never re-dispatches ``on_load`` (plain controllers).
+        Also refreshes the MediaSession metadata (title/artist/duration) so the
+        system UI / lock screen stays in sync.
+        """
+        set_title(builder=self.builder, title=self._title)
+        set_message(builder=self.builder, message=self._artist)
+        self.setLargeIcon(music_path=self.mediaController.source)
+        # Attach metadata (title, artist, duration) to the MediaSession
+        # so the system UI can display it
+        length_of_song = self.mediaController.length
+        metadata = (
+            MediaMetadataBuilder()
+            .putString(MediaMetadata.METADATA_KEY_TITLE, String(self._title))
+            .putString(MediaMetadata.METADATA_KEY_ARTIST, String(self._artist))
+            .putLong(MediaMetadata.METADATA_KEY_DURATION, int(length_of_song * 1000))
+            .build()
+        )
+        self.session.setMetadata(metadata)
+
     def _build_notification(self, is_playing):
         """Fully builds and dispatches the media notification.
 
@@ -496,9 +520,7 @@ class MediaNotification:
 
         logger.debug(f"Title: {self._title}, Artist: {self._artist}, Duration: {length_of_song}, song_position: {song_position}")
 
-        set_title(builder=self.builder,title=self._title)
-        set_message(builder=self.builder,message=self._artist)
-        self.setLargeIcon(music_path=self.mediaController.source)
+        self._apply_now_playing()
         find_and_set_default_icon(self.builder)
         self.builder.setOngoing(is_playing)
         self.builder.setVisibility(1)# NotificationCompat.VISIBILITY_PUBLIC = 1 (show content on lock screen)
@@ -512,16 +534,6 @@ class MediaNotification:
         self._media_style = style
         self.builder.setStyle(style)
 
-        # Attach metadata (title, artist, duration) to the MediaSession
-        # so the system UI can display it
-        metadata = (
-            MediaMetadataBuilder()
-            .putString(MediaMetadata.METADATA_KEY_TITLE, String(self._title))
-            .putString(MediaMetadata.METADATA_KEY_ARTIST, String(self._artist))
-            .putLong(MediaMetadata.METADATA_KEY_DURATION, int(length_of_song * 1000))
-            .build()
-        )
-        self.session.setMetadata(metadata)
         # Update the playback state (position, playing/paused, available actions)
         self.syncMediaSession()
 
@@ -586,9 +598,27 @@ class MediaNotification:
 
     def setTitle(self,title:str):
         self._title = title
+        if self.already_built:
+            # Push the change into the live notification (plain controllers
+            # never re-dispatch on_load to trigger a rebuild). Quiet before the
+            # first build: _build_notification picks the field up as before.
+            self.refresh()
 
     def setArtist(self,artist:str):
         self._artist = artist
+        if self.already_built:
+            self.refresh()
+
+    def setNowPlaying(self, title: str, artist: str):
+        """Atomically set and push the current track's title/artist.
+
+        Preferred over separate setTitle/setArtist on a track change: one
+        refresh (and one artwork decode) instead of two.
+        """
+        self._title = title
+        self._artist = artist
+        if self.already_built:
+            self.refresh()
 
     def setLargeIcon(self,music_path=None,img_path=None):
         if img_path:
@@ -599,6 +629,11 @@ class MediaNotification:
             else:
                 logger.error("Failed getting bitmap from path")
         elif music_path:
+            if music_path == getattr(self, "_last_icon_source", None):
+                # Same track as the last decode - refresh() re-applies now-playing
+                # info on every play/pause/transport update; don't re-decode.
+                return
+            self._last_icon_source = music_path
             try:
                 retriever = MediaMetadataRetriever()
                 if str(music_path).startswith("content://"):
@@ -669,8 +704,16 @@ class MediaNotification:
         return None
 
     def refresh(self):
-        """Refresh the notification."""
+        """Refresh the notification, keeping now-playing info in sync.
+
+        Re-applies title/artist/artwork and the MediaSession metadata before
+        re-posting, so a refresh (play/pause, transport, setNext/setPrev, or a
+        track change via setTitle/setArtist/setNowPlaying) can never surface
+        stale track info.
+        """
         if self.already_built:
+            if self.session is not None and self.mediaController is not None:
+                self._apply_now_playing()
             get_notification_manager().notify(self.notification_id,self.builder.build())
         else:
             logger.warning("Can't refresh notification because it doesn't have Base parameters created in MediaNotification._build_notification")

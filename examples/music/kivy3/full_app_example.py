@@ -418,10 +418,7 @@ class PlainPlayerRoot(BoxLayout):
             self.status_label.text = "Scanning needs Android (device example)"
             return
         if not is_music_permission_in_manifest():
-            self.status_label.text = (
-                "Audio permission missing from buildozer.spec "
-                "(android.permissions = READ_MEDIA_AUDIO)"
-            )
+            self.status_label.text = "Audio permission missing from buildozer.spec (android.permissions = READ_MEDIA_AUDIO, READ_EXTERNAL_STORAGE)"
             return
 
         if MediaPermissionHandler.has_permission_to_access_audio_files():
@@ -504,8 +501,7 @@ class PlainPlayerRoot(BoxLayout):
                 on_next=self.next_track,
                 on_previous=self.previous_track,
             )
-        self.notification.setTitle(title)
-        self.notification.setArtist(artist)
+        self.notification.setNowPlaying(title, artist)
 
         self._pending_seek = None
         self._last_pos = 0.0
