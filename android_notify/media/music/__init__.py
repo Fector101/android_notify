@@ -235,10 +235,13 @@ class IMediaController:
         """
         This returns the current media length in seconds
         """
-        if not hasattr(self.instance, 'length'):
+        # Read the getter exactly once: hasattr() would call it too, doubling
+        # the work (and any side effects/logging) of every access.
+        try:
+            return self.instance.length
+        except AttributeError:
             logger.error(f"No length property was found in {self.instance}")
             return 0
-        return self.instance.length
 
     @property
     def state(self) -> str:
@@ -487,8 +490,11 @@ class MediaNotification:
         Also refreshes the MediaSession metadata (title/artist/duration) so the
         system UI / lock screen stays in sync.
         """
-        set_title(builder=self.builder, title=self._title)
-        set_message(builder=self.builder, message=self._artist)
+        text = (self._title, self._artist)
+        if text != getattr(self, "_applied_text", None):
+            set_title(builder=self.builder, title=self._title)
+            set_message(builder=self.builder, message=self._artist)
+            self._applied_text = text
         self.setLargeIcon(music_path=self.mediaController.source)
         # Attach metadata (title, artist, duration) to the MediaSession
         # so the system UI can display it

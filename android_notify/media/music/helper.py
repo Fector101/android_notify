@@ -301,7 +301,7 @@ class SoundLoader(EventDispatcher):
 
     def _get_length(self):
         if not self._player or not self._player_ready:
-            logger.warning("Warning player is not ready... no _get_length")
+            logger.debug("player not ready yet; length unavailable")
             return 0.0
 
         if self._completed:
@@ -438,7 +438,7 @@ JAVA_CALLBACK_FILE_CONTENT = """
 // Android-Notify implements MediaSessionListener a Callback Listener with python.
 
 
-package org.android_notify.music;"""+"""
+package org.android_notify.music;
 import android.media.session.MediaSession;
 
 public class MediaSessionCallback extends MediaSession.Callback {

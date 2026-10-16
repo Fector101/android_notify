@@ -122,7 +122,6 @@ class KivyLogHandler(logging.Handler):
         self._view = None
 
     def attach(self, log_view):
-        
         with self._lock:
             buffered = list(self._buffer)
             self._view = log_view

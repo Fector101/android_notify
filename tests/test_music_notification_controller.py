@@ -441,6 +441,36 @@ class TestSoundLoaderLength(unittest.TestCase):
         self.assertEqual(instance.length, 0.0)
 
 
+class TestMediaControllerLength(unittest.TestCase):
+    """``IMediaController.length`` must query the underlying getter exactly once.
+
+    ``hasattr(obj, "length")`` already invokes the property getter, so reading
+    ``obj.length`` again doubled the work (and any side effects/logging).
+    """
+
+    def test_getter_is_read_once_per_access(self):
+        calls = []
+
+        class Controller:
+            source = "/tmp/track.ogg"
+
+            @property
+            def length(self):
+                calls.append(1)
+                return 5.0
+
+        adapter = music.IMediaController(Controller())
+
+        self.assertEqual(adapter.length, 5.0)
+        self.assertEqual(len(calls), 1)
+
+    def test_missing_length_is_zero(self):
+        class Controller:
+            source = "/tmp/track.ogg"
+
+        self.assertEqual(music.IMediaController(Controller()).length, 0)
+
+
 class TestLargeIconCache(unittest.TestCase):
     """refresh() re-applies now-playing on every transport update, so the album
     art decode must not repeat while the source is unchanged."""
