@@ -9,7 +9,7 @@ It uses lazy initialization to keep the startup time at 0 and avoid errors in no
 
 import os
 
-__version__ = "1.61.10"
+__version__ = "1.62.0.__dev__"
 
 from .internal.logger import logger
 

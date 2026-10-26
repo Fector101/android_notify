@@ -21,7 +21,7 @@ class String(str):
         return str.__new__(cls, value)
 
 
-class Intent(IntFlag):
+class Intent:#(IntFlag):
     NONE = 0
     FLAG_ACTIVITY_CLEAR_TOP = auto()
     FLAG_ACTIVITY_NEW_TASK = auto()

@@ -9,7 +9,7 @@ from android_notify.internal.android import get_unique_id
 from android_notify.internal.intents import add_intent_to_open_app
 from android_notify.internal.channels import create_channel
 from android_notify.media.music.helper import JAVA_CALLBACK_FILE_CONTENT
-from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path
+from android_notify.widgets.images import find_and_set_default_icon, get_img_absolute_path, get_bitmap_from_path, get_default_large_icon
 from android_notify.widgets.texts import set_title, set_message
 
 
@@ -630,16 +630,18 @@ class MediaNotification:
         if img_path:
             image_absolute_path = get_img_absolute_path(img_path)
             bitmap = get_bitmap_from_path(image_absolute_path)
-            if bitmap:
-                self.builder.setLargeIcon(bitmap)
-            else:
+            if not bitmap:
                 logger.error("Failed getting bitmap from path")
+                bitmap = get_default_large_icon()
+            if bitmap is not None:
+                self.builder.setLargeIcon(bitmap)
         elif music_path:
             if music_path == getattr(self, "_last_icon_source", None):
                 # Same track as the last decode - refresh() re-applies now-playing
                 # info on every play/pause/transport update; don't re-decode.
                 return
             self._last_icon_source = music_path
+            bitmap = None
             try:
                 retriever = MediaMetadataRetriever()
                 if str(music_path).startswith("content://"):
@@ -649,10 +651,14 @@ class MediaNotification:
                 art_bytes = retriever.getEmbeddedPicture()
                 if art_bytes:
                     bitmap = BitmapFactory.decodeByteArray(art_bytes, 0, len(art_bytes))
-                    self.builder.setLargeIcon(bitmap)
             except Exception as error_getting_art_bytes:
                 logger.exception(error_getting_art_bytes)
                 traceback.print_exc()
+            if bitmap is None:
+                # No embedded picture: use default app icon
+                bitmap = get_default_large_icon()
+            if bitmap is not None:
+                self.builder.setLargeIcon(bitmap)
 
     def syncMediaSession(self, *args):
         """

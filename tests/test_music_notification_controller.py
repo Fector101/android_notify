@@ -288,17 +288,21 @@ class TestCompletionLoopRestartGuard(unittest.TestCase):
 
 
 class _RecordingBuilder:
-    """NotificationCompat.Builder stand-in that records title/message."""
+    """NotificationCompat.Builder stand-in that records title/message/icons."""
 
     def __init__(self):
         self.title = None
         self.message = None
+        self.large_icons = []
 
     def setContentTitle(self, value):
         self.title = str(value)
 
     def setContentText(self, value):
         self.message = str(value)
+
+    def setLargeIcon(self, bitmap):
+        self.large_icons.append(bitmap)
 
     def build(self):
         return self
@@ -472,8 +476,8 @@ class TestMediaControllerLength(unittest.TestCase):
 
 
 class TestLargeIconCache(unittest.TestCase):
-    """refresh() re-applies now-playing on every transport update, so the album
-    art decode must not repeat while the source is unchanged."""
+    """Album art is decoded per source, and a track without art must replace
+    the previous cover instead of leaving it on the shared builder."""
 
     def setUp(self):
         music.MediaNotification._instance = None
@@ -495,6 +499,12 @@ class TestLargeIconCache(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
+        self.default_icon = object()
+        fallback = mock.patch.object(
+            music, "get_default_large_icon", return_value=self.default_icon)
+        fallback.start()
+        self.addCleanup(fallback.stop)
+
         self.controller = FakePlainController(length=12.0)
         self.notification = MediaNotification(self.controller)
         self.notification.builder = _RecordingBuilder()
@@ -514,6 +524,40 @@ class TestLargeIconCache(unittest.TestCase):
         self.notification.setLargeIcon(music_path="/tmp/other.ogg")
 
         self.assertEqual(len(self.retriever_calls), 2)
+
+    def test_new_track_without_art_replaces_the_previous_cover(self):
+        # Regression: the same Notification.Builder is reused for every track,
+        # so doing nothing when a track has no picture kept the previous cover.
+        art = object()
+
+        class ArtRetriever:
+            def setDataSource(self, *args, **kwargs):
+                pass
+
+            def getEmbeddedPicture(self):
+                return b"\xff\xd8\xff"
+
+        class FakeBitmapFactory:
+            @staticmethod
+            def decodeByteArray(data, offset, length):
+                return art
+
+        with mock.patch.object(music, "MediaMetadataRetriever", ArtRetriever), \
+                mock.patch.object(music, "BitmapFactory", FakeBitmapFactory):
+            self.notification.setLargeIcon(music_path="/tmp/with_art.ogg")
+
+        self.notification.setLargeIcon(music_path="/tmp/artless.ogg")
+
+        self.assertEqual(self.notification.builder.large_icons,
+                         [art, self.default_icon])
+
+    def test_broken_img_path_falls_back_to_the_default_icon(self):
+        with mock.patch.object(
+                music, "get_img_absolute_path", return_value="/tmp/missing.png"
+        ), mock.patch.object(music, "get_bitmap_from_path", return_value=False):
+            self.notification.setLargeIcon(img_path="assets/missing.png")
+
+        self.assertEqual(self.notification.builder.large_icons, [self.default_icon])
 
 
 if __name__ == "__main__":

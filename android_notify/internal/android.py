@@ -308,3 +308,14 @@ def to_str(string__):
     """
     value = str(string__) # for weird values
     return String(value)
+
+
+def toast(text=None, duration_length_long=False):
+    if not on_android_platform() or from_service_file() or text is None:
+        print(f'Fallback toast - text: {text}, length_long: {duration_length_long}')
+        return
+    from android_notify.internal.java_classes import _LazyJavaClass
+    _Toast = _LazyJavaClass("Toast", "android.widget.Toast")
+    context = get_python_activity_context()
+    duration = _Toast.LENGTH_LONG if duration_length_long else _Toast.LENGTH_SHORT
+    _Toast.makeText(context, to_str(text), duration).show()

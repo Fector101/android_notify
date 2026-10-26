@@ -117,22 +117,46 @@ def set_default_small_icon(builder):
     builder.setSmallIcon(context.getApplicationInfo().icon)
 
 
-def find_and_set_default_icon(builder):
-    """
-    Logic for finding small icon
-    """
-
+def get_default_icon_path():
+    """Path of the app icon used by notifications, per host app."""
+    fallback_icon_path = icon_finder("kivy-appicon.png")
     if on_flet_app():
         fallback_icon_path = icon_finder("flet-appicon.png")
     elif on_pydroid_app():
         fallback_icon_path = icon_finder("pydroid3-appicon.png")
-    else:
-        fallback_icon_path = icon_finder("kivy-appicon.png")
+    return fallback_icon_path
 
+
+def find_and_set_default_icon(builder):
+    """
+    Logic for finding small icon
+    """
+    fallback_icon_path = get_default_icon_path()
     successful = set_small_icon_from_path(image_absolute_path=fallback_icon_path, builder=builder)
     if not successful:
         logger.warning("issue using fallback_appicon, using default icon...")
         set_default_small_icon(builder)
+
+
+_default_large_icon_cache = None
+
+
+def get_default_large_icon():
+    """Bitmap of the app icon, shown when a track has no embedded cover.
+
+    The media notification reuses its builder for every track, so a track
+    without art must replace the previous cover. Decoded once.
+    """
+    global _default_large_icon_cache
+    if not on_android_platform():
+        return None
+    if _default_large_icon_cache is None:
+        _default_large_icon_cache = False
+        try:
+            _default_large_icon_cache = get_bitmap_from_path(get_default_icon_path())
+        except Exception as error:
+            logger.warning(f"no fallback large icon: {error}")
+    return _default_large_icon_cache or None
 
 
 def set_small_icon_from_path(image_absolute_path, builder):
