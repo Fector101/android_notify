@@ -51,6 +51,11 @@ class Intent:#(IntFlag):
     def getPackage(self):
         return self.package
 
+    def setAction(self, action):
+        logger.debug(f"[MOCK] Intent.setAction called with action={action}")
+        self.action = action
+        return self
+
     def addFlags(self, *flags):
         logger.debug(f"[MOCK] Intent.addFlags called with: {flags}")
         return self
@@ -98,9 +103,6 @@ class Intent:#(IntFlag):
     @classmethod
     def putParcelableArrayListExtra(cls, flag, uris:list):
         logger.debug(f"[MOCK] Intent.putParcelableArrayListExtra called with flag={flag} and uris={uris}")
-
-    def setPackage(self, param):
-        pass
 
 
 class PendingIntent:
