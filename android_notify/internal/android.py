@@ -11,6 +11,7 @@ from .permissions import has_notification_permission
 from .java_classes import autoclass, BuildVersion, Uri, NotificationCompat, NotificationManagerCompat, \
     NotificationManager, Context, File, String
 from .an_types import Importance
+from .helper import JAVA_INT_RANGE
 
 
 def cancel_all_notifications():
@@ -286,7 +287,7 @@ def get_unique_id(candidate_id: int = 1) -> int:
         return candidate_id
 
     if from_service_file():
-        return int(time.time() * 1000) % 2_147_483_647
+        return int(time.time() * 1000) % JAVA_INT_RANGE
 
     notification_id = candidate_id
     try:
