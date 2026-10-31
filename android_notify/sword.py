@@ -20,8 +20,7 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
     delete_all_channels, get_channels
 # Intents
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
-    get_broadcast_pending_intent_for_btn, get_dynamic_broadcast_pending_intent, get_name_used_to_open_app, \
-    get_data_object_added_to_intent
+    get_broadcast_pending_intent_for_btn, get_name_used_to_open_app, get_data_object_added_to_intent, get_dynamic_broadcast_pending_intent
 # All Needed Java Classes
 from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder, \
     NotificationCompatBigPictureStyle
