@@ -20,7 +20,8 @@ from .internal.channels import does_channel_exist, do_channels_exist, create_cha
     delete_all_channels, get_channels
 # Intents
 from .internal.intents import add_intent_to_open_app, get_default_pending_intent_for_btn, \
-    get_broadcast_pending_intent_for_btn, get_name_used_to_open_app, get_data_object_added_to_intent
+    get_broadcast_pending_intent_for_btn, get_dynamic_broadcast_pending_intent, get_name_used_to_open_app, \
+    get_data_object_added_to_intent
 # All Needed Java Classes
 from .internal.java_classes import autoclass, cast, String, BuildVersion, NotificationCompat, NotificationCompatBuilder, \
     NotificationCompatBigPictureStyle
@@ -515,20 +516,37 @@ class Notification(BaseNotification):
         string_to_display += "\n (Won't Print Logs When Complied,except if selected `Notification.logs=True`)"
         print(string_to_display)
 
-    def addButton(self, text: str, on_release=None, receiver_name=None, action=None):
+    def addButton(self, text: str, on_release=None, receiver_name=None, action=None, dynamic: bool = False):
         """For adding action buttons
 
         :param text: Text For Button
         :param on_release: function to be called when button is clicked
         :param receiver_name:  receiver class name
         :param action: action for receiver
+        :param dynamic: send the action as a package scoped broadcast instead of targeting a
+            manifest receiver, so a receiver registered at runtime with
+            `android.broadcast.BroadcastReceiver(..., actions=[action])` can receive it.
+            Requires `action` to be a package scoped string. Takes precedence over
+            `receiver_name` (which is then ignored with a warning).
         """
 
         self.__no_of_buttons += 1
         if not on_android_platform():
             return
 
-        action = action or f"{text}_{self.id}"  # tagging with id so it can found notification handle object
+        if dynamic and receiver_name:
+            logger.warning(
+                f"addButton: ignoring receiver_name='{receiver_name}' because dynamic=True. "
+                f"Runtime receivers must be addressed with `action` and are matched by intent filter."
+            )
+            receiver_name = None
+
+        if not action:
+            if dynamic:
+                # Runtime receivers are matched by an explicit, package scoped action
+                action = f"{get_package_name()}.{text}_{self.id}"
+            else:
+                action = f"{text}_{self.id}"  # tagging with id so it can found notification handle object
 
         # for bundle data
         title = self.title or 'Title Placeholder'
@@ -536,7 +554,13 @@ class Notification(BaseNotification):
 
         pending_action_intent = None
         receiver_class_name = None
-        if receiver_name:
+        if dynamic:
+            try:
+                pending_action_intent = get_dynamic_broadcast_pending_intent(
+                    action=action, title=title, btn_no=btn_no, data_object=self.data_object)
+            except Exception as error_getting_dynamic_broadcast_intent:
+                logger.exception(error_getting_dynamic_broadcast_intent)
+        elif receiver_name:
             try:
                 receiver_class_name = f"{get_package_name()}.{receiver_name}"
                 receiverClass = autoclass(receiver_class_name)

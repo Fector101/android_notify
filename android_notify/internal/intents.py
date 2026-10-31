@@ -4,7 +4,7 @@ For Intent related blocks
 import traceback
 
 from .java_classes import Bundle, Intent, PendingIntent
-from android_notify.config import get_python_activity, get_python_activity_context
+from android_notify.config import get_python_activity, get_python_activity_context, get_package_name
 from android_notify.internal.logger import logger
 
 
@@ -33,6 +33,27 @@ def get_default_pending_intent_for_btn(action, title, btn_no, data_object):
 def get_broadcast_pending_intent_for_btn(receiver_class, action, title, btn_no, data_object):
     context = get_python_activity_context()
     action_intent = Intent(context, receiver_class)
+    set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no, data_object=data_object)
+    pending_action_intent = PendingIntent.getBroadcast(
+        context, btn_no, action_intent,
+        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+    )
+    return pending_action_intent
+
+
+def get_dynamic_broadcast_pending_intent(action, title, btn_no, data_object):
+    """Pending intent for a button that must reach a runtime registered receiver.
+
+    `get_broadcast_pending_intent_for_btn` builds an explicit intent
+    (`Intent(context, receiver_class)`), which only a receiver declared in the manifest can
+    receive. Receivers registered at runtime (`android.broadcast.BroadcastReceiver`) are
+    matched by intent filter only, so the button has to send an implicit broadcast.
+    `setPackage()` scopes it to this app, which Android 14+ requires for implicit broadcasts
+    delivered to a `RECEIVER_NOT_EXPORTED` receiver.
+    """
+    context = get_python_activity_context()
+    action_intent = Intent(action)
+    action_intent.setPackage(get_package_name())
     set_action(action_intent=action_intent, action=action, title=title, key_int=btn_no, data_object=data_object)
     pending_action_intent = PendingIntent.getBroadcast(
         context, btn_no, action_intent,
