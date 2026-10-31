@@ -3,6 +3,9 @@
 import inspect, os, re
 from .logger import logger
 
+
+JAVA_INT_RANGE = 2 ** 31  # notification ids and request codes reach Java as 32 bit ints: 0 .. 2147483647
+
 def can_accept_arguments(func, *args, **kwargs):
     try:
         sig = inspect.signature(func)

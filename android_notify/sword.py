@@ -557,7 +557,8 @@ class Notification(BaseNotification):
         if dynamic:
             try:
                 pending_action_intent = get_dynamic_broadcast_pending_intent(
-                    action=action, title=title, btn_no=btn_no, data_object=self.data_object)
+                    action=action, title=title, btn_no=btn_no, data_object=self.data_object,
+                    notification_id=self.id)
             except Exception as error_getting_dynamic_broadcast_intent:
                 logger.exception(error_getting_dynamic_broadcast_intent)
         elif receiver_name:
@@ -565,7 +566,8 @@ class Notification(BaseNotification):
                 receiver_class_name = f"{get_package_name()}.{receiver_name}"
                 receiverClass = autoclass(receiver_class_name)
                 pending_action_intent = get_broadcast_pending_intent_for_btn(receiver_class=receiverClass,
-                                                                             action=action, title=title, btn_no=btn_no, data_object=self.data_object)
+                                                                             action=action, title=title, btn_no=btn_no, data_object=self.data_object,
+                                                                             notification_id=self.id)
             except Exception as error_getting_broadcast_receiver:
                 logger.exception(error_getting_broadcast_receiver)
 
@@ -573,7 +575,8 @@ class Notification(BaseNotification):
             logger.warning(f"Didn't find: {receiver_class_name}, Warning defaulting to getActivity for Button")
 
         if not receiver_name and not pending_action_intent:
-            pending_action_intent = get_default_pending_intent_for_btn(action=action, title=title, btn_no=btn_no, data_object=self.data_object)
+            pending_action_intent = get_default_pending_intent_for_btn(action=action, title=title, btn_no=btn_no, data_object=self.data_object,
+                                                                      notification_id=self.id)
 
         context = get_python_activity_context()
         action_text = cast('java.lang.CharSequence', String(text))
