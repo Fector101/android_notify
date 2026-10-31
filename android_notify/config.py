@@ -216,13 +216,15 @@ def app_storage_path():
     if _app_storage_path is not None:
         return _app_storage_path
 
+    context = get_python_activity_context()
     if on_flet_app():
-        context = get_python_activity_context()
         _app_storage_path = os.path.join(context.getFilesDir().getAbsolutePath(), 'flet')
     elif on_kivy_android():
         # noinspection PyPackageRequirements
-        from android.storage import app_storage_path as kivy_app_storage_path  # type: ignore
-        _app_storage_path = kivy_app_storage_path()
+        # from android.storage import app_storage_path as kivy_app_storage_path  # type: ignore
+        # _app_storage_path = kivy_app_storage_path() # this operation cost me at least one second and at most 1.5sec
+        # /data/user/0/org.laner.lan_ft/files/
+        _app_storage_path = os.path.join(context.getFilesDir().getAbsolutePath())
     else:
         _app_storage_path = os.getcwd()
     return _app_storage_path
