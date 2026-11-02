@@ -264,59 +264,38 @@ For Dev Version usage
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
 
-### Dev Features docs
+## Dev Features docs
 
 <details>
-<summary> <b> Add Data to Notification</b> </summary>
-
-
-- `NotificationHandler.data_object` returns a `dict` of data in the clicked `notification`
-- `setData` can also be called after `send` to change `data_object` stored
-- Use `name` if value is constant `Notification(name="change page")`
-```python
-from android_notify import Notification, NotificationHandler
-
-    def build(self):
-        notification = Notification(title="Hello")
-        notification.setData({"next wallpaper path": "test.jpg"})
-        notification.send()
-
-    def on_start(self):
-        notification_data = NotificationHandler.data_object  # {"next wallpaper path": "test.jpg",...}
-        print(notifcation_data)
-
-    def on_resume(self):
-        notification_data = NotificationHandler.data_object  # {"next wallpaper path": "test.jpg",...}
-        print(notifcation_data)
-```
-
-</details>
-
-
-<details>
-<summary> <b>How to control popups</b> </summary>
+<summary> <b> Dynamic Broadcast Receiver</b> - Make your buttons take actions without opening App, Useful for Foreground Services.
+</summary>
     
 ```python
+from android.broadcast import BroadcastReceiver
 from android_notify import Notification
-import time
+from android_notify.config import get_package_name
 
-notification = Notification(
-    title="Processing...",
-    message="Starting task"
-)
+package = get_package_name() # package.domain + "." + package.name
 
+# Recieves Broadcast on Button Click
+def on_broadcast(context, intent):
+    action = intent.getAction()
+    print(f"BroadcastReceiver: action={action}, extras={intent.getExtras()}")
+    # BroadcastReceiver: action=org.test.myapp.ACTION_SKIP, extras=...)
+    notification.updateMessage(action)
+
+
+# Keep a reference, an unreferenced receiver can be collected and stop delivering.
+receiver = BroadcastReceiver(on_broadcast, actions=[package + '.ACTION_STOP', package + '.ACTION_SKIP'])
+receiver.start()
+
+# Sends BroadCast on Button Click
+notification = Notification(title="Broadcast test")
+notification.addButton("Stop", action=package + ".ACTION_STOP", dynamic=True)
+notification.addButton("Skip", action=package + ".ACTION_SKIP", dynamic=True)
 notification.send()
-time.sleep(10)
-
-# show heads-up when updated
-notification.setOnlyAlertOnce(False)
-
-notification.updateTitle("Processing Complete!")
-notification.updateMessage("Task finished successfully")
 ```
-
 </details>
-
 
 
 ## ☕ Support the Project
