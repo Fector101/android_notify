@@ -5,7 +5,7 @@ from typing import Any, Callable
 from .base import BaseNotification
 from .styles import NotificationStyles
 from .internal.helper import generate_channel_id
-from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, run_on_ui_thread, \
+from .config import from_service_file, get_notification_manager, on_flet_app, get_package_name, \
     get_python_activity_context, on_android_platform
 from .internal.android import cancel_all_notifications, cancel_notifications, dispatch_notification, \
     set_when, show_infinite_progressbar, remove_buttons, set_sound, get_android_importance, force_vibrate, \
@@ -717,7 +717,6 @@ class Notification(BaseNotification):
             self.__has_small_icon = True
         # self.__has_small_icon = True # Can not set here because of threading when getting bitmap for url
 
-    @run_on_ui_thread
     def __apply_notification_image(self, bitmap, img_style):
         try:
             if img_style == NotificationStyles.BIG_PICTURE and bitmap:
@@ -893,12 +892,12 @@ class NotificationHandler:
             return None
 
         if on_flet_app():
-            logger.warning("On Flet App, Didn't Binding Notification Listener")
+            logger.warning("On Flet App, Didn't Binding Notification IntentListener")
             return None
 
         if from_service_file():
             # In Service File error 'NoneType' object has no attribute 'registerNewIntentListener'
-            logger.warning("In service file, Didn't Binding Notification Listener")
+            logger.warning("In service file, Didn't Binding Notification IntentListener")
             return None
 
         # TODO use BroadcastReceiver For Whole notification Click Not Just Buttons
@@ -935,7 +934,6 @@ class NotificationHandler:
         return has_notification_permission()
 
     @classmethod
-    @run_on_ui_thread
     def asks_permission(cls, callback=None):
         """
         Ask for permission to send notifications if needed.
