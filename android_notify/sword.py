@@ -892,12 +892,12 @@ class NotificationHandler:
             return None
 
         if on_flet_app():
-            logger.warning("On Flet App, Didn't Binding Notification Listener")
+            logger.warning("On Flet App, Didn't Binding Notification IntentListener")
             return None
 
         if from_service_file():
             # In Service File error 'NoneType' object has no attribute 'registerNewIntentListener'
-            logger.warning("In service file, Didn't Binding Notification Listener")
+            logger.warning("In service file, Didn't Binding Notification IntentListener")
             return None
 
         # TODO use BroadcastReceiver For Whole notification Click Not Just Buttons
