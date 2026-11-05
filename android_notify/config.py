@@ -75,7 +75,6 @@ def on_pydroid_app():
     return False
 
 
-
 def has_androidx_dependency():
     global _androidx_dependency
 
@@ -121,20 +120,6 @@ def from_service_file():
     return 'PYTHON_SERVICE_ARGUMENT' in os.environ
 
 
-if on_flet_app() or from_service_file() or not on_android_platform():
-    def run_on_ui_thread(func):
-        """Fallback for development/non-Kivy environments."""
-
-        def wrapper(*args, **kwargs):
-            logger.warning("Simulating run on UI thread")
-            return func(*args, **kwargs)
-
-        return wrapper
-elif on_kivy_android():
-    # noinspection PyPackageRequirements
-    from android.runnable import run_on_ui_thread  # type: ignore
-
-
 def get_python_activity():
     global _python_activity
 
@@ -156,7 +141,6 @@ def get_python_activity():
         class_name = activity_class_name + '.PythonActivity'
     _python_activity = autoclass(class_name)
     return _python_activity
-
 
 
 def get_python_service():
