@@ -3,6 +3,10 @@
     __events__ = ('on_play', 'on_stop', 'on_pause', 'on_load', 'on_seek', 'on_complete')
 
 """
+# TODO run some tests with only dispatching "on_play and on_stop", 
+# While write the documentation i reliase distaching ("on_play and on_stop") is same thing as ('on_play', 'on_stop', 'on_pause', 'on_load')
+# Only "on_seek" is neccasary, "on_complete" realy isn't neccasary Kivy dispatchs "on_stop" when track readches it's end
+# TODO on v1.62.1
 
 import os
 from android_notify.internal.logger import logger

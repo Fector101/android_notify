@@ -58,7 +58,7 @@ if on_android_platform():
                     logger.info(JAVA_CALLBACK_FILE_CONTENT)
             else:
                 logger.error("Media bridge missing: add android-notify-music-bridge to android.gradle_dependencies "
-                             "(see docs/music-notifications.html), or add the legacy src/MediaSessionCallback.java "
+                             "(see docs/media-notifications.html), or add the legacy src/MediaSessionCallback.java "
                              "via android.add_src.")
                 logger.info(JAVA_CALLBACK_FILE_CONTENT)
         else:
@@ -341,7 +341,7 @@ class MediaNotification:
             logger.debug("MediaSession initialization and callback setup complete!")
         else: # Pyroid3 and Flet
             logger.error("Media bridge is unavailable, media buttons will be inert. Add android-notify-music-bridge to "
-                         "android.gradle_dependencies (see docs/music-notifications.html).")
+                         "android.gradle_dependencies (see docs/media-notifications.html).")
         create_channel( name=self.channel_name, id__=self.channel_id, importance="medium")
 
         # If a build was deferred while the MediaSession was being created,

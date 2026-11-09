@@ -62,7 +62,7 @@ afterEvaluate {
 
                 pom {
                     name = "android-notify-music-bridge"
-                    description = "Java bridge for Android Notify music notifications: MediaSession.Callback transport-control forwarding."
+                    description = "Java bridge for Android Notify media notifications: MediaSession.Callback transport-control forwarding."
                     url = "https://android-notify.vercel.app"
                     licenses {
                         license {
