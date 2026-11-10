@@ -265,40 +265,6 @@ For Dev Version usage
 requirements = python3, kivy, pyjnius, https://github.com/Fector101/android_notify/archive/main.zip
 ```
 
-## Dev Features docs
-
-<details>
-<summary> <b> Dynamic Broadcast Receiver</b> - Make your buttons take actions without opening App, Useful for Foreground Services.
-</summary>
-    
-```python
-from android.broadcast import BroadcastReceiver
-from android_notify import Notification
-from android_notify.config import get_package_name
-
-package = get_package_name() # package.domain + "." + package.name
-
-# Recieves Broadcast on Button Click
-def on_broadcast(context, intent):
-    action = intent.getAction()
-    print(f"BroadcastReceiver: action={action}, extras={intent.getExtras()}")
-    # BroadcastReceiver: action=org.test.myapp.ACTION_SKIP, extras=...)
-    notification.updateMessage(action)
-
-
-# Keep a reference, an unreferenced receiver can be collected and stop delivering.
-receiver = BroadcastReceiver(on_broadcast, actions=[package + '.ACTION_STOP', package + '.ACTION_SKIP'])
-receiver.start()
-
-# Sends BroadCast on Button Click
-notification = Notification(title="Broadcast test")
-notification.addButton("Stop", action=package + ".ACTION_STOP", dynamic=True)
-notification.addButton("Skip", action=package + ".ACTION_SKIP", dynamic=True)
-notification.send()
-```
-</details>
-
-
 ## ☕ Support the Project
 
 If you find this project helpful, consider buying me a coffee! 😊  
