@@ -7,5 +7,5 @@ This site is currently under **development**. It's best to use the maintained do
 
 Please use that site for installation, guides, examples and the API reference,
 
-It alot to maintain both or have AI write then verify it's code, Thank you.
+Thank you.
 ```
