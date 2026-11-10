@@ -27,7 +27,7 @@ The Android Notify package provides a simple yet comprehensive way to create and
 
 - **Rich Functionality**:
   - Add action Buttons with custom callbacks - [Buttons section](https://android-notify.vercel.app/components#buttons)
-  - Dynamic broadcast buttons that act from a service without opening the app - [Foreground Services](https://android-notify.vercel.app/foreground-services#add-buttons)
+  - Buttons that run functions without having to resume app UI - [Dynamic Broadcast Button](https://android-notify.vercel.app/foreground-services#add-buttons)
   - [Update notification](https://android-notify.vercel.app/advanced-methods#updating-notification) content dynamically
   - Manage progress bars with fine-grained control
   - [Custom notification channels](https://android-notify.vercel.app/advanced-methods#channel-management) for Android 8.0+ (Creating and Deleting)
