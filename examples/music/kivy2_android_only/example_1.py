@@ -7,7 +7,7 @@ shows the notification's transport controls (play / pause, prev / next) plus a
 Repeat toggle, auto-advance at the end of a track, a time readout and an
 in-app, level-colored log panel fed by ``install_kivy_log_handler()``. For the
 absolute minimum see ``simple_example.py``; for a full app with a track list,
-seek bar, album art and shuffle see ``example_2.py``.
+seek bar, album art and shuffle see ``full_app_example.py``.
 
 The two objects that matter, wired in ``load_current``:
 

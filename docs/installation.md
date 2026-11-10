@@ -1,40 +1,5 @@
 # Installation
 
-The package is available on PyPI. Pick the platform you are building for and get going in seconds:
-
-:::{code-tabs}
-PIP
-```bash
-pip install android-notify
-```
-
-Kivy
-```ini
-# Add requirements list
-requirements = python3, kivy, pyjnius, android-notify
-
-# Add permission for notifications
-android.permissions = POST_NOTIFICATIONS
-```
-
-Flet
-```toml
-[tool.flet.android]
-dependencies = [
-  "pyjnius", "android-notify"
-]
-
-[tool.flet.android.permission]
-"android.permission.POST_NOTIFICATIONS" = true
-```
-
-Pydroid 3
-```
-# In the Pydroid 3 pip section, add:
-android-notify
-```
-:::
-
 ## Kivy apps
 
 In your **`buildozer.spec`** file, ensure you include the following:

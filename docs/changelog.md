@@ -2,12 +2,32 @@
 
 Release notes for all versions of Android Notify.
 
-## Unreleased
+## Version 1.62
 
 **Improvements**
 
+- Dynamic broadcast buttons: `Notification.addButton(..., action=..., dynamic=True)` sends a package-scoped broadcast to a `BroadcastReceiver` registered at runtime, so a button can act without opening the app and without a manifest receiver or a Java class.
 - `MediaNotification.setNowPlaying(title, artist)` updates the live notification (title, artist, artwork and lock-screen metadata) in one call on a track change.
 - Media notification module moved to `android_notify.media` (was `android_notify.media.music`). `SoundLoader` and `MediaPermissionHandler` stay under `android_notify.media.music` and can be imported from `android_notify.media.music` or `android_notify.media.music.helper`.
+- Media controllers that do not dispatch events can now drive the notification with `syncPlaybackState()`, including plain Kivy `SoundLoader` wrappers.
+- Media artwork falls back to the app icon when a track has no embedded cover art, instead of keeping the previous track's image.
+- Faster path and playback handling: removed the slow `android.storage` import from the notification path and optimized media position/length reads.
+
+**Changed**
+
+- Removed the `run_on_ui_thread` helper. Open activities from the UI thread directly; do not start an activity from a background thread.
+- Button `PendingIntent` request codes are now unique per notification, so two notifications using the same button action no longer overwrite each other's extras.
+
+**Fixed**
+
+- Unknown media length no longer raises while the notification is being updated.
+- Media notification metadata and artwork are refreshed on a track change without waiting for the next playback event.
+
+**Docs**
+
+- The music notifications page is now **Media Notifications** (`media-notifications`). The old page URL redirects with a short moved note.
+- Documented plain controllers (`syncPlaybackState()`), Android background playback for Kivy's `SoundLoader`, and the default-cover fallback for tracks without embedded art.
+- Documented runtime broadcast receivers for buttons that work from a service without Java.
 
 ## Version 1.61
 

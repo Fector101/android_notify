@@ -34,6 +34,8 @@ service.startForeground(notification.id, builder.build(), foreground_type)
 service.setAutoRestartService(True)
 ```
 
+To add buttons that act from the service without opening the app, see [Broadcast buttons](usage.md#broadcast-buttons). In v1.62, `addButton(..., action=..., dynamic=True)` sends a package-scoped broadcast that a runtime `BroadcastReceiver` can handle without a Java receiver.
+
 ## Register the service in buildozer.spec
 
 Declare the service in your `buildozer.spec` with the format `Name:path/to/service.py:foreground`. Append `:foregroundServiceType=specialUse` so the type is written into `AndroidManifest.xml` automatically:

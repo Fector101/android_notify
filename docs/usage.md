@@ -268,7 +268,40 @@ notification.addButton(
 notification.send()
 :::
 
-For steps to create broadcast buttons, visit the [android-notify wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) - make things happen without opening the app.
+For a receiver declared in your manifest, visit the [android-notify wiki](https://github.com/Fector101/android_notify/wiki/How-to-Use-with-Broadcast-Listener) for the Java receiver setup.
+
+#### Runtime broadcast receiver (v1.62+)
+
+You can skip the Java receiver by registering an `android.broadcast.BroadcastReceiver` at runtime and marking the button `dynamic=True`. The action must be package-scoped; `get_package_name()` returns the package id used by your app.
+
+:::{pydroid}
+from android.broadcast import BroadcastReceiver
+from android_notify import Notification
+from android_notify.config import get_package_name
+
+package = get_package_name()
+
+
+def on_broadcast(context, intent):
+    print(f"Button action: {intent.getAction()}")
+
+
+# Keep a reference. An unreferenced receiver can be collected and stop receiving.
+receiver = BroadcastReceiver(
+    on_broadcast,
+    actions=[package + ".ACTION_STOP", package + ".ACTION_SKIP"],
+)
+receiver.start()
+
+notification = Notification(title="Playback")
+notification.addButton("Stop", action=package + ".ACTION_STOP", dynamic=True)
+notification.addButton("Skip", action=package + ".ACTION_SKIP", dynamic=True)
+notification.send()
+:::
+
+```{note}
+`dynamic=True` sends an implicit, package-scoped broadcast that a runtime receiver can match. Do not also pass `receiver_name`; it is ignored with a warning when `dynamic=True`.
+```
 
 ### Removing buttons
 

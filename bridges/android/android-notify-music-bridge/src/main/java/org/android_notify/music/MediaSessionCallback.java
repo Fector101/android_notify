@@ -3,7 +3,7 @@ package org.android_notify.music;
 import android.media.session.MediaSession;
 
 /**
- * Java bridge for Android-Notify's MusicNotification.
+ * Java bridge for Android-Notify's MediaNotification.
  *
  * It receives MediaSession transport control events (play/pause/seek/next/prev)
  * from the notification, lock screen and Quick Settings, and forwards them to a

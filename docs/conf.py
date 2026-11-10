@@ -51,6 +51,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "imgs"]
 # The master toctree document.
 master_doc = "index"
 
+# The landing page is a pointer to the Vercel docs; the other pages stay in the
+# repo for development but are intentionally not linked from a toctree.
+suppress_warnings = ["toc.not_included"]
+
 # -- Options for intersphinx -------------------------------------------------
 
 intersphinx_mapping = {
