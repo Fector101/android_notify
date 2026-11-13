@@ -71,11 +71,11 @@ cd bridges/android
 ./gradlew --no-daemon :android-notify-music-bridge:publishToMavenLocal
 ```
 
-The version comes from `bridges/android/CHANGELOG.md`. For version `1.0.2`,
+The version comes from `bridges/android/CHANGELOG.md`. For version `1.0.3`,
 the artifact should be under:
 
 ```text
-~/.m2/repository/io/github/fector101/android-notify-music-bridge/1.0.2/
+~/.m2/repository/io/github/fector101/android-notify-music-bridge/1.0.3/
 ```
 
 In the Buildozer spec for the app you are building, make Maven Local a Gradle
@@ -83,7 +83,7 @@ repository and depend on that same version:
 
 ```ini
 android.add_gradle_repositories = mavenLocal()
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.3
 ```
 
 If `android.gradle_dependencies` already contains other libraries, append the
@@ -107,5 +107,5 @@ emulator and the `smoke` container.
 - `adb device unauthorized`: delete `.docker-android/keys` (new keys reset the AVD volume
   automatically on next run) or `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
 - AVD lock from a previous run: `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
-- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.2/`
+- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.3/`
   exists; the smoke spec only needs the `mavenLocal()` repo currently.

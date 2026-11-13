@@ -9,6 +9,7 @@ notification silently stop working.
 
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 
@@ -40,6 +41,70 @@ class TestMusicBridgeIdentifiers(unittest.TestCase):
         self.assertIn("package org.android_notify.music;", JAVA_CALLBACK_FILE_CONTENT)
         self.assertNotIn("com.example.android_notify", JAVA_CALLBACK_FILE_CONTENT)
         self.assertIn("MediaSessionCallback", JAVA_CALLBACK_FILE_CONTENT)
+
+    def test_action_buttons_use_bridge_solid_icons(self):
+        import android_notify.media as music
+
+        music.MediaNotification._instance = None
+        notification = music.MediaNotification(SimpleNamespace(state="play"), on_next=True, on_previous=True)
+        notification.builder = SimpleNamespace(mActions=[])
+        notification.builder.addAction = notification.builder.mActions.append
+        notification._MediaNotification__create_media_button_intent = lambda key_code: key_code
+
+        class CapturingAction:
+            def __init__(self, icon, _title, _intent):
+                self.icon = icon
+
+            def build(self):
+                return self
+
+        with mock.patch.object(music, "ActionBuilder", CapturingAction):
+            notification._format_buttons()
+            self.assertEqual(
+                [action.icon for action in notification.builder.mActions],
+                [
+                    music.MediaActionDrawable.an_media_previous,
+                    music.MediaActionDrawable.an_media_pause,
+                    music.MediaActionDrawable.an_media_next,
+                ],
+            )
+
+            notification.mediaController.instance.state = "pause"
+            notification._format_buttons()
+            self.assertEqual(
+                [action.icon for action in notification.builder.mActions],
+                [
+                    music.MediaActionDrawable.an_media_previous,
+                    music.MediaActionDrawable.an_media_play,
+                    music.MediaActionDrawable.an_media_next,
+                ],
+            )
+
+    def test_action_buttons_fall_back_without_bridge_icons(self):
+        import android_notify.media as music
+
+        music.MediaNotification._instance = None
+        notification = music.MediaNotification(SimpleNamespace(state="play"))
+        notification.builder = SimpleNamespace(mActions=[])
+        notification.builder.addAction = notification.builder.mActions.append
+        notification._MediaNotification__create_media_button_intent = lambda key_code: key_code
+
+        class CapturingAction:
+            def __init__(self, icon, _title, _intent):
+                self.icon = icon
+
+            def build(self):
+                return self
+
+        with (
+            mock.patch.object(music, "MediaActionDrawable", None),
+            mock.patch.object(music, "ActionBuilder", CapturingAction),
+        ):
+            notification._format_buttons()
+        self.assertEqual(
+            [action.icon for action in notification.builder.mActions],
+            [music.R_drawable.ic_media_pause],
+        )
 
 
 class TestMediaButtonReceiverRouting(unittest.TestCase):
@@ -153,6 +218,17 @@ class TestMediaButtonReceiverRouting(unittest.TestCase):
             manifest,
         )
         self.assertIn('android:exported="false"', manifest)
+
+    def test_bridge_declares_solid_vector_action_icons(self):
+        root = Path(__file__).resolve().parents[1]
+        resources = root / "bridges" / "android" / "android-notify-music-bridge" / "src" / "main" / "res" / "drawable"
+
+        for icon in ("play", "pause", "previous", "next"):
+            with self.subTest(icon=icon):
+                content = (resources / f"an_media_{icon}.xml").read_text(encoding="utf-8")
+                self.assertIn('android:fillColor="#FFFFFFFF"', content)
+                self.assertIn("android:pathData=", content)
+                self.assertNotIn("android:stroke", content)
 
 
 if __name__ == "__main__":
