@@ -9,7 +9,7 @@ What it does (single entry point):
 ./tests/scripts/ci/docker_android_test.sh
 ```
 
-1. Publish `io.github.fector101:android-notify-music-bridge` to your host `~/.m2`
+1. Install `io.github.fector101:android-notify-music-bridge` in your host's Maven Local (`~/.m2`)
    (via `docker_gradle_bridge.sh`, `cimg/android` image → Gradle 8.14.3 wrapper → AGP 8.11.0).
 2. `build_music_apk.sh` copies the local `android_notify` package into `music-smoke/`,
    then builds `music-smoke/bin/smokemusic-0.1-arm64...-debug.apk` with the `kivy/buildozer`
@@ -21,6 +21,8 @@ What it does (single entry point):
    asserts logcat markers:
    - `MUSIC_BRIDGE_OK` – bridge class `org.android_notify.music.MediaSessionCallback`
      resolved from the AAR (no legacy `android.add_src`),
+   - `MUSIC_BUTTON_RECEIVER_OK` – the AAR's explicit notification-action receiver
+     resolved,
    - `MUSIC_NOTIFICATION_BUILT` – media notification posted,
    - `MUSIC_PLAYING` / `MUSIC_STATE: pause|play` – audio plays and
      `KEYCODE_MEDIA_PLAY_PAUSE`/`::KEYCODE_MEDIA_NEXT` reach the Java `MediaSession` callback.
@@ -51,9 +53,48 @@ What it does (single entry point):
 ```bash
 ./tests/scripts/ci/ensure_docker_emulator.sh        # up + healthy emulator (host side)
 ./tests/scripts/ci/open_emulator_display.sh          # scrcpy view of the emulator screen
-./tests/scripts/ci/docker_gradle_bridge.sh           # publish bridge AAR to ~/.m2
+./tests/scripts/ci/docker_gradle_bridge.sh           # install bridge AAR in Maven Local (~/.m2)
 ./tests/scripts/ci/build_music_apk.sh                # build the smoke APK
 ```
+
+## Build and use the bridge locally
+
+The bridge's `src/main/AndroidManifest.xml` is part of the Android library
+module. Gradle packages it in the AAR and the app's manifest merger adds the
+receiver declaration when Buildozer includes the AAR; no p4a hook is needed.
+
+To build the AAR and install it **only in your local Maven repository** (not
+Maven Central), run:
+
+```bash
+cd bridges/android
+./gradlew --no-daemon :android-notify-music-bridge:publishToMavenLocal
+```
+
+The version comes from `bridges/android/CHANGELOG.md`. For version `1.0.2`,
+the artifact should be under:
+
+```text
+~/.m2/repository/io/github/fector101/android-notify-music-bridge/1.0.2/
+```
+
+In the Buildozer spec for the app you are building, make Maven Local a Gradle
+repository and depend on that same version:
+
+```ini
+android.add_gradle_repositories = mavenLocal()
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
+```
+
+If `android.gradle_dependencies` already contains other libraries, append the
+bridge coordinate to its comma-separated list instead of replacing them.
+Build normally with Buildozer after installing the AAR locally. When building
+inside Docker, mount the host `~/.m2` into the build container so it can resolve
+the locally installed artifact; `build_music_apk.sh` shows this setup.
+
+For Melo, make sure the Python `android_notify` package in `source.dir` uses the
+matching version that targets the bridge receiver. Do not also package a
+second app-local `MediaButtonReceiver` or declare it from a p4a hook.
 
 Note: Play Store emulator images need shared adb keys — `ensure_docker_adb_keys.sh`
 creates `.docker-android/keys/` (gitignored) and the compose file pins them on both the
@@ -66,5 +107,5 @@ emulator and the `smoke` container.
 - `adb device unauthorized`: delete `.docker-android/keys` (new keys reset the AVD volume
   automatically on next run) or `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
 - AVD lock from a previous run: `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
-- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.0/`
+- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.2/`
   exists; the smoke spec only needs the `mavenLocal()` repo currently.

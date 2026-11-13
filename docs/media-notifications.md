@@ -35,15 +35,17 @@ published on Maven Central. You do not write or copy any Java - just add one lin
 to your `buildozer.spec`:
 
 ```ini
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
 ```
 
 `mavenCentral()` is already included in the Gradle project buildozer generates,
 so no extra repository line is needed.
 
 ```{note}
-If the bridge dependency can't be resolved the notification still builds, but
-the media buttons do nothing.
+The AAR manifest registers the explicit, non-exported receiver used by the
+notification's play/pause/next/previous buttons. Android 12 builds should use
+bridge version 1.0.2 or later; older bridge versions do not include this
+receiver.
 ```
 
 ## Reading audio files
