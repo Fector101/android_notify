@@ -553,6 +553,13 @@ class R_drawable:
     ic_media_next = 3
 
 
+class MediaActionDrawable:
+    an_media_previous = 10
+    an_media_pause = 11
+    an_media_play = 12
+    an_media_next = 13
+
+
 class ActionBuilder:
     def __init__(self, icon, title, pending_intent):
         logger.debug(
