@@ -47,7 +47,7 @@ try:
 except ModuleNotFoundError:
     from kivy.core.audio import SoundLoader as KivySoundLoader
 
-
+from android_notify.config import on_pydroid_app
 from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
 _LOG_HANDLER = install_kivy_log_handler()
@@ -173,6 +173,9 @@ class PlainControllerApp(App):
         logger.info("requesting audio permission")
         # Loading the track needs read access to the audio file, so request it
         # first and only start playback from the grant callback.
+        if on_pydroid_app():
+            self._on_audio_permission(True)
+            return
         MediaPermissionHandler.ask_permission_to_access_audio_files(
             callback=self._on_audio_permission
         )
@@ -252,3 +255,4 @@ class PlainControllerApp(App):
 
 if __name__ == "__main__":
     PlainControllerApp().run()
+
