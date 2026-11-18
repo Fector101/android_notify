@@ -24,7 +24,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
-from android_notify.config import on_android_platform, get_python_activity_context
+from android_notify.config import on_android_platform, get_python_activity_context, on_pydroid_app
 from android_notify.media import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
@@ -105,6 +105,9 @@ class TestApp(App):
         return root
 
     def start(self):
+        if on_pydroid_app():
+            self._on_permission(True)
+            return 
         if not is_music_permission_in_manifest():
             self.status_label.text = (
                 "Audio permission missing from buildozer.spec\n"
