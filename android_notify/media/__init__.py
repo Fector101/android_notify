@@ -14,6 +14,8 @@ from android_notify.widgets.texts import set_title, set_message
 
 
 JAVA_FILE_NAME = "MediaSessionCallback"
+MEDIA_BUTTON_RECEIVER_NAME = f'{JAVA_FILE_NAME}$MediaButtonReceiver'
+MEDIA_BRIDGE_VERSION = "1.0.3"
 # The bridge ships pre-compiled in a fixed package (io.github.fector101:android-notify-music-bridge)
 # so users never have to copy or edit Java.
 # `bridge_interface_class` matches the nested interface embedded in that Java class.
@@ -51,10 +53,12 @@ if on_android_platform():
                     bridge_interface_class = f'{get_package_name().replace(".", "/")}/{JAVA_FILE_NAME}$MediaSessionListener'
                     logger.warning(f"Bridge not found at '{java_bridge_class}', fell back to legacy: {legacy_bridge_class}")
                 except jnius.jnius.JavaException:
-                    logger.error(""
-                                 "Couldn't find the media bridge anywhere. Add android-notify-music-bridge to "
-                                 "buildozer.spec android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1"
-                                 "")
+                    logger.error(
+                        "Couldn't find the media bridge anywhere. Add "
+                        "android-notify-music-bridge to buildozer.spec "
+                        f"android.gradle_dependencies = "
+                        f"io.github.fector101:android-notify-music-bridge:{MEDIA_BRIDGE_VERSION}"
+                    )
                     logger.info(JAVA_CALLBACK_FILE_CONTENT)
             else:
                 logger.error("Media bridge missing: add android-notify-music-bridge to android.gradle_dependencies "
@@ -64,9 +68,30 @@ if on_android_platform():
         else:
             logger.error(e)
             traceback.print_exc()
+
+    try:
+        MediaButtonReceiver = autoclass(f'{MUSIC_BRIDGE_PACKAGE}.{MEDIA_BUTTON_RECEIVER_NAME}')
+        logger.info("Successfully loaded media button receiver")
+    except jnius.jnius.JavaException as e:
+        MediaButtonReceiver = None
+        logger.error(
+            "Media button receiver is unavailable; update android-notify-music-bridge "
+            f"to {MEDIA_BRIDGE_VERSION} or newer for Android 12 or below notification controls: %s",
+            e,
+        )
+    try:
+        MediaActionDrawable = autoclass(f'{MUSIC_BRIDGE_PACKAGE}.R$drawable')
+        logger.info("Loaded custom media action icons from the bridge")
+    except jnius.jnius.JavaException as e:
+        MediaActionDrawable = None
+        logger.warning(
+            "Custom media action icons are unavailable; update android-notify-music-bridge "
+            f"to {MEDIA_BRIDGE_VERSION} or newer: %s",
+            e,
+        )
 else:
     from android_notify.internal.facade import (
-        NotificationCompatBuilder, R_drawable,
+        NotificationCompatBuilder, R_drawable, MediaActionDrawable,
         ActionBuilder, KeyEvent, MediaSessionCallback,
         MediaSession,
         PlaybackState,
@@ -76,6 +101,7 @@ else:
         MediaStyle,
         MediaMetadataRetriever,
     )
+    MediaButtonReceiver = None
     PythonJavaClass = object
     java_method = lambda signature: (lambda func: func)  # Dummy decorator for non-Android platforms
 
@@ -338,6 +364,8 @@ class MediaNotification:
 
             self.callback = MediaSessionCallback(self.listener)
             self.session.setCallback(self.callback)
+            if MediaButtonReceiver is not None:
+                MediaButtonReceiver.setListener(self.listener)
             logger.debug("MediaSession initialization and callback setup complete!")
         else: # Pyroid3 and Flet
             logger.error("Media bridge is unavailable, media buttons will be inert. Add android-notify-music-bridge to "
@@ -351,15 +379,21 @@ class MediaNotification:
 
     def __create_media_button_intent(self, key_code):
         """Creates a PendingIntent for a notification action button.
-
-        Each button (prev, play/pause, next) sends a broadcast with a
-        KeyEvent matching the desired action. MediaStyle.setMediaSession()
-        routes the tap through MediaSession.Callback instead.
         """
         if not self.context:
             return None
-        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        intent.setPackage(self.context.getPackageName())
+        if MediaButtonReceiver is None:
+            # Use the bridge's explicit receiver because ACTION_MEDIA_BUTTON alone
+            # does not route notification action broadcasts to MediaSession.Callback
+            # on Android 12 below.
+            intent = Intent(Intent.ACTION_MEDIA_BUTTON)
+            intent.setPackage(self.context.getPackageName())
+        else:
+            # Each button (prev, play/pause, next) sends a broadcast with a
+            # KeyEvent matching the desired action. MediaStyle.setMediaSession()
+            # routes the tap through MediaSession.Callback instead.
+            intent = Intent(self.context, MediaButtonReceiver)
+            intent.setAction(Intent.ACTION_MEDIA_BUTTON)
 
         event = KeyEvent(KeyEvent.ACTION_DOWN, key_code)
         parcelable_event = cast('android.os.Parcelable', event)
@@ -369,25 +403,40 @@ class MediaNotification:
         return PendingIntent.getBroadcast(self.context, key_code, intent, flag | PendingIntent.FLAG_UPDATE_CURRENT)
 
     def _format_buttons(self):
-        # Add prev, play/pause, and next action buttons using Android
-        # built-in media icons from android.
+        # Use bridge-owned solid icons so Android versions render controls alike.
         # Prev/next are only added when a self.on_next and/or self.on_previous exists.
         is_playing = isMediaPlaying(self.mediaController)
         play_or_pause_text = "Pause" if is_playing else "Play"
         play_pause_code = KeyEvent.KEYCODE_MEDIA_PAUSE if is_playing else KeyEvent.KEYCODE_MEDIA_PLAY
 
         action_intents = []
+        icon_drawables = MediaActionDrawable or R_drawable
         if self.on_previous:
             action_intents.append(
-                (R_drawable.ic_media_previous, String("Previous"), KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+                (
+                    getattr(icon_drawables, "an_media_previous", R_drawable.ic_media_previous),
+                    String("Previous"),
+                    KeyEvent.KEYCODE_MEDIA_PREVIOUS,
+                )
             )
         action_intents.append(
-            (R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
-             String(play_or_pause_text), play_pause_code)
+            (
+                getattr(
+                    icon_drawables,
+                    "an_media_pause" if is_playing else "an_media_play",
+                    R_drawable.ic_media_pause if is_playing else R_drawable.ic_media_play,
+                ),
+                String(play_or_pause_text),
+                play_pause_code,
+            )
         )
         if self.on_next:
             action_intents.append(
-                (R_drawable.ic_media_next, String("Next"), KeyEvent.KEYCODE_MEDIA_NEXT)
+                (
+                    getattr(icon_drawables, "an_media_next", R_drawable.ic_media_next),
+                    String("Next"),
+                    KeyEvent.KEYCODE_MEDIA_NEXT,
+                )
             )
 
         actions = [
@@ -739,6 +788,8 @@ class MediaNotification:
         between tracks would leave the next track with a dead session (controls
         and lock-screen stop working). Only the sound player is swapped per track.
         """
+        if self.listener is not None and MediaButtonReceiver is not None:
+            MediaButtonReceiver.setListener(None)
         if self.session:
             self.session.setActive(False)
             self.session.release()

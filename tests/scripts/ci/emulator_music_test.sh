@@ -13,6 +13,7 @@
 # Expected log markers:
 #
 #   MUSIC_BRIDGE_OK
+#   MUSIC_BUTTON_RECEIVER_OK
 #   MUSIC_NOTIFICATION_BUILT
 #   MUSIC_PLAYING
 #   MUSIC_STATE: pause
@@ -136,6 +137,7 @@ while [ "$_elapsed" -lt "$LOG_TIMEOUT" ]; do
 
     if \
         _logcat_contains "MUSIC_BRIDGE_OK" &&
+        _logcat_contains "MUSIC_BUTTON_RECEIVER_OK" &&
         _logcat_contains "MUSIC_NOTIFICATION_BUILT" &&
         _logcat_contains "MUSIC_PLAYING"
     then
@@ -158,6 +160,12 @@ if ! _logcat_contains "MUSIC_BRIDGE_OK"; then
     _fail \
         "MUSIC_BRIDGE_OK not found " \
         "(AAR class org/android_notify/music/MediaSessionCallback not resolved)"
+fi
+
+if ! _logcat_contains "MUSIC_BUTTON_RECEIVER_OK"; then
+    _fail \
+        "MUSIC_BUTTON_RECEIVER_OK not found " \
+        "(AAR receiver org/android_notify/music/MediaSessionCallback\\$MediaButtonReceiver not resolved)"
 fi
 
 if ! _logcat_contains "MUSIC_NOTIFICATION_BUILT"; then

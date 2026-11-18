@@ -5,18 +5,35 @@ Android Java library (`io.github.fector101:android-notify-music-bridge`) used by
 
 It contains `org.android_notify.music.MediaSessionCallback`, a
 `MediaSession.Callback` bridge that forwards transport control events
-(play/pause/seek/next/prev) to a Python listener implemented with pyjnius.
+(play/pause/seek/next/prev) to a Python listener implemented with pyjnius, and
+the nested `MediaSessionCallback.MediaButtonReceiver` for notification action
+buttons.
 
 The bridge lives in a **fixed package** and is shipped pre-compiled, so users
 never have to copy or edit Java files. To use it, add it to your `buildozer.spec`:
 
 ```ini
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.1
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.3
 ```
 
 See [Media Notifications](https://android-notify.vercel.app/media-notifications#overview) for the full setup.
 
-## [Unreleased]
+## [1.0.3] - 2026-11-13
+
+### Changed
+
+- Added simple solid vector icons for the media notification action buttons so
+  their appearance is consistent across Android versions.
+
+## [1.0.2] - 2026-11-13
+
+### Fixed
+
+- Notification play/pause/next/previous PendingIntents now target a
+  non-exported `MediaSessionCallback.MediaButtonReceiver` registered by the AAR manifest. The
+  receiver forwards actions to the active Python listener, including on
+  Android 12 where an `ACTION_MEDIA_BUTTON` broadcast did not reach the
+  `MediaSession.Callback`.
 
 ## [1.0.1] - 2026-09-20
 

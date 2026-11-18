@@ -8,6 +8,7 @@ MediaSession callback.
 Emits logcat markers consumed by emulator_music_test.sh:
 
     MUSIC_BRIDGE_OK
+    MUSIC_BUTTON_RECEIVER_OK
     MUSIC_NOTIFICATION_BUILT
     MUSIC_PLAYING
     MUSIC_STATE: <state>
@@ -24,7 +25,11 @@ from kivy.clock import Clock
 from kivy.uix.label import Label
 
 from android_notify.media.music.helper import SoundLoader
-from android_notify.media import MediaSessionCallback, MediaNotification
+from android_notify.media import (
+    MediaButtonReceiver,
+    MediaSessionCallback,
+    MediaNotification,
+)
 from android_notify.core import asks_permission_if_needed
 
 
@@ -55,6 +60,10 @@ class SmokeApp(App):
                 print("MUSIC_BRIDGE_OK: org.android_notify.music.MediaSessionCallback loaded", flush=True)
             else:
                 print("MUSIC_BRIDGE_MISSING: MediaSessionCallback was not resolved", flush=True)
+            if MediaButtonReceiver is not None:
+                print("MUSIC_BUTTON_RECEIVER_OK: media action receiver loaded", flush=True)
+            else:
+                print("MUSIC_BUTTON_RECEIVER_MISSING: media action receiver was not resolved", flush=True)
             self._run_smoke()
         except Exception as e:
             print(f"MUSIC_SMOKE_CRASH: {e}-->", flush=True)
