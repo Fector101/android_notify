@@ -420,6 +420,7 @@ class PlainPlayerRoot(BoxLayout):
             return
         if on_pydroid_app():
             self._on_permission(True)
+            return
         if not is_music_permission_in_manifest():
             self.status_label.text = "Audio permission missing from buildozer.spec (android.permissions = READ_MEDIA_AUDIO, READ_EXTERNAL_STORAGE)"
             return
