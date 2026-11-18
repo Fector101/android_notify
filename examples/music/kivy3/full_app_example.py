@@ -59,6 +59,7 @@ from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
 _LOG_HANDLER = install_kivy_log_handler()
 
+from android_notify.config import on_pydroid_app
 from android_notify import logger as android_notify_logger
 from android_notify.config import on_android_platform, get_python_activity_context
 from android_notify.media import MediaNotification
@@ -417,6 +418,8 @@ class PlainPlayerRoot(BoxLayout):
         if not on_android_platform():
             self.status_label.text = "Scanning needs Android (device example)"
             return
+        if on_pydroid_app():
+            self._on_permission(True)
         if not is_music_permission_in_manifest():
             self.status_label.text = "Audio permission missing from buildozer.spec (android.permissions = READ_MEDIA_AUDIO, READ_EXTERNAL_STORAGE)"
             return
