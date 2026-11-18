@@ -40,7 +40,7 @@ import logging
 from android_notify.media import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
-from android_notify.config import on_android_platform, get_python_activity_context
+from android_notify.config import on_android_platform, get_python_activity_context, on_pydroid_app
 from android_notify import logger as android_notify_logger
 from android_notify.widgets.log_view import LogPanel, install_kivy_log_handler
 
@@ -169,6 +169,9 @@ class MusicPlayerRoot(BoxLayout):
     # Scanning                                                            #
     # ------------------------------------------------------------------ #
     def scan_device(self):
+        if on_pydroid_app():
+            self._on_permission(True)
+            return
         if not is_music_permission_in_manifest():
             self.status_label.text = (
                 "Audio permission missing from buildozer.spec "
