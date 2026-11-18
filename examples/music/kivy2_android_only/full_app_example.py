@@ -32,7 +32,7 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.slider import Slider
 
 from android_notify import logger as android_notify_logger
-from android_notify.config import on_android_platform, get_python_activity_context
+from android_notify.config import on_android_platform, get_python_activity_context, on_pydroid_app
 from android_notify.media import MediaNotification
 from android_notify.media.music.helper import SoundLoader, MediaPermissionHandler
 from android_notify.internal.permissions import is_music_permission_in_manifest
@@ -123,6 +123,8 @@ def request_audio_permission(on_result=None):
     Returns a plain-string status:
     "desktop" | "missing_manifest" | "granted" | "requested" | "error".
     """
+    if on_pydroid_app():
+        return "granted"
     if not on_android_platform():
         return "desktop"
 
@@ -612,3 +614,4 @@ class MusicPlayerApp(App):
 
 if __name__ == "__main__":
     MusicPlayerApp().run()
+        
