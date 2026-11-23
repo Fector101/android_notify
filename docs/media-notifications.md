@@ -45,7 +45,7 @@ so no extra repository line is needed.
 The AAR manifest registers the explicit, non-exported receiver used by the
 notification's play/pause/next/previous buttons. Android 12 builds should use
 bridge version 1.0.2 or later; older bridge versions do not include this
-receiver. Version 1.0.3 or later also supplies solid, single-color action icons
+receiver. Version 1.0.2 or later also supplies solid, single-color action icons
 for consistent appearance across Android versions.
 ```
 
