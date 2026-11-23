@@ -18,7 +18,7 @@ android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.
 
 See [Media Notifications](https://android-notify.vercel.app/media-notifications#overview) for the full setup.
 
-## [1.0.2] - Unreleased
+## [1.0.2] - 2026-11-23
 
 ### Changed
 
