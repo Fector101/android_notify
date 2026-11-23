@@ -13,7 +13,7 @@ The bridge lives in a **fixed package** and is shipped pre-compiled, so users
 never have to copy or edit Java files. To use it, add it to your `buildozer.spec`:
 
 ```ini
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.3
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
 ```
 
 See [Media Notifications](https://android-notify.vercel.app/media-notifications#overview) for the full setup.
