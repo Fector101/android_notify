@@ -15,7 +15,7 @@ from android_notify.widgets.texts import set_title, set_message
 
 JAVA_FILE_NAME = "MediaSessionCallback"
 MEDIA_BUTTON_RECEIVER_NAME = f'{JAVA_FILE_NAME}$MediaButtonReceiver'
-MEDIA_BRIDGE_VERSION = "1.0.3"
+MEDIA_BRIDGE_VERSION = "1.0.2"
 # The bridge ships pre-compiled in a fixed package (io.github.fector101:android-notify-music-bridge)
 # so users never have to copy or edit Java.
 # `bridge_interface_class` matches the nested interface embedded in that Java class.
