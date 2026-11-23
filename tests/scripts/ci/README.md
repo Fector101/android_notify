@@ -92,9 +92,6 @@ Build normally with Buildozer after installing the AAR locally. When building
 inside Docker, mount the host `~/.m2` into the build container so it can resolve
 the locally installed artifact; `build_music_apk.sh` shows this setup.
 
-For Melo, make sure the Python `android_notify` package in `source.dir` uses the
-matching version that targets the bridge receiver. Do not also package a
-second app-local `MediaButtonReceiver` or declare it from a p4a hook.
 
 Note: Play Store emulator images need shared adb keys — `ensure_docker_adb_keys.sh`
 creates `.docker-android/keys/` (gitignored) and the compose file pins them on both the
@@ -107,5 +104,5 @@ emulator and the `smoke` container.
 - `adb device unauthorized`: delete `.docker-android/keys` (new keys reset the AVD volume
   automatically on next run) or `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
 - AVD lock from a previous run: `docker compose -f tests/scripts/ci/docker-compose.android.yml down -v`.
-- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.3/`
+- Bridge not resolved at compile time: confirm `~/.m2/io/github/fector101/.../1.0.2/`
   exists; the smoke spec only needs the `mavenLocal()` repo currently.
