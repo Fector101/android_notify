@@ -71,11 +71,11 @@ cd bridges/android
 ./gradlew --no-daemon :android-notify-music-bridge:publishToMavenLocal
 ```
 
-The version comes from `bridges/android/CHANGELOG.md`. For version `1.0.3`,
+The version comes from `bridges/android/CHANGELOG.md`. For version `1.0.2`,
 the artifact should be under:
 
 ```text
-~/.m2/repository/io/github/fector101/android-notify-music-bridge/1.0.3/
+~/.m2/repository/io/github/fector101/android-notify-music-bridge/1.0.2/
 ```
 
 In the Buildozer spec for the app you are building, make Maven Local a Gradle
@@ -83,7 +83,7 @@ repository and depend on that same version:
 
 ```ini
 android.add_gradle_repositories = mavenLocal()
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.3
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
 ```
 
 If `android.gradle_dependencies` already contains other libraries, append the
