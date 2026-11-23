@@ -1,6 +1,11 @@
 package org.android_notify.music;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.media.session.MediaSession;
+import android.util.Log;
+import android.view.KeyEvent;
 
 /**
  * Java bridge for Android-Notify's MediaNotification.
@@ -14,6 +19,8 @@ import android.media.session.MediaSession;
  * copy or edit this file.
  */
 public class MediaSessionCallback extends MediaSession.Callback {
+
+    private static final String TAG = "MediaSessionCallback";
 
     public interface MediaSessionListener {
         void onPlay();
@@ -61,6 +68,55 @@ public class MediaSessionCallback extends MediaSession.Callback {
     public void onSkipToPrevious() {
         if (listener != null) {
             listener.onSkipToPrevious();
+        }
+    }
+
+    /**
+     * Receives media-notification action PendingIntents and forwards them to
+     * the same Python listener as the MediaSession callback.
+     */
+    public static final class MediaButtonReceiver extends BroadcastReceiver {
+
+        private static volatile MediaSessionListener activeListener;
+
+        public static void setListener(MediaSessionListener listener) {
+            activeListener = listener;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+                return;
+            }
+
+            KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+            if (event == null || event.getAction() != KeyEvent.ACTION_DOWN) {
+                return;
+            }
+
+            MediaSessionListener listener = activeListener;
+            if (listener == null) {
+                Log.w(TAG, "Ignoring media button; no active media-session listener");
+                return;
+            }
+
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_MEDIA_PLAY:
+                    listener.onPlay();
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                case KeyEvent.KEYCODE_MEDIA_STOP:
+                    listener.onPause();
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_NEXT:
+                    listener.onSkipToNext();
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                    listener.onSkipToPrevious();
+                    break;
+                default:
+                    Log.w(TAG, "Ignoring unsupported media key: " + event.getKeyCode());
+            }
         }
     }
 }
