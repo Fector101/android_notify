@@ -165,7 +165,7 @@ fi
 if ! _logcat_contains "MUSIC_BUTTON_RECEIVER_OK"; then
     _fail \
         "MUSIC_BUTTON_RECEIVER_OK not found " \
-        "(AAR receiver org/android_notify/music/MediaSessionCallback\\$MediaButtonReceiver not resolved)"
+        "(AAR receiver org/android_notify/music/MediaSessionCallback\$MediaButtonReceiver not resolved)"
 fi
 
 if ! _logcat_contains "MUSIC_NOTIFICATION_BUILT"; then
