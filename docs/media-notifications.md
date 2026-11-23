@@ -35,7 +35,7 @@ published on Maven Central. You do not write or copy any Java - just add one lin
 to your `buildozer.spec`:
 
 ```ini
-android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.3
+android.gradle_dependencies = io.github.fector101:android-notify-music-bridge:1.0.2
 ```
 
 `mavenCentral()` is already included in the Gradle project buildozer generates,
